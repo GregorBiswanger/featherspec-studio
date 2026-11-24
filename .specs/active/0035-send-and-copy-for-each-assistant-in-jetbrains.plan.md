@@ -388,7 +388,7 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
     in the input, (4) trust dialog (a fresh copy of the folder), (5) login (logged out); for Junie also (6) the import suggestion and
     the integration-plugin offer if they show. Type `/sdd-overview` by hand in each CLI and note whether it runs as a command (J-1
     for Junie). Paste the JSON blocks (they are redacted) into the session.
-- [ ] **Verified (T-016):** —
+- [x] **Verified (T-016):** 2026-11-24 · **CI pending** (Kotlin) · red first: `CliAgentsTest` 16 and `HandoverScreenTest` 15 red via `Not implemented` (table literally, K-1 pending, bare command, Claude row = `ClaudeReadiness`, marker order, `.exe/.bat/.cmd` and case, cross-agent command, `CliOnPath` for every name, blank and quoted entries, a directory with only another agent's name; verdict per agent, groups `<agent>.input/.waiting`, agent and `agentRunning` of a tab, paste checks), then 41 of 41 green with kotlinc 2.0.21 and JUnit stubs; platform glue (`HandoverTerminal`) compile-checked against hand-made stubs, `HandoverProbe.kt` (`HandoverInventory.cliAgents`, two actions) and `featherspec-terminal.xml` only by reading. `EnvironmentUtil.getValue("PATH")` is asked by reflection (`HandoverReflect.callStatic`) with the process PATH beside it: no new platform import. Gregor's K-1 run (stage 6 *Gregor prepares*) is still open.
 - **Notes:** —
 
 ### T-017 — Agent rows, prompt text and agent texts (TypeScript)

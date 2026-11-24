@@ -2,6 +2,8 @@
     <actions>
         <action id="featherspec.probe.handover.inventory" class="com.gregorbiswanger.featherspec.studio.probe.HandoverInventoryAction" text="FeatherSpec Probe: Handover Inventory"/>
         <action id="featherspec.probe.handover.claudeTab" class="com.gregorbiswanger.featherspec.studio.probe.HandoverClaudeTabAction" text="FeatherSpec Probe: Handover Claude Tab"/>
+        <action id="featherspec.probe.handover.junieTab" class="com.gregorbiswanger.featherspec.studio.probe.HandoverJunieTabAction" text="FeatherSpec Probe: Handover Junie Tab"/>
+        <action id="featherspec.probe.handover.copilotTab" class="com.gregorbiswanger.featherspec.studio.probe.HandoverCopilotTabAction" text="FeatherSpec Probe: Handover Copilot Tab"/>
         <action id="featherspec.probe.handover.screen" class="com.gregorbiswanger.featherspec.studio.probe.HandoverScreenAction" text="FeatherSpec Probe: Handover Screen"/>
     </actions>
 </idea-plugin>

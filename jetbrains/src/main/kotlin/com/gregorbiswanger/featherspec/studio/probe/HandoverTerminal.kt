@@ -2,6 +2,8 @@ package com.gregorbiswanger.featherspec.studio.probe
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import com.gregorbiswanger.featherspec.studio.assistant.CliAgent
+import com.gregorbiswanger.featherspec.studio.assistant.CliAgents
 import com.gregorbiswanger.featherspec.studio.assistant.Screen
 import com.gregorbiswanger.featherspec.studio.assistant.TerminalGlue
 import com.gregorbiswanger.featherspec.studio.assistant.TerminalTab
@@ -11,17 +13,18 @@ import com.intellij.terminal.frontend.toolwindow.TerminalToolWindowTabsManager
 
 object HandoverTerminal {
     private const val TERMINAL_WINDOW_ID = "Terminal"
-    private const val TAB_NAME = "Claude Code"
-    private const val COMMAND = "claude"
     private const val PASTE = "probe @README.md"
     private const val SHELL_WAIT_MS = 20_000L
     private const val READY_WAIT_MS = 30_000L
     private const val QUIET_MS = 1_000L
     private const val AFTER_PASTE_MS = 2_000L
     private const val POLL_MS = 100L
-    private val MARKERS = listOf("Claude Code", "? for shortcuts", "Welcome", "Tip:", "bypass permissions", "╭", "│ >")
+    private val CLAUDE_MARKERS = listOf("Claude Code", "? for shortcuts", "Welcome", "Tip:", "bypass permissions", "╭", "│ >")
 
-    private class Snapshot(val text: String, val altLength: Long, val blockRunning: Boolean, val blockSeen: Boolean, val status: String)
+    private fun markersOf(agent: CliAgent): List<String> =
+        if (agent == CliAgents.CLAUDE_CODE) CLAUDE_MARKERS else (listOf(agent.displayName, "Welcome") + agent.inputMarkers + agent.waitingMarkers).distinct()
+
+    private class Snapshot(val text: String, val altLength: Long, val blockRunning: Boolean, val blockSeen: Boolean, val status: String, val blocks: Int)
 
     fun tabs(project: Project): JsonArray {
         val manager = TerminalToolWindowTabsManager.getInstance(project)
@@ -65,13 +68,17 @@ object HandoverTerminal {
         return HandoverScreen.tab(tab, name, screen, failure, home)
     }
 
-    fun claudeTab(project: Project): JsonObject {
+    fun claudeTab(project: Project): JsonObject = agentTab(project, CliAgents.CLAUDE_CODE)
+
+    fun agentTab(project: Project, agent: CliAgent): JsonObject {
         val result = JsonObject()
+        result.addProperty("agent", agent.id)
+        result.addProperty("command", agent.command)
         val steps = JsonObject()
         result.add("steps", steps)
         val manager = TerminalToolWindowTabsManager.getInstance(project)
         steps.add("tabsBefore", HandoverReflect.safe { HandoverReflect.onEdt { manager.tabs.size } })
-        val tab = HandoverReflect.onEdt { createTab(manager, project, steps) }
+        val tab = HandoverReflect.onEdt { createTab(manager, project, steps, agent.tabName) }
         val view = HandoverReflect.call(tab, "getView")!!
         HandoverReflect.onEdt { steps.add("showTerminalWindow", HandoverReflect.safe { showWindow(project) }) }
 
@@ -80,27 +87,30 @@ object HandoverTerminal {
         steps.add("shellIntegrationReadyMs", HandoverReflect.element(shellMs))
 
         val sentAt = System.nanoTime()
-        steps.add("sendCommand", HandoverReflect.safe { HandoverReflect.onEdt { send(view, COMMAND, execute = true, bracketed = false) }; COMMAND })
-        val readiness = observeReadiness(view, sentAt)
+        steps.add("sendCommand", HandoverReflect.safe { HandoverReflect.onEdt { send(view, agent.command, execute = true, bracketed = false) }; agent.command })
+        val readiness = observeReadiness(view, sentAt, agent)
         result.add("readinessCandidates", readiness.first)
         steps.add("pasteSentBecause", HandoverReflect.element(readiness.second))
-        result.addProperty("beforePasteTail", tail(snapshot(view).text))
+        val before = snapshot(view, agent)
+        result.addProperty("beforePasteTail", tail(before.text))
 
         steps.add("sendPaste", HandoverReflect.safe { HandoverReflect.onEdt { send(view, PASTE, execute = false, bracketed = true) }; PASTE })
         Thread.sleep(AFTER_PASTE_MS)
-        val after = snapshot(view)
+        val after = snapshot(view, agent)
         result.addProperty("afterPasteTail", tail(after.text))
         result.addProperty("pastedTextVisible", after.text.contains(PASTE))
+        result.addProperty("escapeCharactersVisible", HandoverScreen.escapeVisible(after.text.removePrefix(before.text)))
+        result.addProperty("submitted", HandoverScreen.submitted(before.blocks, after.blocks))
         result.add("tabAfter", HandoverReflect.safe { HandoverReflect.onEdt { describe(tab) } })
         return result
     }
 
-    private fun createTab(manager: TerminalToolWindowTabsManager, project: Project, steps: JsonObject): Any {
+    private fun createTab(manager: TerminalToolWindowTabsManager, project: Project, steps: JsonObject, tabName: String): Any {
         var builder: Any = manager.createTabBuilder()
         val options = JsonObject()
         steps.add("builderCalls", options)
         builder = chain(builder, "workingDirectory", project.basePath, options)
-        builder = chain(builder, "tabName", TAB_NAME, options)
+        builder = chain(builder, "tabName", tabName, options)
         builder = chain(builder, "requestFocus", true, options)
         return HandoverReflect.call(builder, "createTab")!!
     }
@@ -133,7 +143,8 @@ object HandoverTerminal {
         return "$state after $SHELL_WAIT_MS (timeout)"
     }
 
-    private fun observeReadiness(view: Any, sentNanos: Long): Pair<JsonObject, String> {
+    private fun observeReadiness(view: Any, sentNanos: Long, agent: CliAgent): Pair<JsonObject, String> {
+        val markers = markersOf(agent)
         val markerMs = LinkedHashMap<String, Long>()
         var commandBlockMs: Long? = null
         var altBufferMs: Long? = null
@@ -146,7 +157,7 @@ object HandoverTerminal {
         var because = "timeout ${READY_WAIT_MS}ms"
         while (true) {
             val elapsed = (System.nanoTime() - sentNanos) / 1_000_000L
-            val now = runCatching { HandoverReflect.onEdt { snapshot(view) } }.getOrNull()
+            val now = runCatching { HandoverReflect.onEdt { snapshot(view, agent) } }.getOrNull()
             if (now != null) {
                 if (baseline < 0) {
                     baseline = now.text.length
@@ -166,7 +177,7 @@ object HandoverTerminal {
                 if (altBufferMs == null && now.altLength > 0) {
                     altBufferMs = elapsed
                 }
-                for (marker in MARKERS) {
+                for (marker in markers) {
                     if (marker !in markerMs && now.text.contains(marker)) {
                         markerMs[marker] = elapsed
                     }
@@ -190,20 +201,21 @@ object HandoverTerminal {
         json.add("alternateBufferMs", HandoverReflect.element(altBufferMs))
         json.add("outputQuiet1sMs", HandoverReflect.element(quietMs))
         json.add("quietAfterFirstMarkerMs", HandoverReflect.element(quietAfterMarkerMs))
-        val markers = JsonObject()
-        MARKERS.forEach { markers.add(it, HandoverReflect.element(markerMs[it])) }
-        json.add("markerFirstSeenMs", markers)
+        val seen = JsonObject()
+        markers.forEach { seen.add(it, HandoverReflect.element(markerMs[it])) }
+        json.add("markerFirstSeenMs", seen)
         return json to because
     }
 
-    private fun snapshot(view: Any): Snapshot = HandoverReflect.onEdt {
+    private fun snapshot(view: Any, agent: CliAgent): Snapshot = HandoverReflect.onEdt {
         val text = regularText(view)
         val alt = runCatching { textLength(model(view, "getAlternative")) }.getOrDefault(-1L)
         val blocks = runCatching { lastBlocks(view) }.getOrDefault(emptyList())
-        val running = blocks.any { executedCommand(it)?.contains(COMMAND) == true && outputStarted(it) && exitCode(it) == null }
-        val seen = blocks.any { executedCommand(it)?.contains(COMMAND) == true }
+        val running = blocks.any { executedCommand(it)?.contains(agent.command) == true && outputStarted(it) && exitCode(it) == null }
+        val seen = blocks.any { executedCommand(it)?.contains(agent.command) == true }
         val status = runCatching { outputStatus(view) }.getOrDefault("")
-        Snapshot(text, alt, running, seen, status)
+        val count = runCatching { allBlocks(view).size }.getOrDefault(-1)
+        Snapshot(text, alt, running, seen, status, count)
     }
 
     private fun describe(tab: Any): JsonObject {
@@ -254,12 +266,14 @@ object HandoverTerminal {
         return stateValue(HandoverReflect.call(integration, "getOutputStatus")).toString()
     }
 
-    private fun lastBlocks(view: Any): List<Any> {
+    private fun allBlocks(view: Any): List<Any> {
         val integration = shellState(view).second ?: return emptyList()
         val model = HandoverReflect.call(integration, "getBlocksModel")!!
         val blocks = HandoverReflect.call(model, "getBlocks") as List<*>
-        return blocks.filterNotNull().takeLast(3)
+        return blocks.filterNotNull()
     }
+
+    private fun lastBlocks(view: Any): List<Any> = allBlocks(view).takeLast(3)
 
     private fun executedCommand(block: Any): String? = runCatching { HandoverReflect.call(block, "getExecutedCommand") as String? }.getOrNull()
 

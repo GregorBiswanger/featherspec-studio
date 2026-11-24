@@ -4,6 +4,8 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
+import com.gregorbiswanger.featherspec.studio.assistant.CliAgents
+import com.gregorbiswanger.featherspec.studio.assistant.CliOnPath
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -19,6 +21,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 import java.awt.datatransfer.StringSelection
+import java.io.File
 import java.time.Instant
 
 object HandoverProperties {
@@ -52,6 +55,14 @@ class HandoverInventoryAction : HandoverAction("inventory") {
 
 class HandoverClaudeTabAction : HandoverAction("claudeTab") {
     override fun body(project: Project): JsonObject = HandoverTerminal.claudeTab(project)
+}
+
+class HandoverJunieTabAction : HandoverAction("junieTab") {
+    override fun body(project: Project): JsonObject = HandoverTerminal.agentTab(project, CliAgents.JUNIE)
+}
+
+class HandoverCopilotTabAction : HandoverAction("copilotTab") {
+    override fun body(project: Project): JsonObject = HandoverTerminal.agentTab(project, CliAgents.COPILOT)
 }
 
 class HandoverScreenAction : HandoverAction("screen") {
@@ -119,8 +130,26 @@ object HandoverInventory {
         body.add("toolWindows", HandoverReflect.safe { toolWindows(project) })
         body.add("plugins", HandoverReflect.safe { plugins() })
         body.add("terminalTabs", HandoverReflect.safe { HandoverTerminal.tabs(project) })
+        body.add("cliAgents", HandoverReflect.safe { cliAgents() })
         return body
     }
+
+    private fun cliAgents(): JsonObject {
+        val idePath = runCatching { HandoverReflect.callStatic("com.intellij.util.EnvironmentUtil", "getValue", "PATH") as String? }
+        val processPath = System.getenv("PATH")
+        val result = JsonObject()
+        result.add("idePathSource", HandoverReflect.safe { idePath.getOrThrow()?.let { "available" } ?: "null" })
+        for (agent in CliAgents.ALL) {
+            val entry = JsonObject()
+            entry.add("foundOnIdePath", HandoverReflect.safe { matchOf(agent.pathNames, idePath.getOrThrow()) ?: false })
+            entry.add("foundOnProcessPath", HandoverReflect.safe { matchOf(agent.pathNames, processPath) ?: false })
+            result.add(agent.id, entry)
+        }
+        return result
+    }
+
+    private fun matchOf(names: List<String>, path: String?): String? =
+        CliOnPath.match(names, path, File.pathSeparatorChar, CliOnPath::existsOnDisk)
 
     private fun toolWindows(project: Project): JsonArray {
         val manager = ToolWindowManager.getInstance(project)

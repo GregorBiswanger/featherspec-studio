@@ -5,7 +5,8 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonNull
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
-import com.gregorbiswanger.featherspec.studio.assistant.ClaudeReadiness
+import com.gregorbiswanger.featherspec.studio.assistant.CliAgent
+import com.gregorbiswanger.featherspec.studio.assistant.CliAgents
 import com.gregorbiswanger.featherspec.studio.assistant.Screen
 import com.gregorbiswanger.featherspec.studio.assistant.TerminalTab
 
@@ -47,18 +48,24 @@ object HandoverScreen {
     const val READY = "ready"
     const val WAITING = "waiting"
     const val UNKNOWN = "unknown"
+    private val ESCAPE_SIGNS = listOf("\u001b", "^[", "[200~", "[201~")
 
-    fun verdict(claudeRunning: Boolean, text: String): String {
-        val inputBox = ClaudeReadiness.hasInputBox(text)
-        if (claudeRunning && inputBox) {
+    fun verdict(agent: CliAgent, running: Boolean, text: String): String {
+        val inputBox = agent.hasInputBox(text)
+        if (running && inputBox) {
             return READY
         }
-        val waiting = !inputBox && ClaudeReadiness.WAITING_MARKERS.any { text.contains(it) }
+        val waiting = !inputBox && agent.waitingMarkers.any { text.contains(it) }
         return if (waiting) WAITING else UNKNOWN
     }
 
-    fun markers(text: String): List<MarkerHit> =
-        ClaudeReadiness.INPUT_MARKERS.map { hit("input", it, text) } + ClaudeReadiness.WAITING_MARKERS.map { hit("waiting", it, text) }
+    fun markers(text: String): List<MarkerHit> = CliAgents.ALL.flatMap { agent ->
+        agent.inputMarkers.map { hit("${agent.id}.input", it, text) } + agent.waitingMarkers.map { hit("${agent.id}.waiting", it, text) }
+    }
+
+    fun escapeVisible(text: String): Boolean = ESCAPE_SIGNS.any { text.contains(it) }
+
+    fun submitted(blocksBefore: Int, blocksAfter: Int): Boolean = blocksAfter > blocksBefore
 
     fun tab(tab: TerminalTab, name: String?, screen: Screen?, screenError: String?, home: String?): JsonObject {
         val text = screen?.text ?: ""
@@ -69,8 +76,11 @@ object HandoverScreen {
         json.add("command", masked(tab.command, home))
         json.addProperty("shellReady", tab.shellReady)
         json.addProperty("executing", tab.executing)
-        json.addProperty("claudeRunning", screen?.claudeRunning ?: false)
-        json.addProperty("verdict", if (screen == null) UNKNOWN else verdict(screen.claudeRunning, text))
+        val agent = CliAgents.agentOf(tab.command)
+        val running = agent != null && tab.executing
+        json.add("agent", if (agent == null) JsonNull.INSTANCE else JsonPrimitive(agent.id))
+        json.addProperty("agentRunning", running)
+        json.addProperty("verdict", if (screen == null || agent == null) UNKNOWN else verdict(agent, running, text))
         if (screenError != null) {
             json.addProperty("screenError", Redaction.redact(screenError, home))
         }
