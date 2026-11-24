@@ -1316,6 +1316,12 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
 - [x] **Verified (T-042):** 2026-11-21 · red first for the loading-text check (pass 7 fail 1), then green · state check and restricted variant fail when disabled (mutation, restored) · `node --test 'jetbrains/guards/*.test.mjs'` 41/41 · `node --test jetbrains/scripts/*.test.mjs` 4/4 · `npm run test:unit` exit 0 (4019) · eslint, tsc ×2 exit 0 · `renderedTexts.mjs` against `3bc615c`: identical in 450 areas (shell 52, board 38, overview 38, planMap 180, detail 142), exit 0. Deviation: part (1) code before its tests; covered by the mutation-checked negative controls.
 - **Notes:** (1) `src/hosts/embedded/conformance.ts` gains `shell: studio.service.view()` in the conformance output (orchestrator-approved scope extension; no test pins the key set; `src/core` unchanged). (2) The state check reports only a mismatch between a rendered `section.panel-state` and the shell view's state: S2 (nested-project, not-fs-*) and S9 (incomplete-*) are legitimate. (3) The loading-text check overlaps the S4 panel-state rule; it adds coverage for loading text rendered as area content.
 
+### Note 2026-11-24 — JS query before the native browser
+
+- **Why red now:** the Starter default `ide.browser.jcef.jsQueryPoolSize=10000` gave every query a pool slot, hiding that `JBCefJSQuery.create` ran after `createImmediately()`. The Core, Setup and Smoke tests now patch the VM options with `addSystemProperty("ide.browser.jcef.jsQueryPoolSize", 0)` (after the Starter default, so it wins). Without the fix the query has no slot, no `cefQuery` function exists in the page, `start` is sent but no frame returns: `CoreIdeTest` (and every test needing the core) fails with "core not ready within 60 s". With the fix the query exists before native creation and needs no pool.
+- **Change:** `jcef/JsQueries.kt` is the only caller of `JBCefJSQuery.create`; `CoreRuntime` builds with `setCreateImmediately(false)`, creates the query, then `createImmediately()`; `PanelBrowser` builds with `setCreateImmediately(false)` and creates the query in `wire`. A client-wide `JS_QUERY_POOL_SIZE` was left out on purpose: it would rescue the wrong order and hide the regression from CI.
+- **Guard:** `jetbrains/guards/jsQueryOrder.test.mjs` (stray calls, order in both browsers, negative controls). Kotlin result: CI only.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |

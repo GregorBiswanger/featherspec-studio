@@ -5,6 +5,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
+import com.gregorbiswanger.featherspec.studio.jcef.JsQueries
 import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.ui.jcef.JBCefClient
 import com.intellij.ui.jcef.JBCefJSQuery
@@ -183,9 +184,10 @@ class CoreRuntime(
         val created = JBCefBrowser.createBuilder()
             .setClient(client)
             .setOffScreenRendering(true)
+            .setCreateImmediately(false)
             .build()
+        val jsQuery = JsQueries.create(created)
         created.createImmediately()
-        val jsQuery = JBCefJSQuery.create(created)
         jsQuery.addHandler { frame ->
             queue.execute { onFrame(frame) }
             null

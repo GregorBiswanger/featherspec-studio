@@ -1,6 +1,7 @@
 package com.gregorbiswanger.featherspec.studio.panel
 
 import com.gregorbiswanger.featherspec.studio.StudioProjectService
+import com.gregorbiswanger.featherspec.studio.jcef.JsQueries
 import com.gregorbiswanger.featherspec.studio.jcef.PluginRequestHandler
 import com.gregorbiswanger.featherspec.studio.probe.PanelFrames
 import com.gregorbiswanger.featherspec.studio.runtime.CORE_ORIGIN
@@ -23,7 +24,7 @@ private const val PANEL_URL = "$CORE_ORIGIN/index.html"
  * project or unloading the plugin disposes it wherever it is.
  */
 class PanelBrowser private constructor(private val service: StudioProjectService, client: JBCefClient) : Disposable {
-    val browser: JBCefBrowser = JBCefBrowser.createBuilder().setClient(client).build()
+    val browser: JBCefBrowser = JBCefBrowser.createBuilder().setClient(client).setCreateImmediately(false).build()
     private lateinit var query: JBCefJSQuery
     private lateinit var theme: ThemeBridge
     private lateinit var nudge: RepaintNudge
@@ -110,7 +111,7 @@ class PanelBrowser private constructor(private val service: StudioProjectService
     }
 
     private fun wire(client: JBCefClient) {
-        query = JBCefJSQuery.create(browser)
+        query = JsQueries.create(browser)
         query.addHandler { raw ->
             if (attached) {
                 PanelMessages.fromPanel(raw)?.let { service.runtime?.dispatch("panelMessage", it) }

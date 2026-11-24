@@ -471,6 +471,8 @@ As-is at `3bc615c` (digest, from the code):
 - Stages (gates of §6.12): spikes (G1) → guards and parity matrix (G2) → shared changes (G3) → host (runtime, tab and
   theme, tree and status, settings and trust, setup, watching) → packaging and release (G4).
 
+*Amended 2026-11-24 (real failure on Rider 2026.3.0.1, Windows): the core never answered, `idea.log` showed "Set the property JBCefClient.Properties.JS_QUERY_POOL_SIZE to use JBCefJSQuery after the browser has been created" and "first frame from the core: no". Cause: `JBCefJSQuery.create` ran after `createImmediately()`; once native creation has started, a query works only from a pool slot, and the pool exists only when `ide.browser.jcef.jsQueryPoolSize` is above 0 (platform `JBCefJSQuery.create`, `JBCefClient`). The Starter starts the IDE with that registry value at 10000, so CI never saw it; a user IDE has 0. Fix: the core browser and the panel browser are built with `setCreateImmediately(false)`, the query is created through `jcef/JsQueries.kt` before native creation (core: then `createImmediately()`), and no other file calls `JBCefJSQuery.create` (guard `jetbrains/guards/jsQueryOrder.test.mjs`). New CI condition: the Starter tests Core, Setup and Smoke run with `-Dide.browser.jcef.jsQueryPoolSize=0`, the value of a user IDE, so the old order turns the core test red (no frame, "core not ready within 60 s"). The behaviour of the bridge, OSR and the request handler is unchanged.*
+
 ## 13. Assumptions
 
 | ID | Assumption | Why we believe it | What breaks if it is wrong |

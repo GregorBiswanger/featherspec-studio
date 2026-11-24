@@ -102,6 +102,7 @@ class CoreIdeTest {
         context.applyVMOptionsPatch {
             addSystemProperty("idea.trust.all.projects", true)
             addSystemProperty("ide.show.tips.on.startup.default.value", false)
+            addSystemProperty("ide.browser.jcef.jsQueryPoolSize", 0)
             addSystemProperty("featherspec.probe.out", out.toString())
             addSystemProperty("featherspec.probe", "conformance")
             addSystemProperty("featherspec.conformance", conformance.toString())
