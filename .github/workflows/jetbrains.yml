@@ -258,7 +258,7 @@ jobs:
         run: xvfb-run -a gradle -p jetbrains integrationTest --tests '*NoJcefIdeTest' -Pfeatherspec.nojcef=${{ matrix.nojcef }} -Pfeatherspec.ide=${{ matrix.ide }}
       - name: Run the Starter tests (Windows and macOS)
         if: runner.os != 'Linux'
-        run: gradle -p jetbrains integrationTest -Pfeatherspec.ide=${{ matrix.ide }}
+        run: gradle -p jetbrains integrationTest "-Pfeatherspec.ide=${{ matrix.ide }}"
       - name: Compare the JVM next steps with the Baseline
         if: always() && hashFiles('jetbrains/build/probe-out/actual/*.json') != ''
         shell: bash
