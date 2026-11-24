@@ -4,4 +4,6 @@ interface HostHandler {
     fun call(id: String, name: String, args: String)
 
     fun emit(channel: String, payload: String)
+
+    fun note(line: String) {}
 }

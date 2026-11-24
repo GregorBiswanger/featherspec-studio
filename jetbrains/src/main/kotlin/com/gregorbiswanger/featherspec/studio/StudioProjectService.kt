@@ -126,6 +126,7 @@ class StudioProjectService(private val project: Project) : Disposable {
         ),
         resolve = { id, json -> runtime?.resolve(id, json) },
         execute = { block -> ApplicationManager.getApplication().executeOnPooledThread(Runnable { block() }) },
+        coreLog = { line -> thisLogger().info("FeatherSpec core: $line") },
     )
 
     init {
@@ -327,7 +328,9 @@ class StudioProjectService(private val project: Project) : Disposable {
     }
 
     private fun fail(failure: Exception) {
-        thisLogger().warn("The FeatherSpec core could not be started", failure)
-        state.set(CoreState.Failed(failure.message ?: failure.javaClass.simpleName))
+        val reason = failure.message ?: failure.javaClass.simpleName
+        thisLogger().warn("FeatherSpec core failed: $reason", failure)
+        host.note("FeatherSpec core failed: $reason")
+        state.set(CoreState.Failed(reason))
     }
 }

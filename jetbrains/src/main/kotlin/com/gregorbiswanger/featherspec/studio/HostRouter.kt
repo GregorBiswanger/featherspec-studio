@@ -119,12 +119,15 @@ class HostRouter(
     private val router: CallRouter,
     private val resolve: (String, String) -> Unit,
     private val execute: (() -> Unit) -> Unit,
+    private val coreLog: (String) -> Unit = {},
 ) : HostHandler {
     val tree = Observable<String?>(null)
     val status = Observable<String?>(null)
     val log = Observable<List<String>>(emptyList())
 
     private val subscribers = ConcurrentHashMap<String, CopyOnWriteArrayList<(String) -> Unit>>()
+    private val logLock = Any()
+    private val logListeners = CopyOnWriteArrayList<(List<String>) -> Unit>()
 
     override fun call(id: String, name: String, args: String) {
         execute { resolve(id, router.answer(name, args)) }
@@ -139,6 +142,21 @@ class HostRouter(
         subscribers[channel]?.forEach { it(payload) }
     }
 
+    override fun note(line: String) {
+        appendLines(LogLines.parse(LogLines.payload(line)))
+    }
+
+    fun attachLog(replay: (List<String>) -> Unit, listener: (List<String>) -> Unit): () -> Unit {
+        synchronized(logLock) {
+            replay(log.value)
+            logListeners.add(listener)
+        }
+        return {
+            logListeners.remove(listener)
+            Unit
+        }
+    }
+
     fun subscribe(channel: String, listener: (String) -> Unit): () -> Unit {
         val list = subscribers.computeIfAbsent(channel) { CopyOnWriteArrayList() }
         list.add(listener)
@@ -150,7 +168,15 @@ class HostRouter(
 
     private fun appendLog(payload: String) {
         val lines = LogLines.parse(payload)
-        log.update { (it + lines).takeLast(MAX_LOG_LINES) }
+        lines.forEach { coreLog(it) }
+        appendLines(lines)
+    }
+
+    private fun appendLines(lines: List<String>) {
+        synchronized(logLock) {
+            log.update { (it + lines).takeLast(MAX_LOG_LINES) }
+            logListeners.forEach { it(lines) }
+        }
     }
 
     private companion object {

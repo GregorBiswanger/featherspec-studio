@@ -1,5 +1,6 @@
 package com.gregorbiswanger.featherspec.studio.ui
 
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import java.net.URI
@@ -146,6 +147,8 @@ object LogLines {
     } catch (failure: RuntimeException) {
         listOf(payload)
     }
+
+    fun payload(line: String): String = JsonArray().apply { add(line) }.toString()
 
     fun text(lines: List<String>): String = lines.joinToString("") { it + "\n" }
 }

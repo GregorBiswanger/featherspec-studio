@@ -54,6 +54,10 @@ class CoreRuntime(
     var readyAtNanos: Long = 0L
         private set
 
+    @Volatile
+    var firstFrameAtNanos: Long = 0L
+        private set
+
     private val lock = Any()
     private val pendingScripts = ArrayList<String>()
     private val replyLock = Any()
@@ -108,8 +112,7 @@ class CoreRuntime(
             try {
                 create()
             } catch (failure: Throwable) {
-                thisLogger().warn("The FeatherSpec core browser could not be created", failure)
-                state.set(CoreState.Failed(failure.message ?: failure.javaClass.simpleName))
+                fail(failure.message ?: failure.javaClass.simpleName, failure)
             }
         }
     }
@@ -259,6 +262,9 @@ class CoreRuntime(
     }
 
     private fun onFrame(text: String) {
+        if (firstFrameAtNanos == 0L) {
+            firstFrameAtNanos = System.nanoTime()
+        }
         try {
             when (val frame = BridgeFrames.parse(text)) {
                 is Frame.Call -> {
@@ -284,7 +290,7 @@ class CoreRuntime(
                 }
                 is Frame.Failed -> {
                     timeout?.cancel(false)
-                    state.set(CoreState.Failed(frame.error))
+                    fail(frame.error)
                 }
                 is Frame.Invalid -> thisLogger().warn("The FeatherSpec core sent an invalid frame: ${frame.text.take(200)}")
             }
@@ -305,7 +311,25 @@ class CoreRuntime(
 
     private fun onTimeout() {
         if (state.value == CoreState.Loading) {
-            state.set(CoreState.Failed("core not ready within 60 s"))
+            val diagnosis = CoreDiagnosis.describe(
+                createdAtNanos, loadedAtNanos, configAtNanos, startSentAtNanos, firstFrameAtNanos,
+            )
+            fail("core not ready within 60 s. $diagnosis")
         }
+    }
+
+    private fun fail(reason: String, cause: Throwable? = null) {
+        val before = state.value
+        if (before is CoreState.Failed || before is CoreState.Unavailable) {
+            return
+        }
+        val line = "FeatherSpec core failed: $reason"
+        if (cause != null) {
+            thisLogger().warn(line, cause)
+        } else {
+            thisLogger().warn(line)
+        }
+        handler.note(line)
+        state.set(CoreState.Failed(reason))
     }
 }

@@ -19,8 +19,7 @@ class LogView(project: Project, host: HostRouter) : Disposable {
         get() = console.component
 
     init {
-        unsubscribe = host.subscribe("log") { payload -> print(LogLines.parse(payload)) }
-        print(host.log.value)
+        unsubscribe = host.attachLog({ lines -> print(lines) }, { lines -> print(lines) })
     }
 
     override fun dispose() {
