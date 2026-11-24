@@ -62,6 +62,7 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
         }
         if (lifecycle.stateChanged(state) == PanelStep.OPENED) {
             service.runtime?.dispatch("panelOpened", PanelMessages.openedPayload(resumed))
+            service.refreshAvailability()
         }
     }
 

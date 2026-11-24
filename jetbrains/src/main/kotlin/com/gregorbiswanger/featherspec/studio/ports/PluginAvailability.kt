@@ -9,7 +9,7 @@ object PluginIds {
     const val JUNIE = "org.jetbrains.junie"
     const val AI_ASSISTANT = "com.intellij.ml.llm"
 
-    val ALL: List<String> = listOf(COPILOT, TERMINAL, JUNIE, AI_ASSISTANT)
+    val ALL: List<String> = listOf(TERMINAL)
 }
 
 enum class ActivityCheck { LOADED, NOT_DISABLED }

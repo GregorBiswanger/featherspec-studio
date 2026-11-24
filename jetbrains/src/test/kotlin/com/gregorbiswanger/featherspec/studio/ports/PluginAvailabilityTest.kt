@@ -10,27 +10,24 @@ class PluginAvailabilityTest {
     private fun queryOf(vararg ids: String) = PluginQuery { it in ids }
 
     @Test
-    fun `AC-003 the ids are the four of the spec`() {
-        assertEquals(
-            listOf("com.github.copilot", "org.jetbrains.plugins.terminal", "org.jetbrains.junie", "com.intellij.ml.llm"),
-            PluginIds.ALL,
-        )
+    fun `AC-044 the only plugin watched is the Terminal plugin`() {
+        assertEquals(listOf("org.jetbrains.plugins.terminal"), PluginIds.ALL)
     }
 
     @Test
     fun `AC-003 a snapshot lists exactly the watched plugins that are available, in table order`() {
         assertEquals(emptyList<String>(), PluginAvailability.snapshot(queryOf()))
         assertEquals(
-            listOf("com.github.copilot", "org.jetbrains.plugins.terminal", "org.jetbrains.junie", "com.intellij.ml.llm"),
+            listOf("org.jetbrains.plugins.terminal"),
             PluginAvailability.snapshot(queryOf("com.intellij.ml.llm", "org.jetbrains.junie", "org.jetbrains.plugins.terminal", "com.github.copilot")),
         )
-        assertEquals(listOf("org.jetbrains.junie"), PluginAvailability.snapshot(queryOf("org.jetbrains.junie", "com.anthropic.code.plugin")))
+        assertEquals(emptyList<String>(), PluginAvailability.snapshot(queryOf("org.jetbrains.junie", "com.anthropic.code.plugin")))
     }
 
     @Test
     fun `AC-003 a plugin that is reported unloaded counts as absent even while the platform still lists it`() {
-        val query = queryOf("com.github.copilot", "org.jetbrains.plugins.terminal")
-        assertEquals(listOf("org.jetbrains.plugins.terminal"), PluginAvailability.snapshot(query, setOf("com.github.copilot")))
+        val query = queryOf("org.jetbrains.plugins.terminal")
+        assertEquals(emptyList<String>(), PluginAvailability.snapshot(query, setOf("org.jetbrains.plugins.terminal")))
         assertEquals(setOf("com.github.copilot"), PluginAvailability.absentAfter(PluginEventKind.UNLOADED, "com.github.copilot", false))
         assertEquals(emptySet<String>(), PluginAvailability.absentAfter(PluginEventKind.UNLOADED, "com.github.copilot", true))
         assertEquals(emptySet<String>(), PluginAvailability.absentAfter(PluginEventKind.LOADED, "com.github.copilot", false))

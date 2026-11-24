@@ -1,5 +1,6 @@
 package com.gregorbiswanger.featherspec.studio.assistant
 
+import com.gregorbiswanger.featherspec.studio.StudioProjectService
 import com.gregorbiswanger.featherspec.studio.ports.HostOs
 import com.gregorbiswanger.featherspec.studio.ports.IdePlugins
 import com.gregorbiswanger.featherspec.studio.ports.PluginIds
@@ -19,6 +20,9 @@ class IdeAssistantCalls(private val project: Project) : AssistantCalls {
         }
         try {
             sender().send(request)
+        } catch (failure: AgentNotInstalled) {
+            project.getService(StudioProjectService::class.java).refreshAvailability()
+            throw failure
         } catch (failure: LinkageError) {
             throw IllegalStateException("the Terminal API could not be used (${failure.javaClass.simpleName})", failure)
         }

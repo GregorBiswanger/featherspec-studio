@@ -1,5 +1,6 @@
 package com.gregorbiswanger.featherspec.studio
 
+import com.google.gson.JsonPrimitive
 import com.gregorbiswanger.featherspec.studio.actions.RowSelection
 import com.gregorbiswanger.featherspec.studio.assistant.AssistantCalls
 import com.gregorbiswanger.featherspec.studio.assistant.AssistantPort
@@ -23,6 +24,10 @@ import com.gregorbiswanger.featherspec.studio.panel.StudioFile
 import com.gregorbiswanger.featherspec.studio.ports.UiMemoryState
 import com.gregorbiswanger.featherspec.studio.probe.OpenTimingProbe
 import com.gregorbiswanger.featherspec.studio.setup.SetupCalls
+import com.gregorbiswanger.featherspec.studio.settings.AssistantWatch
+import com.gregorbiswanger.featherspec.studio.settings.AvailabilityRecompute
+import com.gregorbiswanger.featherspec.studio.settings.EffectiveAssistant
+import com.gregorbiswanger.featherspec.studio.settings.PluginOptionsBus
 import com.gregorbiswanger.featherspec.studio.settings.SettingsTable
 import com.gregorbiswanger.featherspec.studio.settings.StudioSettings
 import com.gregorbiswanger.featherspec.studio.runtime.CoreRuntime
@@ -42,6 +47,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
 import com.intellij.openapi.roots.ModuleRootListener
@@ -99,6 +105,12 @@ class StudioProjectService(private val project: Project) : Disposable {
 
     @Volatile
     private var pluginsWatch = PluginsWatch(emptyList())
+
+    @Volatile
+    private var assistantWatch = AssistantWatch(EffectiveAssistant.NONE)
+
+    @Volatile
+    private var lastPlugins: List<String> = emptyList()
 
     private val projectBase: String = project.basePath.orEmpty()
 
@@ -285,9 +297,40 @@ class StudioProjectService(private val project: Project) : Disposable {
 
     fun sendPlugins(plugins: List<String>) {
         val core = runtime ?: return
-        if (pluginsWatch.changed(plugins)) {
-            core.dispatch("pluginsChanged", PluginAvailability.event(plugins))
+        lastPlugins = plugins
+        AvailabilityRecompute(
+            pluginsWatch,
+            assistantWatch,
+            { core.dispatch("pluginsChanged", PluginAvailability.event(it)) },
+            { core.dispatch("settingsChanged", SettingsTable.payload(SettingsTable.ASSISTANT_KEY, JsonPrimitive(it))) },
+        ).run(StudioSettings.getInstance().model().assistant, plugins)
+    }
+
+    fun refreshAvailability() {
+        ApplicationManager.getApplication().executeOnPooledThread(
+            Runnable {
+                try {
+                    val plugins = IdePlugins().snapshot()
+                    sendPlugins(plugins)
+                    PluginOptionsBus.shared.publish(plugins)
+                } catch (cancelled: ProcessCanceledException) {
+                    throw cancelled
+                } catch (failure: Exception) {
+                    thisLogger().warn("The FeatherSpec agent availability could not be recomputed", failure)
+                } catch (failure: LinkageError) {
+                    thisLogger().warn("The FeatherSpec agent availability could not be recomputed", failure)
+                }
+            },
+        )
+    }
+
+    fun sendSetting(payload: String) {
+        val rewritten = EffectiveAssistant.event(payload, lastPlugins)
+        val effective = EffectiveAssistant.assistantValue(rewritten)
+        if (effective != null && !assistantWatch.changed(effective)) {
+            return
         }
+        runtime?.dispatch("settingsChanged", rewritten)
     }
 
     private fun sendFolders() {
@@ -317,10 +360,15 @@ class StudioProjectService(private val project: Project) : Disposable {
             emptyList()
         }
         pluginsWatch = PluginsWatch(plugins)
+        lastPlugins = plugins
+        val effective = EffectiveAssistant.of(StudioSettings.getInstance().model().assistant, plugins)
+        assistantWatch = AssistantWatch(effective)
+        val settings = LinkedHashMap(SettingsTable.values(StudioSettings.getInstance().model()))
+        settings[SettingsTable.ASSISTANT_KEY] = JsonPrimitive(effective)
         return CoreConfig.json(
             platform = CoreConfig.platform(HostOs.windows, HostOs.mac),
             studioVersion = PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID))?.version ?: "0.0.0",
-            settings = SettingsTable.values(StudioSettings.getInstance().model()),
+            settings = settings,
             trusted = trusted,
             folders = folders,
             memory = UiMemoryState.getInstance().memory.forProject(projectBase),

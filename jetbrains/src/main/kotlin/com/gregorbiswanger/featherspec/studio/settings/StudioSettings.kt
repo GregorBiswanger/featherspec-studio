@@ -54,7 +54,7 @@ class StudioSettings : PersistentStateComponent<StudioSettings.State> {
                 continue
             }
             val service = project.getService(StudioProjectService::class.java)
-            events.forEach { service.dispatchEvent("settingsChanged", it) }
+            events.forEach { service.sendSetting(it) }
         }
     }
 
