@@ -3,7 +3,7 @@
 **Status:** In Progress
 **Plan:** [0035-send-and-copy-for-each-assistant-in-jetbrains.plan.md](0035-send-and-copy-for-each-assistant-in-jetbrains.plan.md)
 
-Basis: Gregor's decisions PD-105 (changed), **PD-108** (honest hybrid handover) and PD-109 (Junie readiness, spec 0037);
+Basis: Gregor's decisions PD-105 (changed), **PD-108** (honest hybrid handover; changed 2026-11-24 by **PD-112**, §16) and PD-109 (Junie readiness, spec 0037);
 the concept [18-junie-bootstrap.md](../../docs/ux-audit/18-junie-bootstrap.md) (§6 T-1, T-2; §8 E-2) and the work order
 [19-junie-handoff.md](../../docs/ux-audit/19-junie-handoff.md) (§1 G0-4, §2 branches A–C, §6 rows *Einstellung* and
 *Rückmeldung Copy for*); spec 0034 §6.7, OP-024, ADR-004 S-3; the VS Code send specs 0024, 0026, 0027, 0031, 0033. Content
@@ -20,6 +20,10 @@ In JetBrains IDEs every step action is Copy prompt today (PD-105, 0034 AC-031). 
 Junie** put the prompt and the same files, as references in that assistant's syntax, on the clipboard and open the
 assistant's chat for pasting. The attached files are exactly the files VS Code attaches. The empty state *No specs yet*
 gets the same step action as every other next-step place, in both hosts — the one deliberate VS Code change.
+
+*Amended 2026-11-24 by PD-112 (§16, AC-043 to AC-053):* in JetBrains every assistant gets a real Send through its command-line
+agent in an IDE terminal tab — **Send to Junie** (Junie CLI, the default when available), **Send to Claude Code** and **Send to
+Copilot** (GitHub Copilot CLI) — by the mechanism of §6.3. Copy for is removed; Copy prompt stays in every menu. VS Code is unchanged.
 
 ## 2. Goal and problem
 
@@ -48,6 +52,8 @@ with the prompt for the offered assistant (§6.1). **Claude terminal** — §6.3
 - The attached files of 0027, 0031 and 0033 for all three handovers (§6.2); the Junie wording in one function with both
   forms of 19 §2 (§6.7).
 - The texts of §7, the parity rows of every criterion, the VS Code protection of §6.8.
+- *Amended 2026-11-24 (PD-112):* Send to Junie and Send to Copilot through the Junie CLI and the GitHub Copilot CLI in the IDE
+  terminal; the *Assistant* setting offers Junie, Claude Code, GitHub Copilot and None; Copy for leaves the scope (§16).
 
 ### Out of scope
 
@@ -104,6 +110,8 @@ Claude Code plugin: the CLI in the terminal is enough (proxy, OP-003). Copy for 
 IDE project that is not trusted as in a trusted one, as VS Code's Send does in Restricted Mode (0024 AC-011, 0027 AC-013).
 *Amended 2026-11-23 (review 20 S-3, PD-110, decided by Gregor, OP-016, AC-037):* Send to Claude Code in a project that is not
 trusted (Safe Mode) only types into a running Claude terminal and never starts `claude` (§6.3).
+*Superseded 2026-11-24 for JetBrains by PD-112:* the rows `copilot` and `junie` (JetBrains) and their Copy for are replaced by
+§16 *Handover per assistant*; the row `claudeCode` stays and is the model for all three.
 
 ### 6.2 Attached files and references (0027, 0031, 0033, PD-091, PD-097)
 
@@ -165,6 +173,8 @@ trusted (Safe Mode) only types into a running Claude terminal and never starts `
 
 ### 6.4 Copy for Copilot · Copy for Junie (PD-108)
 
+*Superseded 2026-11-24 by PD-112 (§16, AC-050): Copy for is removed; this section stays as history only.*
+
 1. Build the text of §6.2 and write it to the clipboard. A failed write ends here: `Copy failed`, nothing opens.
 2. Open the assistant's chat tool window in this IDE project, if it exists: Copilot → GitHub Copilot Chat; Junie → AI Chat
    while `com.intellij.ml.llm` is available, else the Junie tool window (proxy, OP-010). Not found, or opening fails →
@@ -192,6 +202,8 @@ the missing API (LLM-2340). The menu holds `Copy prompt` alone (proxy, OP-011).
   Terminal ⇔ `org.jetbrains.plugins.terminal` (proxy, OP-014, A-007). When the IDE reports a plugin loaded or unloaded,
   options and offer follow within 500 ms of the report.
 - A change of the setting reaches every open IDE project's panel within 500 ms (0021 AC-011), without restart.
+- *Amended 2026-11-24 (PD-112, AC-043, AC-044):* options, default and *Available* follow §16 *The Assistant setting*; the
+  Copilot, Junie and AI Assistant plugins are no longer asked.
 
 ### 6.6 Places, and the empty state in both hosts
 
@@ -211,6 +223,8 @@ no Tip line (proxy, OP-015). Without an offer it stays Copy prompt, deep-equal t
 - **C (`follow`):** a line `/sdd-<name>` or `/sdd-<name> <rest>` becomes `Follow .claude/commands/sdd-<name>.md` or
   `Follow .claude/commands/sdd-<name>.md for <rest>`; every other line stays; then the references as in A.
 Spike J-1 (19 §2, Gregor) decides the form: branch C switches the constant; A and B keep A (A-004).
+*Superseded 2026-11-24 by PD-112 (§16 *Prompt text*, AC-046):* one `cliText(line, paths, form)` for the three CLI agents, with
+` @<path>` references and one form constant per agent (`CLI_FORMS`).
 
 ### 6.8 Protection of VS Code
 
@@ -247,6 +261,9 @@ VS Code texts are unchanged. JetBrains reuses 0024's and 0027's texts for Send t
 | Log causes (Claude Code) | `the Terminal plugin is not available` · `Claude Code was not ready within 15000 ms` · `Claude Code was not ready for input` · `the claude command was not found on the PATH` · `the project is not trusted` · `terminal call failed: <message>` · `no result within 20000 ms` |
 
 `<key>` is `Cmd+V` on macOS, else `Ctrl+V` (0024 §6.5).
+
+*Amended 2026-11-24 (PD-112):* every Copy for row above is removed; the new texts are in §16 *Texts*; the Claude Code texts stay
+byte-identical and are the Claude Code instance of the agent texts.
 
 ## 8. Security, permissions and privacy
 
@@ -289,18 +306,18 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
 
 **Setting and offer**
 
-- **AC-001** The JetBrains settings page shall show the *Assistant* row of §6.5 with §7's label and description, the
+- ~~**AC-001** The JetBrains settings page shall show the *Assistant* row of §6.5 with §7's label and description, the
   options `None: Copy prompt`, `GitHub Copilot`, `Claude Code` in this order and `Junie` last, each except None only while its
   assistant is available (*amended 2026-11-23, review 20 S-5, AC-039; before: Copilot and Claude Code always*), and under the combo the selected option's description of §7; the default shall be `none`, and only the four
-  values of §6.5 shall be stored.
+  values of §6.5 shall be stored.~~ — superseded by PD-112 on 2026-11-24 (AC-043, §16).
 - **AC-002** When the developer applies another *Assistant* value, every open IDE project's panel shall show the step
   action of the new value within 500 ms of Apply, without an IDE restart.
-- **AC-003** Junie shall count as available exactly while `org.jetbrains.junie` or `com.intellij.ml.llm` is installed and
+- ~~**AC-003** Junie shall count as available exactly while `org.jetbrains.junie` or `com.intellij.ml.llm` is installed and
   enabled, GitHub Copilot while `com.github.copilot` is, and the Terminal while `org.jetbrains.plugins.terminal` is; when
-  the IDE reports a plugin loaded or unloaded, the options and the offer shall follow within 500 ms of the report.
-- **AC-004** For each stored value `none`, `copilot`, `claudeCode`, `junie`, `""`, `42` and unset, with each subset of
+  the IDE reports a plugin loaded or unloaded, the options and the offer shall follow within 500 ms of the report.~~ — superseded by PD-112 on 2026-11-24 (AC-044, §16).
+- ~~**AC-004** For each stored value `none`, `copilot`, `claudeCode`, `junie`, `""`, `42` and unset, with each subset of
   {GitHub Copilot, Terminal, Junie} available, the JetBrains host shall offer exactly the handover of §6.1 for that value
-  when its assistant is available, and otherwise render the same DOM as `none` with no Send and no Copy for text.
+  when its assistant is available, and otherwise render the same DOM as `none` with no Send and no Copy for text.~~ — superseded by PD-112 on 2026-11-24 (AC-045, §16).
 - **AC-005** In VS Code, for each value of AC-004 including `junie`, with 0024 AC-002's extension sets, the offer, the
   views and the calls shall be deep-equal to the start commit, AC-007's empty state excepted, and the manifest's
   `featherspec-studio.assistant` entry byte-identical.
@@ -320,10 +337,10 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
 
 **Attached files**
 
-- **AC-009** For every world of `CASE_WORLDS` and each of its lines with a step action (0031 follow-up lines included),
+- ~~**AC-009** For every world of `CASE_WORLDS` and each of its lines with a step action (0031 follow-up lines included),
   the paths that Send to Claude Code types and that Copy for Copilot and Copy for Junie reference shall be, in order, the
   paths of the ` @<path>` mentions that VS Code's Claude Code Send prefills for the same world; a path containing whitespace
-  shall be in none of them; the welcome and the empty state shall reference no path.
+  shall be in none of them; the welcome and the empty state shall reference no path.~~ — superseded by PD-112 on 2026-11-24 (AC-046, §16).
 - **AC-010** If a file to attach is no longer a spec or plan entry of the current model or does not exist at activation,
   then the handover shall leave out that path only, show §7's or 0027's text naming the file, and write one log line per
   left-out path without the prompt.
@@ -349,27 +366,27 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
 
 **Copy for (JetBrains)**
 
-- **AC-016** When the developer activates Copy for Copilot, the clipboard shall hold exactly `copilotCopyText(line, paths)`
+- ~~**AC-016** When the developer activates Copy for Copilot, the clipboard shall hold exactly `copilotCopyText(line, paths)`
   of §6.2, the GitHub Copilot Chat tool window shall be opened when it exists, the control shall show §7's done texts for
-  `GitHub Copilot Chat`, and no text shall be typed, sent or submitted anywhere.
-- **AC-017** When the developer activates Copy for Junie, the clipboard shall hold exactly `junieCopyText(line, paths,
+  `GitHub Copilot Chat`, and no text shall be typed, sent or submitted anywhere.~~ — superseded by PD-112 on 2026-11-24 (AC-050, §16).
+- ~~**AC-017** When the developer activates Copy for Junie, the clipboard shall hold exactly `junieCopyText(line, paths,
   form)` of §6.7 with the configured form, AI Chat shall be opened when `com.intellij.ml.llm` is available, else the Junie
-  tool window when it exists, and the control shall show §7's done texts for that place.
-- **AC-018** `junieCopyText` shall give, for the table of the plan's test (lines `/sdd-plan <path>`, `/sdd-specify`,
+  tool window when it exists, and the control shall show §7's done texts for that place.~~ — superseded by PD-112 on 2026-11-24 (AC-050, §16).
+- ~~**AC-018** `junieCopyText` shall give, for the table of the plan's test (lines `/sdd-plan <path>`, `/sdd-specify`,
   `Implement T-003 of <plan>`, a line without `/sdd-`; zero, one and two paths), the texts of §6.7 for form A and for form
-  C, and the configured form shall be A.
-- **AC-019** If the chat tool window of a Copy for is not found, then the clipboard shall still hold the text and the
+  C, and the configured form shall be A.~~ — superseded by PD-112 on 2026-11-24 (AC-046, §16).
+- ~~**AC-019** If the chat tool window of a Copy for is not found, then the clipboard shall still hold the text and the
   control shall show `Copied. Open <place> and paste it with <key>.`; if the clipboard write fails, then the control shall
-  show `Copy failed` and no tool window shall open.
-- **AC-020** The menu of Copy for shall hold exactly one item, `Copy prompt`, which shall put the line alone on the
-  clipboard and open nothing.
+  show `Copy failed` and no tool window shall open.~~ — superseded by PD-112 on 2026-11-24 (AC-050, §16).
+- ~~**AC-020** The menu of Copy for shall hold exactly one item, `Copy prompt`, which shall put the line alone on the
+  clipboard and open nothing.~~ — superseded by PD-112 on 2026-11-24 (AC-050, §16).
 
 **Texts and tips**
 
 - **AC-021** Every text of §7 shall exist exactly once in a text module and be asserted literally by a test, and every
   text constant and text function that the start commit's text modules define shall return byte-identical text.
-- **AC-022** While Copy for is offered and step tips are shown, the toggletip's Send paragraph (0024 §6.8) shall be §7's
-  Copy for sentence for that assistant; while Send to Claude Code is offered in JetBrains it shall be 0024's sentence.
+- ~~**AC-022** While Copy for is offered and step tips are shown, the toggletip's Send paragraph (0024 §6.8) shall be §7's
+  Copy for sentence for that assistant; while Send to Claude Code is offered in JetBrains it shall be 0024's sentence.~~ — superseded by PD-112 on 2026-11-24 (AC-050, §16).
 
 **Safety and platform**
 
@@ -392,19 +409,19 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   *Assistant* Claude Code: in the `NS-7-start` situation the main part puts the prompt with two `@` mentions into a running
   `claude` tab, and with no such tab into a new `Claude Code` tab; nothing is sent; Enter in the tab sends it with both
   files; Rider, Terminal and Claude Code versions recorded.
-- **AC-028** *(manual, Gregor, Rider 2026.3)* Copy for Copilot and Copy for Junie open their chat and paste the prompt
+- ~~**AC-028** *(manual, Gregor, Rider 2026.3)* Copy for Copilot and Copy for Junie open their chat and paste the prompt
   with the references; he records whether `#file:` and `@file:` become references (A-002, A-003), the tool window IDs
   (A-008), the option Junie with and without Junie, a setting switch without restart, and in VS Code the empty state with
-  Send to Copilot.
+  Send to Copilot.~~ — superseded by PD-112 on 2026-11-24 (AC-053, §16).
 - **AC-029** `README.md` (section *JetBrains IDEs*), `CHANGELOG.md` and `docs/release-checklist.md` (a 0035 section with
   AC-027, AC-028) shall describe the three handovers; the statements of §5 shall carry their notes; `jetbrains/AGENTS.md`
   shall carry §5's rule; `AGENTS.md` shall stay at most 15 000 bytes and `.memory-bank/activeContext.md` below 7000 bytes.
 
 **After review 20 (amendments of 2026-11-23, §16)**
 
-- **AC-030** *(review 20 B-1)* Until AC-028 shows that a pasted `#file:` or `@file:` becomes a reference, no text of the Studio
+- ~~**AC-030** *(review 20 B-1)* Until AC-028 shows that a pasted `#file:` or `@file:` becomes a reference, no text of the Studio
   (text modules, the settings table, README, CHANGELOG) shall promise a "reference": the Copy for texts of §7 shall say the
-  file paths, each asserted literally, and the syntaxes `#file:<path>` and `@file:<path>` shall stay unchanged.
+  file paths, each asserted literally, and the syntaxes `#file:<path>` and `@file:<path>` shall stay unchanged.~~ — superseded by PD-112 on 2026-11-24 (AC-050, §16).
 - **AC-031** *(review 20 B-2)* While a Send to Claude Code runs in JetBrains, the control of the same line shall show
   `aria-disabled="true"` and `aria-busy="true"` (not `disabled`, the focus stays), the label `Starting Claude Code…` and the
   name `Starting Claude Code: <line>`, and a second click, also on the menu's Send items and on a second control for the
@@ -419,14 +436,14 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   once instead of 0024's warning, and write one log line with the cause and without the prompt; every other failure shall
   keep 0024's warning. The readiness check shall sit in the platform-free `ClaudeReadiness`, its markers shall be named
   constants marked *K-1 pending*, and a dialog left in the scrollback above a later input box shall not count as waiting.
-- **AC-033** *(review 20 B-3, PD-110)* The README (the intro, the bullet *Local and read-only* and the Privacy bullet) shall say
+- ~~**AC-033** *(review 20 B-3, PD-110)* The README (the intro, the bullet *Local and read-only* and the Privacy bullet) shall say
   literally `Studio starts no agent on its own and sends nothing. In JetBrains IDEs, Send to Claude Code may start claude in a
   terminal tab when you click it.`, no README line shall still say that Studio starts no process or no agent without that
-  exception for JetBrains, and the CHANGELOG shall name PD-110.
-- **AC-034** *(review 20 S-4)* After Copy for Junie with AI Chat as the place, the control shall show `Copied. In AI Chat, choose
+  exception for JetBrains, and the CHANGELOG shall name PD-110.~~ — superseded by PD-112 on 2026-11-24 (AC-052, §16).
+- ~~**AC-034** *(review 20 S-4)* After Copy for Junie with AI Chat as the place, the control shall show `Copied. In AI Chat, choose
   Junie and paste it with <key>.` (with a file left out `Copied without <file>: the file was not found. In AI Chat, choose
   Junie and paste it with <key>.`) and the toggletip shall say `…paste it into AI Chat with Junie as the agent, choose the
-  model there…`; Copy for Copilot and Copy for Junie with the Junie tool window as the place shall keep their texts.
+  model there…`; Copy for Copilot and Copy for Junie with the Junie tool window as the place shall keep their texts.~~ — superseded by PD-112 on 2026-11-24 (AC-050, §16).
 - **AC-035** *(review 20 S-1)* In JetBrains, for each step case, the main part of Send to Claude Code shall target a new chat when the
   case's tip names *a new chat* (`STEP_GUIDES[case].session` is `new`: NS-5, NS-6-plan, NS-9, NS-10) and the current chat otherwise;
   the menu shall list both targets in the order current, new; this shall hold in the detail, the first Now row and the
@@ -448,11 +465,11 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
 - **AC-038** *(review 20 S-6)* The settings description of the *Assistant* row shall be `The assistant your next step goes to. Studio sends
   nothing; Copy prompt stays in the button's menu.`, repeat no option description, and be asserted literally in the settings
   table's test.
-- **AC-039** *(review 20 S-5)* The *Assistant* combo shall list `None: Copy prompt` always and each of `GitHub Copilot`, `Claude Code` and
+- ~~**AC-039** *(review 20 S-5)* The *Assistant* combo shall list `None: Copy prompt` always and each of `GitHub Copilot`, `Claude Code` and
   `Junie` only while its assistant is available (Copilot by `com.github.copilot`, Claude Code by the Terminal plugin, Junie by
   `org.jetbrains.junie` or `com.intellij.ml.llm`), in the order of AC-001; a stored value whose assistant is not available shall show `None: Copy prompt`
   and stay stored until another value is applied; and a plugin loaded or unloaded while the page is open shall change the list
-  without reopening the page. *(This amends AC-001's "`GitHub Copilot`, `Claude Code` always".)*
+  without reopening the page. *(This amends AC-001's "`GitHub Copilot`, `Claude Code` always".)*~~ — superseded by PD-112 on 2026-11-24 (AC-043, AC-044, §16).
 - **AC-040** *(review 20 S-7, **K-1 pending**)* The plugin-activity check of the platform glue shall be decided by one platform-free strategy
   (`PluginActivity.available`, with `ActivityCheck.LOADED` and `NOT_DISABLED`) whose current value is `LOADED`, so that today's
   behaviour is unchanged; only the chosen strategy shall be asked and nothing for a plugin that is not installed; the K-1 probe shall
@@ -475,6 +492,79 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   shall be disposed. Bridge messages, their order and the restored area and selection of 0034 AC-007 shall not change, the budget of
   1,000 ms shall not change, and the line `FEATHERSPEC-TIMING open→first-content` shall stay true (`warm`). It shall be checked by the Starter
   smoke (*frame after reopening*, *frame after the restoring reopen*) and by plain tests of the parking rules. VS Code is unchanged.
+
+**After PD-112 (amendment of 2026-11-24, §16)**
+
+- **AC-043** *(PD-112; replaces AC-001, AC-039)* The JetBrains settings page shall show the *Assistant* row of §6.5 with §7's
+  label and AC-038's description, the options `Junie`, `Claude Code`, `GitHub Copilot` in this order, each only while its CLI
+  agent is available (AC-044), then `None: Copy prompt` always, and under the combo the selected option's description of §16
+  *Texts*; while one of the three agents is not available, it shall also show §16's hint `Junie, Claude Code and GitHub Copilot
+  appear here once their command is on the IDE's PATH. Installed one just now? Restart the IDE.` Stored shall be only `none`,
+  `copilot`, `claudeCode`, `junie` or nothing (unset, the default); unset shall act as `junie` while the Junie CLI is
+  available and as `none` otherwise; applying the option the combo shows for an unset value shall keep it unset; a stored value
+  whose agent is not available shall show `None: Copy prompt` and stay stored until another value is applied (OP-013); an
+  availability change while the page is open shall change the list without reopening the page.
+- **AC-044** *(PD-112; replaces AC-003)* A CLI agent of §16 *Agents* shall count as available exactly while the Terminal plugin
+  is available (AC-040's check) and one of the agent's *names on the PATH* is a regular file in a directory of the PATH that the
+  IDE process gives its child processes; the Junie, AI Assistant and GitHub Copilot plugins shall not be asked. The host shall
+  compute it off the event thread when the IDE project opens, when the settings page opens, when the Studio tab opens, when the
+  Terminal plugin is loaded or unloaded, and after a Send failed as *not installed*; options and offer shall follow within
+  500 ms of that moment. The search shall be platform-free and tested with fake directories for every name of the three agents
+  (blank and quoted entries, a directory that holds only another agent's name).
+- **AC-045** *(PD-112; replaces AC-004)* For each stored value `none`, `copilot`, `claudeCode`, `junie`, `""`, `42` and unset,
+  with each subset of {Terminal plugin, `junie`, `claude`, `copilot` on the PATH} given as fakes, the JetBrains host shall offer
+  exactly `Send to <Name>` of §16 for the value's agent (unset: Junie) while that agent is available, and otherwise render the
+  same DOM as `none` with no Send text.
+- **AC-046** *(PD-112; replaces AC-009, AC-018)* For every world of `CASE_WORLDS` and each of its lines with a step action, the
+  text that Send to Junie, Send to Claude Code and Send to Copilot type shall be `cliText(line, paths, form)` with the agent's
+  form of `CLI_FORMS`: the line (form `slash`) or its rewrite `Follow .claude/commands/sdd-<name>.md` / `Follow
+  .claude/commands/sdd-<name>.md for <rest>` (form `follow`, other lines unchanged), then one ` @<path>` per path, the paths in
+  order being those of the ` @<path>` mentions that VS Code's Claude Code Send prefills for the same world; a path containing
+  whitespace shall be in none of them; the welcome and the empty state shall type no path. `cliText` shall give the texts of both
+  forms for the table of the plan's test (lines `/sdd-plan <path>`, `/sdd-specify`, `Implement T-003 of <plan>`, a line without
+  `/sdd-`; zero, one and two paths), and `CLI_FORMS` shall be `claudeCode: slash`, `junie: follow`, `copilot: follow`, the last
+  two marked *K-1 pending*.
+- **AC-047** *(PD-112; generalises AC-011 to AC-015, AC-031, AC-032, AC-035 to AC-037)* Each of AC-011, AC-012, AC-013, AC-014,
+  AC-015, AC-031, AC-032, AC-035, AC-036 and AC-037 shall hold for Send to Junie and Send to Copilot, read with that agent's
+  row of §16 *Agents* and its texts of §16 *Texts* in place of Claude Code, `claude`, the tab name `Claude Code` and the Claude
+  texts; one parameterised test per criterion shall run for all three agents, and the Claude Code instance shall stay
+  byte-identical in its texts, log causes and terminal calls.
+- **AC-048** *(PD-112)* An agent's terminal shall be a tab whose running command, as shell integration reports it, has as its
+  first word the agent's command or that command with `.exe`, `.bat` or `.cmd` (compared without case where the file system
+  ignores case), started in the active FeatherSpec root; a tab running another agent's command shall never be typed into for
+  this agent (a running `claude` is no Junie terminal); a new tab shall run the bare command alone, without any argument or
+  flag (so never `--trust-project`, `--allow-all-paths`, `--yolo`, `--trust-folder` or `--dangerously-skip-permissions`), shown
+  by the byte record of the fake terminal for each agent.
+- **AC-049** *(PD-112, **K-1 pending**)* Readiness shall be decided per agent by the platform-free `AgentReadiness` from the
+  agent's named constants `INPUT_MARKERS` and `WAITING_MARKERS` (Claude Code: those of AC-032) and one `MARKERS_STATUS` per agent,
+  `K-1 pending` for all three until K-1; the paste mode shall be one named constant per agent, bracketed for all three until K-1
+  says otherwise; the *Handover Screen* probe shall report for every terminal tab the agent its command belongs to, that agent's
+  verdict, and the hits of every marker of all three agents; after K-1, the redacted `lastLines` of each recorded state shall be
+  the fixtures of a replay test whose verdicts equal the probe's.
+- **AC-050** *(PD-112; replaces AC-016, AC-017, AC-019, AC-020, AC-022, AC-030, AC-034)* In JetBrains no step action shall be a
+  Copy for: the menu of each Send shall hold `Send to the current chat`, `Send to a new chat` and `Copy prompt` in this order,
+  and Copy prompt shall put the line alone on the clipboard and open nothing; the toggletip's Send paragraph shall be 0024's
+  sentence with the agent's name; no file under `src/` or `jetbrains/src/` and no line of `README.md`, `CHANGELOG.md` or
+  `docs/release-checklist.md` shall contain `Copy for`, `copilotCopyText`, `junieCopyText`, `COPY_FOR_` or `openChat`; the bridge
+  call `assistant.openChat` shall be in neither `contract.ts` nor `HostContract.kt`; and the plugin shall open no chat tool
+  window. VS Code's Send to Copilot and Send to Claude Code shall stay as they are (AC-005, AC-026).
+- **AC-051** *(PD-112)* The JetBrains host shall pass the effective *Assistant* value of AC-043 to the core with the start and
+  again within 500 ms whenever a change of the setting or of an agent's availability (AC-044) changes it, so that an unset value
+  follows the Junie CLI's availability without an Apply; in VS Code the setting, its manifest entry and the offer shall stay
+  byte-identical (AC-005).
+- **AC-052** *(PD-112; replaces AC-033)* The README (the intro, the bullet *Local and read-only* and the Privacy bullet) shall say
+  literally `Studio starts no agent on its own and sends nothing. In JetBrains IDEs, Send to Junie, Claude Code or Copilot may
+  start that assistant's command-line agent in a terminal tab when you click it.`, and no README line shall promise less without
+  that exception; the section *JetBrains IDEs* shall name the three Sends, the commands `junie`, `claude` and `copilot` with the
+  Terminal plugin as their condition, the PATH hint of AC-043, Safe Mode and the waiting text; the CHANGELOG shall name PD-112 and
+  the removal of Copy for; `docs/release-checklist.md` shall list AC-027 and AC-053 in its 0035 section.
+- **AC-053** *(manual, Gregor, Rider 2026.3, plugin ZIP from the CI artifact, `C:\projects\test\tip-splitter`; replaces AC-028)*
+  With *Assistant* Junie and again with GitHub Copilot: in the `NS-7-start` situation the main part puts the prompt with its two
+  `@` mentions into a running agent tab, and with none into a new tab named `Junie` or `GitHub Copilot`; nothing is sent and no
+  escape characters show; Enter in the tab sends it and the agent reads both files; a fresh start at the trust or login screen
+  shows the waiting text; in Safe Mode no tab is started; without the CLI on the PATH the option is missing and the hint shows;
+  with the setting unset and the Junie CLI installed the step action is Send to Junie; he records the Rider, Terminal, Junie CLI
+  and Copilot CLI versions and whether `/sdd-overview` runs as a command in each CLI (form decision of AC-046).
 
 ## 12. Technical notes for developers or AI agents
 
@@ -509,13 +599,25 @@ As-is at `aa0fe9b` (digest from the code):
 | A-007 | "Installed and enabled" can be asked through non-internal API | `isPluginInstalled` documented; the Verifier checks the enabled check | AC-003's enabled half needs another documented API; K-1 records it; **K-1 pending** (review 20 S-7): forum notes say `isLoaded` may be unreliable from 2025.3 (not confirmed by JetBrains); the strategy is swappable (AC-040) |
 | A-008 | The tool windows can be found by ID: GitHub Copilot Chat, AI Chat, Junie | the IDs are not documented; probe K-1 lists the real IDs in Rider | a missing ID only gives `Open <place> and paste …` (AC-019) |
 | A-009 | GitHub Copilot's plugin ID is `com.github.copilot` | its Marketplace listing; not in GitHub's docs; probe K-1 confirms it | Copy for Copilot is never offered; one constant changes |
+| A-010 | Junie CLI and Copilot CLI take a bracketed paste into their input without submitting it | both are full-screen input boxes with Shift+Enter for a new line (Junie and GitHub docs, 2026-11); neither documents bracketed paste; Claude Code takes it (AC-027 pending) | escape characters show or the paste submits: that agent's paste-mode constant switches (AC-049); K-1 |
+| A-011 | A typed ` @<path>` becomes a file reference in Junie CLI and Copilot CLI | Junie: "Use `@` to attach a file or folder from the current project"; GitHub: "type `@` followed by the relative path" | the path stays plain text, which both agents still read; AC-053 records it |
+| A-012 | Neither Junie CLI nor Copilot CLI runs `/sdd-*` from `.claude/commands` | Junie reads custom commands from `.junie/commands` and `~/.junie/commands` only (or after `/import`); Copilot CLI's `/<name>` runs built-ins and skills (`.github/skills`, `.claude/skills`, `.agents/skills`) | if one of them does, or FeatherSpec ships loaders or skills, its `CLI_FORMS` entry switches to `slash` (one constant, AC-046) |
+| A-013 | Shell integration reports `junie` and `copilot` as the running command, as it does for `claude` | the reworked terminal records the typed command of a block (§12); on Windows `junie` is the shim `junie.bat`, `copilot` from npm a `.cmd` | a running agent tab is not found: each Send opens a new tab; K-1 |
+| A-014 | The PATH the IDE gives its child processes holds the folder the installers write | Junie and Claude Code install to `~/.local/bin` and add it to the user PATH (Windows) or the shell profile (macOS, Linux), then ask to restart the shell; winget and npm use their own PATH folders | an IDE started before the install hides the option until it restarts: §16's hint says so (AC-043) |
+| A-015 | Each agent's readiness can be told from its screen within 15 s | as A-005; the markers of Junie and Copilot are guesses from their docs (**K-1 pending**) | wrong markers turn Send into copy plus the waiting text for that agent until K-1 (as A-005) |
+
+*Amended 2026-11-24 (PD-112):* A-002, A-003, A-004, A-008 and A-009 concern Copy for and no longer decide anything; A-004's J-1
+now decides `CLI_FORMS.junie` (A-012). A-001 stays true and is the reason for PD-112.
 
 ## 14. Open points
 
 **Open: K-1 pending** (review 20 S-7, B-4): the values of the K-1 probe decide (a) whether `PluginManagerCore.isLoaded` and
 `isDisabled` agree for the four plugin IDs (`PluginActivity.CURRENT`, AC-040; a difference switches the strategy, or moves the
 check to the optional dependency), and (b) the real input, trust-dialog and login markers of `ClaudeReadiness` (AC-032). The probe
-now records `PluginManagerCore.isLoaded` next to `isDisabled`. Nothing else is open. Proxy decisions of the clarify pass (2026-11-22, orchestrator's agent as product-owner proxy, from PD-068,
+now records `PluginManagerCore.isLoaded` next to `isDisabled`. *Amended 2026-11-24 (PD-112):* K-1 also decides, for Junie CLI and
+Copilot CLI, (c) their input and waiting markers (AC-049), (d) bracketed paste (A-010), (e) the running command reported by shell
+integration (A-013), (f) whether `/sdd-overview` runs as a command (`CLI_FORMS`, A-012), and (g) whether
+`EnvironmentUtil.getValue("PATH")` and `System.getenv("PATH")` find the same commands (A-014). Nothing else is open. Proxy decisions of the clarify pass (2026-11-22, orchestrator's agent as product-owner proxy, from PD-068,
 PD-094, PD-108, PD-109, 0024, 0034, 18, 19); Gregor may flip any of them:
 
 - OP-001 (proxy) Folder and status: `active/`, In Progress, plan Not started, as the orchestrator asked; a Draft in
@@ -539,6 +641,19 @@ PD-094, PD-108, PD-109, 0024, 0034, 18, 19); Gregor may flip any of them:
 - OP-016 (proxy; **decided by Gregor 2026-11-23, review 20 S-3, PD-110**) Copy for and Copy prompt work in Safe Mode as in a trusted project; Send to Claude Code only types into a running Claude terminal and never starts `claude` there.
 - OP-017 (proxy) The shared-guard moves to 0035's start commit; "`src/core` unchanged" gives way to §6.8's checks.
 - OP-018 (proxy) The JetBrains-only texts of §7 except T-1 and T-2.
+- OP-020 (proxy, 2026-11-24, PD-112) The option order is Gregor's order of PD-112: `Junie`, `Claude Code`, `GitHub Copilot`,
+  then `None: Copy prompt`.
+- OP-021 (proxy, PD-112) `CLI_FORMS` is `follow` for Junie and Copilot until K-1/J-1, because neither CLI reads
+  `.claude/commands` (A-012); Claude Code keeps `slash`.
+- OP-022 (proxy, PD-112) "The PATH of the IDE process" is the environment the IDE gives its child processes
+  (`EnvironmentUtil.getValue("PATH")`, on macOS the login shell's), falling back to `System.getenv("PATH")`; K-1 compares both.
+- OP-023 (proxy, PD-112) One send gate per IDE project for all three agents (B-2): one assistant is offered at a time.
+- OP-024 (proxy, PD-112) The settings page explains a missing option with one hint line (AC-043), because the PATH is not
+  visible to the developer and an install needs an IDE restart (A-014).
+- OP-025 (proxy, PD-112) An unset value stays unset when the shown option is applied, so it keeps following the Junie CLI's
+  availability (AC-043, AC-051); choosing `None` explicitly from another value stores `none`.
+- OP-026 (proxy, PD-112) The spec keeps its file name and title (renaming moves files: ask first); the title's "Copy for" is
+  history.
 - OP-019 `/sdd-clarify` 2026-11-22 (stranger pass, role-played; no subagent available): 9 findings, 2 blocking; all
   resolved by proxy (Gregor confirms with the plan):
   - (blocking) A `claude` in another folder would get paths it cannot resolve → the Claude terminal must run in the
@@ -557,7 +672,8 @@ PD-094, PD-108, PD-109, 0024, 0034, 18, 19); Gregor may flip any of them:
 
 Ready: clarified 2026-11-22 (§14); the proxies wait for Gregor's read. Done per `AGENTS.md`: AC-001–AC-026 and AC-029
 proven by tests and CI, AC-027 and AC-028 checked by Gregor, every parity row categorised, VS Code CI and `.vsix`
-unchanged. Next: Gregor reads the plan; spike K-1 and 0034's close come first (plan stage 0); spec 0037 builds on the
+unchanged. *Amended 2026-11-24 (PD-112):* AC-043 to AC-052 proven by tests and CI, AC-053 (instead of AC-028) and AC-027
+checked by Gregor, K-1's values for the three agents in §13 and in the constants. Next: Gregor reads the plan; spike K-1 and 0034's close come first (plan stage 0); spec 0037 builds on the
 option Junie and Copy for Junie.
 
 ## 16. Amendments after UX review 20 (2026-11-23)
@@ -583,3 +699,77 @@ S-6; S-7 is only prepared (below). The budget rule is PD-111 and not part of thi
 Addendum 2026-11-23 (work list 3.6, Gregor brought it forward; review 20 §5 item 4: a long cold start is a product topic, the loading state): the tab no longer waits for the browser to show something. `StudioEditor` puts a native Swing placeholder (`LoadingPlaceholder`, text `Loading project…`, `UIUtil` colours, accessible name equal to the text) into the tab in the pass that creates the editor, and also while the core loads; the `JBCefBrowser` is created one event-thread turn later (`DeferredStart`, cancelled on dispose and on a view change) below the placeholder, and the placeholder goes when the first `shell` frame reaches the browser (`LoadingCover`). The timing line of 0034 AC-007 now ends at the first paint of the placeholder (the former `JBLoadingPanel.isLoading` test is the placeholder test) or at the first `shell` frame, whichever is first; the smoke probe finds `LoadingPlaceholder` instead of `JBLoadingPanel`; budgets unchanged. No bridge message changes. New criterion AC-041; parity row through the generator. VS Code unchanged.
 
 Addendum 2026-11-23 (reopen of the Studio tab, 1.2 s on Linux and 1.8 s on macOS against the budget of 1,000 ms; the cause is a new `JBCefBrowser` and a new page load for each open): `StudioEditor` no longer owns the browser; `PanelBrowser` does (browser, `JBCefJSQuery`, theme bridge, repaint nudge, page), registered under the project service. On dispose the editor parks it in `PanelParking` (`ParkRule`: the core was ready, no failure, a `shell` frame was shown, not dead), the next editor takes it and the core re-posts the frames of a `hello` through the new `PanelSession.resume()` (shared code, additive; VS Code never calls it). The theme bridge stays alive while parked, so a theme change updates the parked page in place and needs no new browser. No bridge message changes; `panelOpened` carries `{"resumed":true}` only for a parked browser. New criterion AC-042; parity row through the generator. VS Code unchanged.
+
+### Amendment 2026-11-24: PD-112, Send to each CLI agent in the IDE terminal
+
+Source: PD-112 (Gregor, 2026-11-24; changes PD-108, extends PD-110 to all three agents), research of 2026-11-24 (plan
+*Research*, block PD-112). No JetBrains chat (AI Chat, Junie, Copilot Chat) offers a supported way to fill its input (A-001), but
+each assistant has a command-line agent that runs in the IDE terminal. So every assistant gets the mechanism of §6.3: find a
+running agent tab or start the CLI in a new one, wait until it is ready, type the prompt and its files without Enter. Copy for is
+removed (texts, code, menus, criteria). Copy prompt stays in every menu. VS Code is unchanged (§6.8, AC-005, AC-026).
+
+**Handover per assistant (JetBrains; replaces the JetBrains rows of §6.1 and all of §6.4)**
+
+| Value | Offered while | Step action (main part · menu) | What reaches the assistant |
+| --- | --- | --- | --- |
+| `none`, unknown | always | Copy prompt (0021) | nothing; the line on the clipboard |
+| unset | as `junie` while the Junie CLI is available, else as `none` | as that value | as that value |
+| `junie` | the Junie CLI is available | `Send to Junie` · `Send to the current chat`, `Send to a new chat`, `Copy prompt` | typed into the Junie terminal's input, not sent |
+| `claudeCode` | the Claude Code CLI is available | `Send to Claude Code` · the same menu | as §6.3 |
+| `copilot` | the GitHub Copilot CLI is available | `Send to Copilot` · the same menu | typed into the Copilot terminal's input, not sent |
+
+Every rule of §6.3 holds for each agent — the agent terminal (Claude terminal), current and new chat, the session target of S-1,
+waiting for an answer (B-4), Safe Mode (S-3, PD-110), a missing command (S-2), typing, *While it runs* (B-2), fallback and platform
+API — read with the agent's row below in place of Claude Code and `claude` (AC-047). The Studio starts only the bare command,
+without any argument or flag, so that trust, login and permission decisions stay with the developer (AC-048).
+
+**Agents** (one platform-free table in Kotlin and one in TypeScript; marked rows are **K-1 pending**)
+
+| | Junie | Claude Code | GitHub Copilot |
+| --- | --- | --- | --- |
+| Value, name in texts | `junie`, `Junie` | `claudeCode`, `Claude Code` | `copilot`, `Copilot` |
+| Command started in a new tab | `junie` | `claude` | `copilot` |
+| Names on the PATH (AC-044) | `junie`, `junie.exe`, `junie.bat`, `junie.cmd` | `claude`, `claude.exe`, `claude.cmd` | `copilot`, `copilot.exe`, `copilot.cmd` |
+| New tab name | `Junie` | `Claude Code` | `GitHub Copilot` |
+| File reference | ` @<path>` | ` @<path>` | ` @<path>` |
+| Line form (`CLI_FORMS`) | `follow` (K-1/J-1) | `slash` | `follow` (K-1) |
+| Paste mode | bracketed (K-1) | bracketed | bracketed (K-1) |
+| Input markers, provisional | `? for shortcuts`, `shift+tab` (guesses) | AC-032's | `@ to mention files`, `/ for commands`, `? for help` (guesses) |
+| Waiting markers, provisional | `Continue with JetBrains account`, `Use a Junie API key` (login, documented), `Do you trust`, `integration plugin` (guesses) | AC-032's | `trust the files in this folder`, `Yes, and remember this folder for future sessions`, `No (Esc)`, `/login` (documented) |
+
+**Prompt text (replaces §6.2's Copilot and Junie syntaxes and §6.7):** `cliText(line, paths, form)`: form `slash` keeps the line,
+form `follow` rewrites a line `/sdd-<name>` or `/sdd-<name> <rest>` as §6.7's form C did; then one ` @<path>` per path that
+contains no whitespace. The files are §6.2's (AC-046).
+
+**The *Assistant* setting (replaces §6.5's options and *Available*):** options `Junie`, `Claude Code`, `GitHub Copilot`, each
+only while its agent is available, then `None: Copy prompt` (OP-020); stored `none`, `copilot`, `claudeCode`, `junie` or unset
+(default); unset acts as `junie` while the Junie CLI is available, else as `none` (OP-025); the host passes the effective value
+to the core (AC-051). An agent is available while the Terminal plugin is available and one of its names lies in a directory of
+the PATH that the IDE gives its child processes (OP-022); the Junie plugin, AI Assistant and the GitHub Copilot plugin are not
+asked. The host computes it at project open, settings page open, Studio tab open, Terminal plugin load or unload, and after a
+*not installed* failure (AC-044). S-2 becomes: an agent not on the IDE's PATH is not offered; a command that vanished or that the
+terminal's shell cannot start is still told after the 15 000 ms timeout by that agent's own text.
+
+**Texts** (JetBrains; the Claude Code texts of §7 stay byte-identical and are the Claude Code instance; `<Name>`, `<command>` from
+*Agents*)
+
+| Place | Text |
+| --- | --- |
+| Option labels | `Junie` · `Claude Code` · `GitHub Copilot` · `None: Copy prompt` |
+| Option descriptions | `Send to Junie types the prompt into the Junie CLI in the IDE terminal and sends nothing. Needs the junie command and the Terminal plugin.` · Claude Code: §7 unchanged · `Send to Copilot types the prompt into the GitHub Copilot CLI in the IDE terminal and sends nothing. Needs the copilot command and the Terminal plugin.` · None: §7 unchanged |
+| Hint under the combo | `Junie, Claude Code and GitHub Copilot appear here once their command is on the IDE's PATH. Installed one just now? Restart the IDE.` |
+| Main part, done, waiting | `Send to <Name>` · `Opened in <Name>` · `Starting <Name>…` · `Starting <Name>: <line>` (0024, 0027 patterns) |
+| Waiting for an answer | `<Name> is waiting for you in the terminal. Answer it there, then send again. The prompt is copied.` |
+| Project not trusted | `This project is not trusted, so Studio does not start <command>. The prompt is copied.` |
+| Not installed | `<Name> did not start. Is the <command> command installed? The prompt is copied.` |
+| Log causes | `<Name> was not ready within 15000 ms` · `<Name> was not ready for input` · `the <command> command was not found on the PATH` · the other causes of §7 unchanged |
+| Removed | every Copy for text of §7, its places and the Copy for toggletip sentence |
+
+**Criteria:** superseded AC-001, AC-003, AC-004, AC-009, AC-016 to AC-020, AC-022, AC-028, AC-030, AC-033, AC-034, AC-039 (struck
+in §11, each naming its successor); new AC-043 to AC-053; AC-011 to AC-015, AC-031, AC-032, AC-035 to AC-037 stay as the Claude
+Code instance and are generalised by AC-047; AC-015 is extended by AC-048 (`.exe`, `.bat`, `.cmd`); AC-029's "three handovers" are
+the three Sends; AC-027 stays for Claude Code beside AC-053. Parity: the struck rows become `n-a` with PD-112, the new rows
+`deliberately different` with PD-112 (VS Code has no CLI Send), AC-046 `shared`.
+
+**Why not keep Copy for:** it asked one more paste and promised references it could not prove (AC-030); a CLI agent in the IDE
+terminal takes the prompt in its input exactly as Claude Code does, and the developer still presses Enter.

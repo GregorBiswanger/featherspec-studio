@@ -27,7 +27,9 @@ describe('0035 T-013: parity, amendments and docs', () => {
     it('AC-025: every criterion of 0035 has a row', async () => {
         const rows = (await read('docs/jetbrains/parity.md')).split('\n').filter((line) => line.startsWith('| 0035 |'));
         const ids = rows.map((row) => row.split('|')[2]?.trim());
-        const expected = Array.from({ length: 42 }, (_, index) => `AC-${String(index + 1).padStart(3, '0')}`);
+        const spec = await read('.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md');
+        const expected = [...new Set([...spec.matchAll(/^- (?:~~)?\*\*(AC-\d{3})\*\*/gm)].map((match) => match[1]))];
+        expect(expected.length).toBeGreaterThanOrEqual(53);
         expect(ids).toEqual(expected);
     });
 
