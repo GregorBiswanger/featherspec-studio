@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..', '..', '..');
 
 const SCANNED = ['README.md', 'docs/release-checklist.md', 'docs/runtime-data.md'];
 const FORBIDDEN = ['agent center', 'provider', 'copilot', 'clear run history', 'stop run', 'resume run'];
-const ALLOWED = ['GitHub Copilot, Claude Code or any other', 'copilot-home', 'GitHub.copilot-chat', 'GitHub Copilot', 'Send to Copilot', 'Copy for Copilot', '`copilot`', "Copilot's chat"];
+const ALLOWED = ['GitHub Copilot, Claude Code or any other', 'copilot-home', 'GitHub.copilot-chat', 'GitHub Copilot', 'Send to Copilot', 'Send to Junie, Claude Code or Copilot', '`copilot`', "Copilot's chat"];
 
 export function findForbidden(text: string): string[] {
     let rest = text;
@@ -390,7 +390,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             '## Release polish (0032)',
             '## Start, plan attachment and prompt layout (0033)',
             '## JetBrains (manual) (0034)',
-            '## Send and Copy for in JetBrains (manual) (0035)',
+            '## Send in JetBrains (manual) (0035)',
             '## Go',
         ]);
         for (const gone of ['Plan line', 'descriptions cut', 'attention row', 'attention reason', 'filters, sort']) {
@@ -743,7 +743,7 @@ describe('product docs after 0024 (AC-015)', () => {
     it('the README Privacy says the next step reaches the assistant by paste or by Send, and that Send fills the input and sends nothing', async () => {
         const readme = await read('README.md');
         const privacy = readme.slice(readme.indexOf('## Privacy and stored data'), readme.indexOf('## Known limitations')).replace(/\s+/g, ' ');
-        expect(privacy).toContain('it reaches your assistant only when you paste it, or when you choose Send to Copilot or Send to Claude Code, which fill the chat input and send nothing');
+        expect(privacy).toContain("it reaches your assistant only when you paste it, or when you choose Send to Junie, Claude Code or Copilot, which type into the agent's input and send nothing");
         expect(privacy).not.toContain('it reaches your assistant only when you paste it.');
     });
 

@@ -11,7 +11,7 @@ Current phase: act
 
 ## Active Spec
 - [0036](../.specs/active/0036-jetbrains-marketplace-release.md) / [plan](../.specs/active/0036-jetbrains-marketplace-release.plan.md): release 0034+0035, G0 first.
-- [0035](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md) / [plan](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.plan.md): Send and Copy for in JetBrains (PD-108), T-001…T-013 built, review 20 AC-030…AC-040 built (CI pending); next T-014; **K-1 pending**, proxies (§14) await Gregor.
+- [0035](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md) / [plan](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.plan.md): Send to three CLI agents in JetBrains (PD-112), T-016…T-022, T-024 built (CI pending); next T-023 (K-1), T-014, T-015.
 - [0034](../.specs/active/0034-studio-for-jetbrains-ides.md) / [plan](../.specs/active/0034-studio-for-jetbrains-ides.plan.md): JetBrains IDEs, T-001…T-042 verified except T-035, G4 fix round open; baseline `3bc615c`.
 - [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec for Copilot and Claude Code in every version (PD-091), T-001…T-011 verified; AC-016, AC-017, AC-020 are Gregor's or the orchestrator's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 are Gregor's; OP-004 closed by PD-078.

@@ -58,18 +58,16 @@ describe('0035 T-013: parity, amendments and docs', () => {
         expect(agents).not.toContain('Never edit `src/core`');
     });
 
-    it('AC-029: the README section JetBrains IDEs names the three handovers and stays honest', async () => {
+    it('AC-029: the README section JetBrains IDEs names the three Sends and stays honest', async () => {
         const section = jetbrainsSection(await read('README.md'));
         for (const sentence of [
+            '**Send to Junie**',
             '**Send to Claude Code**',
-            '**Copy for Copilot**',
-            '**Copy for Junie**',
+            '**Send to Copilot**',
             'FeatherSpec Studio | Assistant**',
             'never presses Enter',
-            'send nothing and fill no input',
-            'neither assistant offers an API',
             'waits for you to trust the folder or to log in',
-            '`Starting Claude Code…`',
+            '`Starting <Name>…`',
         ]) {
             expect(section, sentence).toContain(sentence);
         }
@@ -80,12 +78,12 @@ describe('0035 T-013: parity, amendments and docs', () => {
     it('AC-029: the CHANGELOG and the release checklist name the handovers and the manual checks', async () => {
         const [changelog, checklist] = await Promise.all([read('CHANGELOG.md'), read('docs/release-checklist.md')]);
         expect(changelog).toContain('**Send to Claude Code**');
-        expect(changelog).toContain('**Copy for Junie**');
-        const start = checklist.indexOf('## Send and Copy for in JetBrains (manual) (0035)');
+        expect(changelog).toContain('**Send to Junie**');
+        const start = checklist.indexOf('## Send in JetBrains (manual) (0035)');
         expect(start).toBeGreaterThan(0);
         const section = checklist.slice(start, checklist.indexOf('## Go', start));
         expect(section).toContain('AC-027');
-        expect(section).toContain('AC-028');
+        expect(section).toContain('AC-053');
         expect(section).toContain('NS-7-start');
     });
 

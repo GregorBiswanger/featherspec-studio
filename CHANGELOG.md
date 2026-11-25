@@ -10,19 +10,19 @@ First release.
 
 ### Added
 
-- JetBrains IDEs, setting *Assistant* (0035, PD-108): **Send to Claude Code** types the prompt and its `@` file mentions into
-  a Claude tab of the IDE terminal (a new tab `Claude Code` runs `claude` first) and never presses Enter; **Copy for
-  Copilot** and **Copy for Junie** copy the prompt with the file paths in the form `#file:<path>` or `@file:<path>` and open the chat for pasting,
-  because neither offers an API to fill its input. Copy prompt stays in the button's menu. The Terminal plugin is an
-  optional dependency; Junie is offered only while a Junie plugin is available. While Send to Claude Code starts `claude`
-  the button shows `Starting Claude Code…` and ignores a second click; when Claude Code waits for an answer (folder
-  trust, login) nothing is typed, the tab is focused and the prompt is copied (review 20, AC-030 to AC-032).
-- After Copy for Junie the control says `In AI Chat, choose Junie and paste it with Ctrl+V.`, because AI Chat opens with its recommended agent (review 20 S-4, AC-034).
+- JetBrains IDEs, setting *Assistant* (0035, PD-112): **Send to Junie**, **Send to Claude Code** and **Send to Copilot** type the
+  prompt and its `@` file mentions into a tab of the IDE terminal that runs the command-line agent (`junie`, `claude`,
+  `copilot`; a new tab runs the bare command first) and never press Enter. PD-112 removed the Copy-for handover of PD-108
+  (clipboard plus chat window): the three Sends replace it, Copy prompt stays in the button's menu. The Terminal plugin is an
+  optional dependency; an agent is offered only while its command is on the IDE's PATH, and an unset *Assistant* follows
+  Junie while `junie` is available. While a Send starts an agent the button shows `Starting <Name>…` and ignores a second
+  click; when the agent waits for an answer (folder trust, login) nothing is typed, the tab is focused and the prompt is
+  copied (review 20, AC-030 to AC-032, AC-047).
 - The main part of Send to Claude Code follows the Tip's session: a new chat means a new terminal tab, the current chat or any chat the running tab; the menu keeps both (review 20 S-1, AC-035).
 - When `claude` cannot be found on the IDE's PATH after the 15 s timeout, Send to Claude Code says `Claude Code did not start. Is the claude command installed? The prompt is copied.` instead of the general warning (review 20 S-2, AC-036).
 - In a project the IDE does not trust (Safe Mode) Send to Claude Code types only into a running `claude` tab and never starts `claude`; otherwise it copies the prompt and says `This project is not trusted, so Studio does not start claude. The prompt is copied.` (PD-110, review 20 S-3, AC-037).
-- Settings, JetBrains: *Assistant* lists each option only while its assistant is available (GitHub Copilot, Claude Code with the Terminal plugin, Junie); a stored value whose assistant is missing shows `None: Copy prompt` and is kept; the list follows plugins loaded or unloaded while the page is open. The description is `The assistant your next step goes to. Studio sends nothing; Copy prompt stays in the button's menu.` (review 20 S-5, S-6, AC-038, AC-039).
-- Gregor's decision PD-110 (review 20 B-3, AC-033): Studio itself starts no agent on its own and sends nothing. In JetBrains IDEs, Send to Claude Code may start claude in a terminal tab when you click it.
+- Settings, JetBrains: *Assistant* lists each option only while its assistant is available (Junie, Claude Code and GitHub Copilot, each by its command on the IDE's PATH and the Terminal plugin); a stored value whose assistant is missing shows `None: Copy prompt` and is kept; the list follows plugins loaded or unloaded while the page is open. The description is `The assistant your next step goes to. Studio sends nothing; Copy prompt stays in the button's menu.` (review 20 S-5, S-6, AC-038, AC-039).
+- Gregor's decisions PD-110 and PD-112 (review 20 B-3, AC-033, AC-052): Studio itself starts no agent on its own and sends nothing. In JetBrains IDEs, Send to Junie, Claude Code or Copilot may start that assistant's command-line agent in a terminal tab when you click it.
 - With an offered assistant the empty state `No specs yet. Start with /sdd-specify` shows the step action for
   `/sdd-specify`, in VS Code and in JetBrains IDEs; without one it keeps its Copy prompt.
 - Start via lifecycle (0033): a Ready spec offers `/sdd-lifecycle <spec> In Progress` first, under `Start: move the spec

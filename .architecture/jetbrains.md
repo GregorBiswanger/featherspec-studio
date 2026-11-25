@@ -1,5 +1,5 @@
 # Map: jetbrains (IntelliJ Platform host)
-# last reconciled: 2026-11-23 (0035, ADR-004)
+# last reconciled: 2026-11-24 (0035, PD-112, ADR-004)
 
 ## Internal pattern
 - `jetbrains/src/main/kotlin/com/gregorbiswanger/featherspec/studio/` — root package: `StudioProjectService` (per project: core
@@ -8,7 +8,7 @@
 - `runtime/` — bridge to the hidden JCEF core page: `HostContract` (mirror of `contract.ts`), `BridgeFrames`, `ReplyBatch`,
   `CorePage`, `CoreRuntime`/`CoreState` (buffered scripts, 60 s start timer, Unsupported/Suspended/Failed).
 - `jcef/` — `JcefAvailability`, `PluginResources` (the exact URL allow-list), `PluginRequestHandler` (serves `core.html`, panel HTML).
-- `assistant/` (0035) — `AssistantPort` (argument checks, `AssistantCalls`), pure `ClaudeTerminal` (Claude tab choice, readiness with the provisional marker lists `INPUT_MARKERS`/`WAITING_MARKERS` (K-1 pending), the waiting check, `ClaudeOnPath` (S-2: `claude`, `claude.exe`, `claude.cmd` on the IDE's PATH, asked only after the timeout), the Safe Mode rule (S-3: `trusted` is asked at every Send; no new tab, no `claude` while untrusted), `SendGate` against a second Send during the wait, paste text) and `ChatWindows` (candidate tool window IDs); glue `TerminalGlue`/`TerminalReflect` (Reworked Terminal API, reflective, optional dependency), `IdeChatWindows`, `IdeAssistantCalls`, `Edt`.
+- `assistant/` (0035) — `AssistantPort` (`assistant.terminal` → `AgentRequest(agent, target, text)`), `CliAgents` (one table: Junie, Claude Code, Copilot with command, PATH names, tab name, provisional marker lists (K-1 pending), paste mode; `CliOnPath`), pure `AgentTerminal` (`AgentTabs`, `AgentReadiness`, `AgentSender`: tab choice per agent, the waiting check, the not-installed check asked only after the timeout, the Safe Mode rule (`trusted` asked at every Send), one `SendGate` per project for all agents); glue `TerminalGlue`/`TerminalReflect` (Reworked Terminal API, reflective, optional dependency), `IdeAssistantCalls`, `Edt`. Availability: `ports/CliAvailability` (`cli:<command>` ids from the IDE PATH, only with the Terminal plugin) and `settings/EffectiveAssistant` (unset → Junie or none; `AvailabilityRecompute` pushes `pluginsChanged` and `settingsChanged`).
 - `ports/` — host ports behind routed calls: `PluginAvailability` (+ `PluginActivity`, the swappable "installed and active" strategy, K-1 pending; `IdePlugins` glue, `PluginEvents` listener; pushes `plugins`, `pluginsChanged`), `FilePorts`, `FileUris`, `ProjectFolders` (PD-103), `UnsavedDocuments` (+ `IdeUnsavedDocuments` glue: reads see unsaved editor documents; `SpecWatch` reports their edits), `RootWatcher`/`SpecWatch` (own
   watcher plus VFS events), `FileRuntimeMedium`, `StoreLocation`, `UiMemory(State)`, `EditorOpen`, `SystemCalls` (clipboard, editor).
 - `panel/` — editor tab: `StudioEditor(Provider)`, `StudioFile`, `PanelShim` (VS Code API shim), `PanelModel` (Loading/Ready/Failed/Unavailable), `PanelBrowser` (the browser with its page, owned by the project service), `PanelParking` (one parked browser per project, 0035 AC-042).
@@ -27,7 +27,7 @@
 ## Task playbooks
 - A Kotlin change: pure class + JUnit test; glue thin; verify with `jetbrains.yml`. A bridge change: `contract.ts` and `HostContract.kt` together.
 - A new host call: name in `contract.ts`, row in `HostRouter` (group), port under `ports/` or `setup/`; never in `src/core`.
-- A handover change: TypeScript row in `src/hosts/embedded/assistants.ts`, bridge call in `contract.ts` and `HostContract.kt`, port under `assistant/`; Terminal classes load only through the optional dependency, every call guarded.
+- A change of an agent: the `CLI_AGENTS` row in `src/hosts/embedded/assistants.ts` and the `CliAgents` row in Kotlin; TypeScript row in `src/hosts/embedded/assistants.ts`, bridge call in `contract.ts` and `HostContract.kt`, port under `assistant/`; Terminal classes load only through the optional dependency, every call guarded.
 - A manifest or bundle change: `jetbrains/guards/*.mjs` (`pluginZip.mjs`, `vsixFiles.mjs`, `sameBundles.mjs`) must stay green.
 
 ## Traps

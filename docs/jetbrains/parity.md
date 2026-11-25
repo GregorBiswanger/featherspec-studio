@@ -760,48 +760,59 @@ Generated from `.specs/done/` and `.specs/active/` by `src/adapters/node/parity.
 | 0033 | AC-006 | shared | C-views |  |
 | 0033 | AC-007 | shared | shared-test |  |
 | 0033 | AC-008 | shared | shared-test |  |
-| 0035 | AC-001 | deliberately different | PD-108, PD-109 (H-8, 0034 AC-018; the option Junie exists only in JetBrains) |  |
+| 0035 | AC-001 | n-a | Superseded by PD-112 on 2026-11-24 (AC-043, §16) |  |
 | 0035 | AC-002 | host | H-8 and 0034 AC-018 |  |
-| 0035 | AC-003 | deliberately different | PD-108, PD-109 (H-17; plugin availability) |  |
-| 0035 | AC-004 | deliberately different | PD-108 (H-17; the JetBrains offer per assistant) |  |
+| 0035 | AC-003 | n-a | Superseded by PD-112 on 2026-11-24 (AC-044, §16) |  |
+| 0035 | AC-004 | n-a | Superseded by PD-112 on 2026-11-24 (AC-045, §16) |  |
 | 0035 | AC-005 | shared | shared-test |  |
 | 0035 | AC-006 | deliberately different | PD-108 (Copy for where VS Code shows Send) |  |
 | 0035 | AC-007 | shared | shared-test |  |
 | 0035 | AC-008 | shared | shared-test |  |
-| 0035 | AC-009 | shared | shared-test |  |
+| 0035 | AC-009 | n-a | Superseded by PD-112 on 2026-11-24 (AC-046, §16) |  |
 | 0035 | AC-010 | shared | shared-test |  |
 | 0035 | AC-011 | deliberately different | PD-108 (Send to Claude Code through the IDE terminal) |  |
 | 0035 | AC-012 | deliberately different | PD-108 (Send to Claude Code through the IDE terminal) |  |
 | 0035 | AC-013 | deliberately different | PD-108 (Send to Claude Code through the IDE terminal) |  |
 | 0035 | AC-014 | deliberately different | PD-108 (Send to Claude Code through the IDE terminal) |  |
 | 0035 | AC-015 | deliberately different | PD-108 (Send to Claude Code through the IDE terminal) |  |
-| 0035 | AC-016 | deliberately different | PD-108 (Copy for Copilot and Copy for Junie) |  |
-| 0035 | AC-017 | deliberately different | PD-108 (Copy for Copilot and Copy for Junie) |  |
-| 0035 | AC-018 | shared | shared-test |  |
-| 0035 | AC-019 | deliberately different | PD-108 (Copy for Copilot and Copy for Junie) |  |
-| 0035 | AC-020 | deliberately different | PD-108 (Copy for Copilot and Copy for Junie) |  |
+| 0035 | AC-016 | n-a | Superseded by PD-112 on 2026-11-24 (AC-050, §16) |  |
+| 0035 | AC-017 | n-a | Superseded by PD-112 on 2026-11-24 (AC-050, §16) |  |
+| 0035 | AC-018 | n-a | Superseded by PD-112 on 2026-11-24 (AC-046, §16) |  |
+| 0035 | AC-019 | n-a | Superseded by PD-112 on 2026-11-24 (AC-050, §16) |  |
+| 0035 | AC-020 | n-a | Superseded by PD-112 on 2026-11-24 (AC-050, §16) |  |
 | 0035 | AC-021 | shared | shared-test |  |
-| 0035 | AC-022 | deliberately different | PD-108 (the Copy for sentence of the toggletip) |  |
+| 0035 | AC-022 | n-a | Superseded by PD-112 on 2026-11-24 (AC-050, §16) |  |
 | 0035 | AC-023 | host | H-17 and 0034 AC-025 |  |
 | 0035 | AC-024 | host | H-17 and 0034 AC-034 |  |
 | 0035 | AC-025 | shared | shared-test |  |
 | 0035 | AC-026 | shared | shared-test |  |
-| 0035 | AC-027 | deliberately different | PD-108 (manual check in Rider) |  |
-| 0035 | AC-028 | deliberately different | PD-108 (manual check in Rider) |  |
+| 0035 | AC-027 | deliberately different | PD-108 (manual check in Rider; stays for Claude Code beside AC-053) |  |
+| 0035 | AC-028 | n-a | Superseded by PD-112 on 2026-11-24 (AC-053, §16) |  |
 | 0035 | AC-029 | shared | shared-test |  |
-| 0035 | AC-030 | deliberately different | PD-108 (review 20 B-1: Copy for texts say file paths until AC-028) |  |
+| 0035 | AC-030 | n-a | Superseded by PD-112 on 2026-11-24 (AC-050, §16) |  |
 | 0035 | AC-031 | deliberately different | PD-108 (review 20 B-2: the wait state of Send to Claude Code exists only in JetBrains) |  |
 | 0035 | AC-032 | deliberately different | PD-108 (review 20 B-4: the waiting check of Send to Claude Code in the IDE terminal exists only in JetBrains) |  |
-| 0035 | AC-033 | deliberately different | PD-110 (review 20 B-3: the README sentence about starting claude concerns JetBrains only) |  |
-| 0035 | AC-034 | deliberately different | PD-108 (review 20 S-4: the Copy for Junie texts exist only in JetBrains) |  |
+| 0035 | AC-033 | n-a | Superseded by PD-112 on 2026-11-24 (AC-052, §16) |  |
+| 0035 | AC-034 | n-a | Superseded by PD-112 on 2026-11-24 (AC-050, §16) |  |
 | 0035 | AC-035 | deliberately different | PD-108 (review 20 S-1: the main target of Send to Claude Code in the IDE terminal follows the tip's session; VS Code has one target) |  |
 | 0035 | AC-036 | deliberately different | PD-108 (review 20 S-2: the not-installed text of Send to Claude Code in the IDE terminal exists only in JetBrains) |  |
 | 0035 | AC-037 | deliberately different | PD-110 (review 20 S-3: Send to Claude Code starts claude in the IDE terminal only in JetBrains, never in Safe Mode) |  |
 | 0035 | AC-038 | deliberately different | PD-108 (H-8; review 20 S-6: the description of the IDE's Assistant row; VS Code keeps its manifest description) |  |
-| 0035 | AC-039 | deliberately different | PD-108 (H-8; review 20 S-5: the option list of the IDE's settings page follows the IDE's plugins) |  |
+| 0035 | AC-039 | n-a | Superseded by PD-112 on 2026-11-24 (AC-043, AC-044, §16) |  |
 | 0035 | AC-040 | deliberately different | PD-108 (H-17; review 20 S-7: the plugin-activity check of the IDE, K-1 pending) |  |
 | 0035 | AC-041 | deliberately different | PD-111 (work list 3.6; 0034 AC-007: the native loading placeholder of the IDE tab exists only in JetBrains) |  |
 | 0035 | AC-042 | deliberately different | PD-111 (work list 3.6; 0034 AC-007, R-5: the IDE parks the panel browser of the closed tab for the next open; the VS Code webview is kept by the editor itself) |  |
+| 0035 | AC-043 | deliberately different | PD-112 (the IDE settings page offers Junie, Claude Code and GitHub Copilot by their commands) |  |
+| 0035 | AC-044 | deliberately different | PD-112 (availability of the CLI agents by the IDE PATH exists only in JetBrains) |  |
+| 0035 | AC-045 | deliberately different | PD-112 (the three Sends through the IDE terminal exist only in JetBrains) |  |
+| 0035 | AC-046 | shared | shared-test |  |
+| 0035 | AC-047 | deliberately different | PD-112 (the agent table of the IDE terminal; VS Code keeps its rows) |  |
+| 0035 | AC-048 | deliberately different | PD-112 (a new agent tab runs the bare command in the IDE terminal) |  |
+| 0035 | AC-049 | deliberately different | PD-112 (readiness markers and paste mode per CLI agent; K-1 pending) |  |
+| 0035 | AC-050 | deliberately different | PD-112 (Copy for removed from the JetBrains source and protocol 13) |  |
+| 0035 | AC-051 | deliberately different | PD-112 (the host passes the effective Assistant value to the core) |  |
+| 0035 | AC-052 | deliberately different | PD-112 (the README sentence about starting an agent concerns JetBrains only) |  |
+| 0035 | AC-053 | deliberately different | PD-112 (manual check in Rider with Junie and GitHub Copilot) |  |
 | 0036 | AC-001 | n-a | Release process of both products (0036 §1): no product behaviour to mirror in JetBrains |  |
 | 0036 | AC-002 | n-a | Release process of both products (0036 §1): no product behaviour to mirror in JetBrains |  |
 | 0036 | AC-003 | n-a | Release process of both products (0036 §1): no product behaviour to mirror in JetBrains |  |

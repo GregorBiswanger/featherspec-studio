@@ -1573,47 +1573,35 @@
         },
         "0035": {
             "ranges": {
-                "AC-007..AC-010": {
-                    "category": "shared",
-                    "reference": "shared-test"
-                },
                 "AC-011..AC-015": {
                     "category": "deliberately different",
                     "reference": "PD-108 (Send to Claude Code through the IDE terminal)"
-                },
-                "AC-016..AC-017": {
-                    "category": "deliberately different",
-                    "reference": "PD-108 (Copy for Copilot and Copy for Junie)"
-                },
-                "AC-019..AC-020": {
-                    "category": "deliberately different",
-                    "reference": "PD-108 (Copy for Copilot and Copy for Junie)"
                 },
                 "AC-025..AC-026": {
                     "category": "shared",
                     "reference": "shared-test"
                 },
-                "AC-027..AC-028": {
-                    "category": "deliberately different",
-                    "reference": "PD-108 (manual check in Rider)"
+                "AC-007..AC-008": {
+                    "category": "shared",
+                    "reference": "shared-test"
                 }
             },
             "criteria": {
                 "AC-001": {
-                    "category": "deliberately different",
-                    "reference": "PD-108, PD-109 (H-8, 0034 AC-018; the option Junie exists only in JetBrains)"
+                    "category": "n-a",
+                    "reference": "Superseded by PD-112 on 2026-11-24 (AC-043, §16)"
                 },
                 "AC-002": {
                     "category": "host",
                     "reference": "H-8 and 0034 AC-018"
                 },
                 "AC-003": {
-                    "category": "deliberately different",
-                    "reference": "PD-108, PD-109 (H-17; plugin availability)"
+                    "category": "n-a",
+                    "reference": "Superseded by PD-112 on 2026-11-24 (AC-044, §16)"
                 },
                 "AC-004": {
-                    "category": "deliberately different",
-                    "reference": "PD-108 (H-17; the JetBrains offer per assistant)"
+                    "category": "n-a",
+                    "reference": "Superseded by PD-112 on 2026-11-24 (AC-045, §16)"
                 },
                 "AC-005": {
                     "category": "shared",
@@ -1623,17 +1611,41 @@
                     "category": "deliberately different",
                     "reference": "PD-108 (Copy for where VS Code shows Send)"
                 },
-                "AC-018": {
+                "AC-009": {
+                    "category": "n-a",
+                    "reference": "Superseded by PD-112 on 2026-11-24 (AC-046, §16)"
+                },
+                "AC-010": {
                     "category": "shared",
                     "reference": "shared-test"
+                },
+                "AC-016": {
+                    "category": "n-a",
+                    "reference": "Superseded by PD-112 on 2026-11-24 (AC-050, §16)"
+                },
+                "AC-017": {
+                    "category": "n-a",
+                    "reference": "Superseded by PD-112 on 2026-11-24 (AC-050, §16)"
+                },
+                "AC-018": {
+                    "category": "n-a",
+                    "reference": "Superseded by PD-112 on 2026-11-24 (AC-046, §16)"
+                },
+                "AC-019": {
+                    "category": "n-a",
+                    "reference": "Superseded by PD-112 on 2026-11-24 (AC-050, §16)"
+                },
+                "AC-020": {
+                    "category": "n-a",
+                    "reference": "Superseded by PD-112 on 2026-11-24 (AC-050, §16)"
                 },
                 "AC-021": {
                     "category": "shared",
                     "reference": "shared-test"
                 },
                 "AC-022": {
-                    "category": "deliberately different",
-                    "reference": "PD-108 (the Copy for sentence of the toggletip)"
+                    "category": "n-a",
+                    "reference": "Superseded by PD-112 on 2026-11-24 (AC-050, §16)"
                 },
                 "AC-023": {
                     "category": "host",
@@ -1643,13 +1655,21 @@
                     "category": "host",
                     "reference": "H-17 and 0034 AC-034"
                 },
+                "AC-027": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (manual check in Rider; stays for Claude Code beside AC-053)"
+                },
+                "AC-028": {
+                    "category": "n-a",
+                    "reference": "Superseded by PD-112 on 2026-11-24 (AC-053, §16)"
+                },
                 "AC-029": {
                     "category": "shared",
                     "reference": "shared-test"
                 },
                 "AC-030": {
-                    "category": "deliberately different",
-                    "reference": "PD-108 (review 20 B-1: Copy for texts say file paths until AC-028)"
+                    "category": "n-a",
+                    "reference": "Superseded by PD-112 on 2026-11-24 (AC-050, §16)"
                 },
                 "AC-031": {
                     "category": "deliberately different",
@@ -1660,12 +1680,12 @@
                     "reference": "PD-108 (review 20 B-4: the waiting check of Send to Claude Code in the IDE terminal exists only in JetBrains)"
                 },
                 "AC-033": {
-                    "category": "deliberately different",
-                    "reference": "PD-110 (review 20 B-3: the README sentence about starting claude concerns JetBrains only)"
+                    "category": "n-a",
+                    "reference": "Superseded by PD-112 on 2026-11-24 (AC-052, §16)"
                 },
                 "AC-034": {
-                    "category": "deliberately different",
-                    "reference": "PD-108 (review 20 S-4: the Copy for Junie texts exist only in JetBrains)"
+                    "category": "n-a",
+                    "reference": "Superseded by PD-112 on 2026-11-24 (AC-050, §16)"
                 },
                 "AC-035": {
                     "category": "deliberately different",
@@ -1684,8 +1704,8 @@
                     "reference": "PD-108 (H-8; review 20 S-6: the description of the IDE's Assistant row; VS Code keeps its manifest description)"
                 },
                 "AC-039": {
-                    "category": "deliberately different",
-                    "reference": "PD-108 (H-8; review 20 S-5: the option list of the IDE's settings page follows the IDE's plugins)"
+                    "category": "n-a",
+                    "reference": "Superseded by PD-112 on 2026-11-24 (AC-043, AC-044, §16)"
                 },
                 "AC-040": {
                     "category": "deliberately different",
@@ -1698,6 +1718,50 @@
                 "AC-042": {
                     "category": "deliberately different",
                     "reference": "PD-111 (work list 3.6; 0034 AC-007, R-5: the IDE parks the panel browser of the closed tab for the next open; the VS Code webview is kept by the editor itself)"
+                },
+                "AC-043": {
+                    "category": "deliberately different",
+                    "reference": "PD-112 (the IDE settings page offers Junie, Claude Code and GitHub Copilot by their commands)"
+                },
+                "AC-044": {
+                    "category": "deliberately different",
+                    "reference": "PD-112 (availability of the CLI agents by the IDE PATH exists only in JetBrains)"
+                },
+                "AC-045": {
+                    "category": "deliberately different",
+                    "reference": "PD-112 (the three Sends through the IDE terminal exist only in JetBrains)"
+                },
+                "AC-046": {
+                    "category": "shared",
+                    "reference": "shared-test"
+                },
+                "AC-047": {
+                    "category": "deliberately different",
+                    "reference": "PD-112 (the agent table of the IDE terminal; VS Code keeps its rows)"
+                },
+                "AC-048": {
+                    "category": "deliberately different",
+                    "reference": "PD-112 (a new agent tab runs the bare command in the IDE terminal)"
+                },
+                "AC-049": {
+                    "category": "deliberately different",
+                    "reference": "PD-112 (readiness markers and paste mode per CLI agent; K-1 pending)"
+                },
+                "AC-050": {
+                    "category": "deliberately different",
+                    "reference": "PD-112 (Copy for removed from the JetBrains source and protocol 13)"
+                },
+                "AC-051": {
+                    "category": "deliberately different",
+                    "reference": "PD-112 (the host passes the effective Assistant value to the core)"
+                },
+                "AC-052": {
+                    "category": "deliberately different",
+                    "reference": "PD-112 (the README sentence about starting an agent concerns JetBrains only)"
+                },
+                "AC-053": {
+                    "category": "deliberately different",
+                    "reference": "PD-112 (manual check in Rider with Junie and GitHub Copilot)"
                 }
             }
         },

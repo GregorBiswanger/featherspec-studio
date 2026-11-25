@@ -8,17 +8,18 @@ async function read(file: string): Promise<string> {
     return fs.readFile(path.join(root, file), 'utf8');
 }
 
-const PD_110_SENTENCE = 'Studio starts no agent on its own and sends nothing. In JetBrains IDEs, Send to Claude Code may start claude in a terminal tab when you click it.';
+const PD_112_SENTENCE =
+    "Studio starts no agent on its own and sends nothing. In JetBrains IDEs, Send to Junie, Claude Code or Copilot may start that assistant's command-line agent in a terminal tab when you click it.";
 
 describe('0035 review 20 B-3 / PD-110 / AC-033: the README keeps its promise honest', () => {
-    it('AC-033 the intro, the Local and read-only bullet and the Privacy bullet carry the sentence of PD-110, literally', async () => {
+    it('AC-033 the intro, the Local and read-only bullet and the Privacy bullet carry the sentence of PD-112, literally', async () => {
         const lines = (await read('README.md')).split('\n');
         const introduction = lines.find((line) => line.startsWith('Studio reads your project'));
         const bullet = lines.find((line) => line.startsWith('- **Local and read-only.**'));
         const privacy = lines.find((line) => line.startsWith('- Studio starts no agent on its own'));
         for (const line of [introduction, bullet, privacy]) {
             expect(line).toBeDefined();
-            expect(line).toContain(PD_110_SENTENCE);
+            expect(line).toContain(PD_112_SENTENCE);
         }
     });
 
@@ -26,13 +27,14 @@ describe('0035 review 20 B-3 / PD-110 / AC-033: the README keeps its promise hon
         const lines = (await read('README.md')).split('\n');
         expect(lines.filter((line) => line.includes('starts no process'))).toEqual([]);
         expect(lines.filter((line) => /starts no agent(?! on its own)/.test(line) && line.includes('Studio reads your project')).map((line) => line.slice(0, 60))).toEqual([]);
-        expect(lines.filter((line) => line.includes('Send to Claude Code opens a terminal tab and runs `claude` there when none is running'))).toEqual([]);
+        expect(lines.filter((line) => line.includes('Send to Claude Code may start claude in a terminal tab'))).toEqual([]);
     });
 
-    it('AC-033 the CHANGELOG names PD-110 and the decision of Gregor', async () => {
+    it('AC-052 the CHANGELOG names PD-110 and PD-112 and the decision of Gregor', async () => {
         const changelog = await read('CHANGELOG.md');
         expect(changelog).toContain('PD-110');
-        expect(changelog).toContain(PD_110_SENTENCE.replace('Studio starts', 'Studio itself starts'));
+        expect(changelog).toContain('PD-112');
+        expect(changelog).toContain(PD_112_SENTENCE.replace('Studio starts', 'Studio itself starts'));
     });
 
     it('AC-033 negative control, the old promise is found by the same check', () => {
@@ -41,11 +43,12 @@ describe('0035 review 20 B-3 / PD-110 / AC-033: the README keeps its promise hon
     });
 });
 
-describe('0035 review 20 S-4 / AC-034: README and CHANGELOG tell to choose Junie in AI Chat', () => {
-    it('AC-034 the README section and the CHANGELOG say it', async () => {
+describe('0035 PD-112 / AC-050: README and CHANGELOG no longer tell to choose Junie in AI Chat', () => {
+    it('AC-050 neither says it, and the README section names no AI Chat step', async () => {
         const [readme, changelog] = await Promise.all([read('README.md'), read('CHANGELOG.md')]);
-        expect(readme).toContain('AI Chat opens with its recommended agent, so for Junie choose Junie in AI Chat before you paste.');
-        expect(changelog).toContain('In AI Chat, choose Junie and paste it with Ctrl+V.');
+        expect(readme).not.toContain('AI Chat opens with its recommended agent');
+        expect(changelog).not.toContain('In AI Chat, choose Junie and paste it with Ctrl+V.');
+        expect(readme.split('## JetBrains IDEs')[1]).not.toContain('AI Chat');
     });
 });
 
@@ -61,7 +64,8 @@ describe('0035 review 20 S-6 and S-5 / AC-038, AC-039: the settings page names o
 
     it('AC-039 the README says that each option appears only while its assistant is available, and the stored value stays', async () => {
         const readme = await read('README.md');
-        expect(readme).toContain('Each assistant appears in the setting only while it is available: GitHub Copilot with its plugin, Claude Code with the Terminal plugin, Junie with a Junie plugin. A stored value whose assistant is missing shows `None: Copy prompt` and is kept.');
+        expect(readme).toContain('Each assistant appears in the setting only while the Terminal plugin and its command are available.');
+        expect(readme).toContain('A stored value whose assistant is missing shows `None: Copy prompt` and is kept.');
         expect(readme).not.toContain('*Junie* appears in the setting only while a Junie plugin is available');
     });
 
@@ -76,21 +80,18 @@ describe('0035 review 20 S-6 and S-5 / AC-038, AC-039: the settings page names o
 describe('0035 review 20 S-3 / PD-110 / AC-037: README and CHANGELOG say what Safe Mode does', () => {
     it('AC-037 the README section, the Privacy bullet and the CHANGELOG carry the own text and the rule', async () => {
         const [readme, changelog] = await Promise.all([read('README.md'), read('CHANGELOG.md')]);
-        for (const text of [readme, changelog]) {
-            expect(text).toContain('This project is not trusted, so Studio does not start claude. The prompt is copied.');
-        }
-        expect(readme).toContain('In a project that is not trusted (Safe Mode) Send to Claude Code never starts `claude`.');
-        expect(readme).toContain('it types only into a running `claude` tab');
+        expect(changelog).toContain('This project is not trusted, so Studio does not start claude. The prompt is copied.');
+        expect(readme).toContain('This project is not trusted, so Studio does not start <command>. The prompt is copied.');
+        expect(readme).toContain('In a project that is not trusted (Safe Mode) no Send starts an agent.');
+        expect(readme).toContain('it types only into a running tab');
     });
 });
 
 describe('0035 review 20 S-2 / AC-036: README and CHANGELOG say what a missing claude shows', () => {
     it('AC-036 the README section and the CHANGELOG carry the own text', async () => {
         const [readme, changelog] = await Promise.all([read('README.md'), read('CHANGELOG.md')]);
-        for (const text of [readme, changelog]) {
-            expect(text).toContain('Claude Code did not start. Is the claude command installed? The prompt is copied.');
-        }
-        expect(readme).toContain('(`claude`, `claude.exe` or `claude.cmd`)');
+        expect(changelog).toContain('Claude Code did not start. Is the claude command installed? The prompt is copied.');
+        expect(readme).toContain('<Name> did not start. Is the <command> command installed? The prompt is copied.');
     });
 });
 
@@ -177,8 +178,8 @@ describe('0035 AC-042: the reopened Studio tab takes the parked panel browser', 
     });
 });
 
-describe('0035 README polish: "on its own" everywhere the Studio is meant, and Send to Claude Code as a short list', () => {
-    const CLAUDE_BULLET = '- **Send to Claude Code** (needs the `claude` command and the Terminal plugin)';
+describe('0035 README polish: "on its own" everywhere the Studio is meant, and Send as a short list', () => {
+    const AGENT_BULLET = '- `junie` for Junie, `claude` for Claude Code, `' + 'copilot' + '` for GitHub Copilot';
 
     it('every README sentence that says Studio starts no agent says "on its own", the Plan map and next step ones included', async () => {
         const readme = await read('README.md');
@@ -191,9 +192,9 @@ describe('0035 README polish: "on its own" everywhere the Studio is meant, and S
         expect('it starts no agent and writes no file'.match(/starts no agent(?! on its own)/g)).not.toBeNull();
     });
 
-    it('the Send to Claude Code bullet is a short list with one fact per item', async () => {
+    it('the agent bullet is a short list with one fact per item', async () => {
         const lines = (await read('README.md')).split('\n');
-        const start = lines.findIndex((line) => line.startsWith(CLAUDE_BULLET));
+        const start = lines.findIndex((line) => line.startsWith(AGENT_BULLET));
         expect(start).toBeGreaterThan(0);
         const items: string[] = [];
         for (let index = start + 1; index < lines.length && lines[index].startsWith('  - '); index++) {
@@ -204,9 +205,9 @@ describe('0035 README polish: "on its own" everywhere the Studio is meant, and S
             "The main part follows the step's Tip",
             'It never presses Enter',
             'waits for you to trust the folder or to log in',
-            '`Starting Claude Code…`',
-            'Claude Code did not start. Is the claude command installed? The prompt is copied.',
-            'This project is not trusted, so Studio does not start claude. The prompt is copied.',
+            '`Starting <Name>…`',
+            '<Name> did not start. Is the <command> command installed? The prompt is copied.',
+            'This project is not trusted, so Studio does not start <command>. The prompt is copied.',
         ];
         wanted.forEach((text, index) => expect(items[index], text).toContain(text));
         expect(lines[start].length).toBeLessThan(260);
@@ -219,13 +220,12 @@ describe('0035 README polish: "on its own" everywhere the Studio is meant, and S
         const section = (await read('README.md')).split('## JetBrains IDEs')[1];
         for (const text of [
             'one ` @path` per attached file',
-            'a running `claude` tab of the IDE terminal',
-            'a new tab `Claude Code` in the project root',
+            'into a running tab of that agent in the IDE terminal',
+            'a new tab in the project root after it has started the command, with no flag',
             'Send to the current chat** and **Send to a new chat**',
             'within 15 seconds',
-            '(`claude`, `claude.exe` or `claude.cmd`)',
-            'it does not stop earlier, because the IDE\'s PATH can differ from the terminal\'s',
-            'it types only into a running `claude` tab',
+            'not found on the PATH of the IDE',
+            'it types only into a running tab',
         ]) {
             expect(section, text).toContain(text);
         }

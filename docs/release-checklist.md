@@ -354,14 +354,14 @@ Evidence for spec 0034 AC-040, AC-041 and AC-042; the plugin ZIP is the `plugin-
 - [ ] **Cold start on Windows** (AC-040, gate, PD-111): on Gregor's Windows machine, open the project with the ZIP installed. Enter the measured seconds until *core ready* (limit 12 s, R-5) and until the first panel frame after *Open* (limit 1 s, AC-007): core ready ___ s, first panel frame ___ s. The CI runners only run these budgets as a trend (Windows and macOS, a failure from 1.5 times the budget); this is the check of the user budgets. Over 12 s is a product topic (loading state, warming up after the project start), not a CI topic. To read the panel time instead of a stopwatch, start the IDE with `-Dfeatherspec.probe.handover=true` (Help > Edit Custom VM Options) and find the line `FEATHERSPEC-TIMING open→first-content <ms> (cold|warm)` in `idea.log` (Help > Show Log in Explorer); the first line after the IDE start is the cold value.
 - [ ] **Open beside** (AC-040): a file opened from the detail with Ctrl+click opens in a split beside the panel; if it opens in the current window, note the IDE version.
 
-## Send and Copy for in JetBrains (manual) (0035)
+## Send in JetBrains (manual) (0035)
 
-Evidence for spec 0035 AC-027 and AC-028; plugin ZIP, Rider 2026.3 and `C:\projects\test\tip-splitter` as in the 0034 section. Record the versions of Rider, the Terminal plugin, Claude Code, GitHub Copilot and Junie.
+Evidence for spec 0035 AC-027 and AC-053; plugin ZIP, Rider 2026.3 and `C:\projects\test\tip-splitter` as in the 0034 section. Record the versions of Rider, the Terminal plugin, Junie, Claude Code and GitHub Copilot (CLI).
 
 - [ ] **Send to Claude Code** (AC-027): *Assistant* Claude Code; in the `NS-7-start` situation the main part puts the prompt with two `@` mentions into a running `claude` tab, and with no such tab into a new `Claude Code` tab after `claude` is ready; nothing is sent; Enter in the tab sends it with both files.
-- [ ] **Copy for Copilot and Copy for Junie** (AC-028): each opens its chat and the paste carries the references; note whether `#file:` and `@file:` become references (A-002, A-003) and the tool window IDs (A-008).
-- [ ] **Options and setting** (AC-028): the option *Junie* with and without a Junie plugin; a change of *Assistant* shows in the panel without an IDE restart.
-- [ ] **VS Code** (AC-028): the empty state with Send to Copilot on a project without specs.
+- [ ] **Send to Junie and Send to Copilot** (AC-053): each with its CLI on the PATH, in the `NS-7-start` situation: the prompt with its two `@` mentions in a running agent tab, a new tab `Junie` or `GitHub Copilot` otherwise; nothing sent, no escape characters; the waiting text at the trust or login screen; Safe Mode starts no tab; note whether the `@` paths become file references (A-011) and whether the paste mode holds (A-010).
+- [ ] **Options and setting** (AC-053): without the CLI on the PATH the option is missing and the hint shows; unset follows Junie; a change of *Assistant* shows in the panel without an IDE restart.
+- [ ] **VS Code** (AC-053): the empty state with Send to Copilot on a project without specs.
 
 ## Go
 

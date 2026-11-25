@@ -4,7 +4,7 @@ Read `AGENTS.md` first. This folder is the IntelliJ Platform plugin of FeatherSp
 
 ## What lives here
 - `src/main/kotlin/com/gregorbiswanger/featherspec/studio/` — Kotlin host, root package `com.gregorbiswanger.featherspec.studio`.
-  Packages: `runtime/` bridge to the core page · `jcef/` · `ports/` host ports · `assistant/` Send and Copy for · `panel/` editor tab · `theme/` · `tree/` tool window ·
+  Packages: `runtime/` bridge to the core page · `jcef/` · `ports/` host ports · `assistant/` Send to the CLI agents · `panel/` editor tab · `theme/` · `tree/` tool window ·
   `actions/` · `status/` · `ui/` · `settings/` · `setup/` · `probe/` (CI probes, inert by default); inside view: `.architecture/jetbrains.md`.
 - `src/main/resources/META-INF/plugin.xml` — plugin manifest (id, the two `<depends>` lines plus the optional Terminal one in `featherspec-terminal.xml`; `since-build` is in `build.gradle.kts`).
 - `src/test/kotlin/…` — plain JUnit 5 tests; `src/integrationTest/kotlin/…` — Starter smoke and conformance.
