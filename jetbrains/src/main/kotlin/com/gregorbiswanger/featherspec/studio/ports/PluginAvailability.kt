@@ -4,10 +4,7 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 
 object PluginIds {
-    const val COPILOT = "com.github.copilot"
     const val TERMINAL = "org.jetbrains.plugins.terminal"
-    const val JUNIE = "org.jetbrains.junie"
-    const val AI_ASSISTANT = "com.intellij.ml.llm"
 
     val ALL: List<String> = listOf(TERMINAL)
 }
@@ -35,8 +32,6 @@ enum class PluginEventKind { LOADED, UNLOADED }
 object PluginAvailability {
     fun snapshot(query: PluginQuery, absent: Set<String> = emptySet()): List<String> =
         PluginIds.ALL.filter { it !in absent && query.available(it) }
-
-    fun junie(plugins: List<String>): Boolean = PluginIds.JUNIE in plugins || PluginIds.AI_ASSISTANT in plugins
 
     fun recompute(kind: PluginEventKind, isUpdate: Boolean): Boolean = !(kind == PluginEventKind.UNLOADED && isUpdate)
 

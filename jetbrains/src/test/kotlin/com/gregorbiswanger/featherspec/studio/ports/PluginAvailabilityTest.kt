@@ -42,15 +42,6 @@ class PluginAvailabilityTest {
     }
 
     @Test
-    fun `AC-003 Junie is available while either Junie plugin is`() {
-        assertFalse(PluginAvailability.junie(emptyList()))
-        assertFalse(PluginAvailability.junie(listOf("com.github.copilot", "org.jetbrains.plugins.terminal")))
-        assertTrue(PluginAvailability.junie(listOf("org.jetbrains.junie")))
-        assertTrue(PluginAvailability.junie(listOf("com.intellij.ml.llm")))
-        assertTrue(PluginAvailability.junie(listOf("org.jetbrains.junie", "com.intellij.ml.llm")))
-    }
-
-    @Test
     fun `AC-003 the event carries the plugins array and nothing else`() {
         val event = JsonParser.parseString(PluginAvailability.event(listOf("com.github.copilot", "org.jetbrains.junie"))).asJsonObject
         assertEquals(setOf("plugins"), event.keySet())

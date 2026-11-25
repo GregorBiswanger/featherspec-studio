@@ -4,34 +4,22 @@ import com.google.gson.JsonNull
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 
-enum class ChatAssistant(val id: String) {
-    COPILOT("copilot"),
-    JUNIE("junie"),
-}
-
 enum class AgentTarget { CURRENT, NEW }
 
 data class AgentRequest(val agent: CliAgent, val target: AgentTarget, val text: String)
 
 interface AssistantCalls {
     fun terminal(request: AgentRequest)
-
-    fun openChat(assistant: ChatAssistant): Boolean
 }
 
 object UnavailableAssistantCalls : AssistantCalls {
     override fun terminal(request: AgentRequest) {
         throw IllegalStateException("the assistant calls are not available")
     }
-
-    override fun openChat(assistant: ChatAssistant): Boolean = false
 }
 
 object AssistantRequests {
     const val TERMINAL = "assistant.terminal"
-    const val OPEN_CHAT = "assistant.openChat"
-    const val OPENED = "opened"
-    const val NOT_FOUND = "notFound"
 
     fun hasControlCharacter(text: String): Boolean =
         text.any { Character.isISOControl(it) || it == LINE_SEPARATOR || it == PARAGRAPH_SEPARATOR }
@@ -49,12 +37,6 @@ object AssistantRequests {
         require(!line.isNullOrEmpty()) { "$TERMINAL needs text" }
         require(!hasControlCharacter(line)) { "the text holds a control character" }
         return AgentRequest(agent, target, line)
-    }
-
-    fun chatAssistant(argsJson: String): ChatAssistant {
-        val id = objectOf(argsJson)?.let { text(it, "assistant") }
-        return ChatAssistant.values().firstOrNull { it.id == id }
-            ?: throw IllegalArgumentException("$OPEN_CHAT needs the assistant copilot or junie")
     }
 
     fun ok(value: String?): String = JsonObject().apply {
@@ -82,10 +64,6 @@ class AssistantPort(private val calls: AssistantCalls) {
         AssistantRequests.TERMINAL -> {
             calls.terminal(AssistantRequests.agentRequest(argsJson))
             AssistantRequests.ok(null)
-        }
-        AssistantRequests.OPEN_CHAT -> {
-            val opened = calls.openChat(AssistantRequests.chatAssistant(argsJson))
-            AssistantRequests.ok(if (opened) AssistantRequests.OPENED else AssistantRequests.NOT_FOUND)
         }
         else -> null
     }

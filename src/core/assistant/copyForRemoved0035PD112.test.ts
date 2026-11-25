@@ -12,6 +12,7 @@ import { plainSendViewOf, sendViewOf, tipClosingOf } from './sendView';
 
 const root = process.cwd();
 const REMOVED = ['Copy for', `${'copilot'}CopyText`, 'junieCopyText', 'COPY_FOR_', 'openChat'];
+const KOTLIN_REMOVED = [...REMOVED, 'ChatWindows', 'ChatAssistant', 'OPEN_CHAT', 'PluginIds.COPILOT', 'PluginIds.JUNIE', 'PluginIds.AI_ASSISTANT'];
 const SELF = 'src/core/assistant/copyForRemoved0035PD112.test.ts';
 const EXEMPT_UNTIL_DOCS = ['src/adapters/node/docs0035.test.ts', 'src/adapters/node/docsScan.test.ts'];
 const AGENTS = ['junie', 'claudeCode', 'copilot'] as const;
@@ -32,6 +33,15 @@ describe('0035 PD-112 AC-050: Copy for is gone from the source', () => {
         const names = (await filesUnder(path.join(root, 'src'))).filter((file) => /\.(ts|tsx|css|json)$/.test(file));
         const files = await Promise.all(names.map(async (file) => ({ name: path.relative(root, file).split(path.sep).join('/'), text: await fs.readFile(file, 'utf8') })));
         expect(offenders(files, [SELF, ...EXEMPT_UNTIL_DOCS])).toEqual([]);
+    });
+
+    it('no Kotlin file under jetbrains/src holds one of the removed names, and the removed files are gone', async () => {
+        const names = (await filesUnder(path.join(root, 'jetbrains', 'src'))).filter((file) => file.endsWith('.kt') || file.endsWith('.xml'));
+        const files = await Promise.all(names.map(async (file) => ({ name: path.relative(root, file).split(path.sep).join('/'), text: await fs.readFile(file, 'utf8') })));
+        expect(files.filter((file) => KOTLIN_REMOVED.some((term) => file.text.includes(term))).map((file) => file.name)).toEqual([]);
+        for (const gone of ['ChatWindows.kt', 'IdeChatWindows.kt', 'ChatWindowsTest.kt']) {
+            expect(files.map((file) => file.name).filter((name) => name.endsWith(`/${gone}`)), gone).toEqual([]);
+        }
     });
 
     it('the exemptions are all still needed', async () => {

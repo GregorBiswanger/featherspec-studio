@@ -6,7 +6,6 @@ import com.gregorbiswanger.featherspec.studio.ports.IdePlugins
 import com.gregorbiswanger.featherspec.studio.ports.PluginIds
 import com.gregorbiswanger.featherspec.studio.ports.UiMemoryState
 import com.intellij.ide.trustedProjects.TrustedProjects
-import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import java.io.File
 
@@ -26,14 +25,6 @@ class IdeAssistantCalls(private val project: Project) : AssistantCalls {
         } catch (failure: LinkageError) {
             throw IllegalStateException("the Terminal API could not be used (${failure.javaClass.simpleName})", failure)
         }
-    }
-
-    override fun openChat(assistant: ChatAssistant): Boolean = try {
-        val candidates = ChatWindows.candidates(assistant, IdePlugins().available(PluginIds.AI_ASSISTANT))
-        IdeChatWindows(project).open(candidates)
-    } catch (failure: RuntimeException) {
-        thisLogger().warn("The ${assistant.id} chat window could not be opened", failure)
-        false
     }
 
     private fun sender(): AgentSender = AgentSender(

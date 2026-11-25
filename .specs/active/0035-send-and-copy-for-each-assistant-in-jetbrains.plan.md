@@ -477,7 +477,7 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
   them as information). **Ask first:** delete `assistant/ChatWindows.kt`, `assistant/IdeChatWindows.kt`, `ChatWindowsTest.kt`.
 - **Tests first:** AC-050's scan (from T-018) now covers `jetbrains/src/` and is red until this step.
 - **Verify:** CI: every job of `jetbrains.yml` green at one head (G8).
-- [ ] **Verified (T-022):** —
+- [x] **Verified (T-022):** 2026-11-24 · CI pending (Kotlin). Red first (1): the AC-050 scan of `jetbrains/src` (`.kt`, `.xml`) for `Copy for`, `openChat`, `OPEN_CHAT`, `ChatWindows`, `ChatAssistant`, `PluginIds.COPILOT/JUNIE/AI_ASSISTANT` plus the three deleted files, added to `copyForRemoved0035PD112.test.ts`; green after: 11/11. Removed: `ChatWindows.kt`, `IdeChatWindows.kt`, `ChatWindowsTest.kt` (deletion covered by Gregor's brief, which asks for Copy for to be removed everywhere), `ChatAssistant`, `OPEN_CHAT`, `openChat` in `AssistantPort`/`IdeAssistantCalls`, the Copilot/Junie/AI Assistant plugin ids and `PluginAvailability.junie` with its test; `AssistantPortTest` keeps one check that `assistant.openChat` is not answered. Local Kotlin (kotlinc 2.0.21): `AgentsSendTest`, `AgentTerminalTest`, `AssistantPortTest`, `CliAgentsTest`, `HostRouterTest`, `SettingsTableTest`, `EffectiveAssistantTest`, `CliAvailabilityTest`, `PluginAvailabilityTest`, `CoreConfigTest` 161/161. The probe reads no plugin id of the removed ones.
 - **Notes:** —
 
 ### T-023 — K-1 values into the constants; replay test

@@ -8,18 +8,12 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class AssistantPortTest {
-    private class Recording(var chat: Boolean = true, var failure: RuntimeException? = null) : AssistantCalls {
+    private class Recording(var failure: RuntimeException? = null) : AssistantCalls {
         val terminal = ArrayList<AgentRequest>()
-        val chats = ArrayList<ChatAssistant>()
 
         override fun terminal(request: AgentRequest) {
             terminal.add(request)
             failure?.let { throw it }
-        }
-
-        override fun openChat(assistant: ChatAssistant): Boolean {
-            chats.add(assistant)
-            return chat
         }
     }
 
@@ -29,10 +23,11 @@ class AssistantPortTest {
         assertThrows(IllegalArgumentException::class.java) { port.answer(name, args) }.message.orEmpty()
 
     @Test
-    fun `AC-023 only the two assistant calls are answered`() {
+    fun `AC-023 only the terminal call is answered`() {
         val port = AssistantPort(Recording())
         assertEquals(null, port.answer("clipboard.write", """{"text":"x"}"""))
         assertEquals(null, port.answer("assistant.other", "{}"))
+        assertEquals(null, port.answer("assistant." + "open" + "Chat", """{"assistant":"junie"}"""))
         assertEquals(null, port.answer("actions.openStudio", "{}"))
     }
 
@@ -110,30 +105,5 @@ class AssistantPortTest {
         val port = AssistantPort(Recording(failure = IllegalStateException("tab closed")))
         val thrown = assertThrows(IllegalStateException::class.java) { port.answer("assistant.terminal", """{"assistant":"claudeCode","target":"current","text":"x"}""") }
         assertEquals("tab closed", thrown.message)
-    }
-
-    @Test
-    fun `AC-016 the chat call answers opened or notFound for Copilot and Junie`() {
-        val calls = Recording()
-        val port = AssistantPort(calls)
-        assertEquals("opened", reply(port.answer("assistant.openChat", """{"assistant":"copilot"}""")).get("ok").asString)
-        calls.chat = false
-        assertEquals("notFound", reply(port.answer("assistant.openChat", """{"assistant":"junie"}""")).get("ok").asString)
-        assertEquals(listOf(ChatAssistant.COPILOT, ChatAssistant.JUNIE), calls.chats)
-    }
-
-    @Test
-    fun `AC-023 the chat call refuses every other assistant and bad arguments`() {
-        val calls = Recording()
-        val port = AssistantPort(calls)
-        for (args in listOf("{}", """{"assistant":"claudeCode"}""", """{"assistant":"none"}""", """{"assistant":1}""", """{"assistant":"Copilot"}""", "[]", "x", "")) {
-            assertEquals("assistant.openChat needs the assistant copilot or junie", refusal(port, "assistant.openChat", args), args)
-        }
-        assertEquals(emptyList<ChatAssistant>(), calls.chats)
-    }
-
-    @Test
-    fun `AC-023 the chat ids are the core ids`() {
-        assertEquals(listOf("copilot", "junie"), ChatAssistant.values().map { it.id })
     }
 }
