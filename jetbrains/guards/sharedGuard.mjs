@@ -3,7 +3,11 @@ import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const keyOf = (test) => `${test.file}\u0000${test.title}`;
+// A spec that moves between its lifecycle folders (.specs/active → .specs/done) keeps its tests:
+// test titles that name the spec file are compared without that folder, nothing else is relaxed.
+const lifecycleFree = (title) => title.replace(/\.specs\/(?:active|done)\//g, '.specs/<lifecycle>/');
+
+const keyOf = (test) => `${test.file}\u0000${lifecycleFree(test.title)}`;
 
 export const missingTests = (startList, headList) => {
     const present = new Set(headList.map(keyOf));

@@ -24,6 +24,19 @@ test('AC-006 tests that the head adds are not reported', () => {
     assert.deepEqual(missingTests([keep], [keep, other]), []);
 });
 
+test('AC-006 a spec moving from .specs/active to .specs/done keeps its tests', () => {
+    const before = { file: 'src/adapters/node/docsScan.test.ts', title: '.specs/active/0018-overview.md carries its 5 notes of 0020' };
+    const after = { ...before, title: '.specs/done/0018-overview.md carries its 5 notes of 0020' };
+    assert.deepEqual(missingTests([before], [after]), []);
+});
+
+test('AC-006 negative control: a lifecycle move does not hide a changed title or another spec', () => {
+    const before = { file: 'src/adapters/node/docsScan.test.ts', title: '.specs/active/0018-overview.md carries its 5 notes of 0020' };
+    assert.deepEqual(missingTests([before], [{ ...before, title: '.specs/done/0018-overview.md carries its 4 notes of 0020' }]), [before]);
+    assert.deepEqual(missingTests([before], [{ ...before, title: '.specs/done/0019-detail.md carries its 5 notes of 0020' }]), [before]);
+    assert.deepEqual(missingTests([before], [{ ...before, title: '.specs/archive/0018-overview.md carries its 5 notes of 0020' }]), [before]);
+});
+
 test('AC-039 vitest entries become root-relative keys with forward slashes', () => {
     const json = JSON.stringify([
         { name: 'AC-006 reads the project', file: path.join(root, 'src', 'core', 'specs', 'readProject.test.ts'), projectName: 'node' },
