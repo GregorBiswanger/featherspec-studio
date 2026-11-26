@@ -7,7 +7,6 @@ import com.gregorbiswanger.featherspec.studio.assistant.AssistantPort
 import com.gregorbiswanger.featherspec.studio.assistant.IdeAssistantCalls
 import com.gregorbiswanger.featherspec.studio.jcef.Availability
 import com.gregorbiswanger.featherspec.studio.jcef.JcefAvailability
-import com.gregorbiswanger.featherspec.studio.jcef.WarmThenLaunch
 import com.gregorbiswanger.featherspec.studio.ports.FilePorts
 import com.gregorbiswanger.featherspec.studio.ports.Folder
 import com.gregorbiswanger.featherspec.studio.ports.HostOs
@@ -151,14 +150,7 @@ class StudioProjectService(private val project: Project) : Disposable {
             return
         }
         ApplicationManager.getApplication().executeOnPooledThread(Runnable { prepare() })
-        val app = ApplicationManager.getApplication()
-        WarmThenLaunch(
-            background = { block -> app.executeOnPooledThread(Runnable { block() }) },
-            edt = { block -> app.invokeLater(Runnable { block() }) },
-            disposed = { Disposer.isDisposed(this) },
-            warm = { JBCefApp.getInstance() },
-            launch = { launch() },
-        ).run()
+        ApplicationManager.getApplication().invokeLater { launch() }
     }
 
     fun openStudio() {
