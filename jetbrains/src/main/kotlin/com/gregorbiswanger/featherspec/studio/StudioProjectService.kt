@@ -36,7 +36,6 @@ import com.gregorbiswanger.featherspec.studio.runtime.CoreStateHolder
 import com.gregorbiswanger.featherspec.studio.runtime.UnavailableKind
 import com.gregorbiswanger.featherspec.studio.ui.HostUi
 import com.intellij.ide.BrowserUtil
-import com.intellij.ide.plugins.PluginManager
 import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationActivationListener
@@ -364,7 +363,7 @@ class StudioProjectService(private val project: Project) : Disposable {
         settings[SettingsTable.ASSISTANT_KEY] = JsonPrimitive(effective)
         return CoreConfig.json(
             platform = CoreConfig.platform(HostOs.windows, HostOs.mac),
-            studioVersion = PluginManager.getPluginByClass(StudioProjectService::class.java)?.version ?: "0.0.0",
+            studioVersion = StudioVersion.value,
             settings = settings,
             trusted = trusted,
             folders = folders,

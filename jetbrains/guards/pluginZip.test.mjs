@@ -38,9 +38,11 @@ test('AC-035 entries naming GraalJS, Truffle, polyglot or ICU4J are reported', (
 });
 
 test('AC-014 the required jar entries are reported when missing', () => {
-    const present = ['embedded/core.js', 'webview/main.js', 'webview/main.css', 'icons/toolWindow.svg', 'icons/toolWindow_dark.svg', 'META-INF/plugin.xml'];
+    const present = ['embedded/core.js', 'webview/main.js', 'webview/main.css', 'icons/toolWindow.svg', 'icons/toolWindow_dark.svg', 'META-INF/plugin.xml', 'com/gregorbiswanger/featherspec/studio/studio-version.txt'];
     assert.deepEqual(missingEntries(present), []);
     assert.deepEqual(missingEntries(present.filter((name) => name !== 'webview/main.css')), ['missing in the plugin jar: webview/main.css']);
+    const noVersion = present.filter((name) => !name.endsWith('studio-version.txt'));
+    assert.deepEqual(missingEntries(noVersion), ['missing in the plugin jar: com/gregorbiswanger/featherspec/studio/studio-version.txt']);
 });
 
 test('icons need at least one entry below icons/', () => {

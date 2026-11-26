@@ -148,3 +148,21 @@ intellijPlatform {
         }
     }
 }
+
+// The plugin reads its own version from this resource, because every platform call that returns it
+// (PluginManagerCore.getPlugin, PluginManager.getPluginByClass) is internal API from 2026.3 on.
+val studioVersionResource = tasks.register("studioVersionResource") {
+    val pluginVersion = intellijPlatform.pluginConfiguration.version
+    val out = layout.buildDirectory.dir("generated/studio-version")
+    inputs.property("version", pluginVersion)
+    outputs.dir(out)
+    doLast {
+        val file = out.get().file("com/gregorbiswanger/featherspec/studio/studio-version.txt").asFile
+        file.parentFile.mkdirs()
+        file.writeText(pluginVersion.get())
+    }
+}
+
+sourceSets.main {
+    resources.srcDir(studioVersionResource)
+}

@@ -14,6 +14,8 @@ export const REQUIRED_JAR_ENTRIES = [
     'icons/toolWindow.svg',
     'icons/toolWindow_dark.svg',
     'META-INF/plugin.xml',
+    // 0036 T-004: the plugin reads its version from here (the platform calls for it are internal API).
+    'com/gregorbiswanger/featherspec/studio/studio-version.txt',
 ];
 export const BYTE_IDENTICAL = [
     ['webview/main.js', 'dist/webview/main.js'],
