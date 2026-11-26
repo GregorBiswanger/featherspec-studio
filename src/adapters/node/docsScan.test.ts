@@ -47,9 +47,9 @@ async function exists(file: string): Promise<boolean> {
 }
 
 export function firstRelease(changelog: string): string {
-    const start = changelog.indexOf('## [');
-    const next = changelog.indexOf('\n## [', start + 1);
-    return changelog.slice(start, next === -1 ? undefined : next + 1).replace(/\n+$/, '\n');
+    const rest = changelog.slice(changelog.indexOf('## [0.1.0]'));
+    const end = rest.slice(1).search(/^(## \[|\[[^\]]+\]: )/m);
+    return (end < 0 ? rest : rest.slice(0, end + 1)).replace(/\n+$/, '\n');
 }
 
 describe('product docs after 0015 (AC-025)', () => {
@@ -336,9 +336,11 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         expect(text).not.toContain('(0020)');
     });
 
-    it('CHANGELOG is one first release, dated on the release day (2026-11-20), and describes the product as it ships', async () => {
+    it('CHANGELOG holds 0.1.0 dated on the release day (2026-11-20), at most one Unreleased section above it, and describes the product as it ships', async () => {
         const text = await read('CHANGELOG.md');
-        expect(text.match(/^## \[/gm)).toEqual(['## [']);
+        const headings = text.match(/^## \[.*$/gm) ?? [];
+        expect(headings.filter((heading) => heading.includes('Unreleased')).length).toBeLessThanOrEqual(1);
+        expect(headings.at(-1)).toBe('## [0.1.0] - 2026-11-20');
         expect(text).toContain('\n## [0.1.0] - 2026-11-20\n');
         expect(text).not.toContain('## [Unreleased]');
         const lower = text.toLowerCase().split('featherspec-studio.assistant').join('');
@@ -480,8 +482,8 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         }
     });
 
-    it('finds the first release section of a changelog and stops at the next one', () => {
-        expect(firstRelease('# C\n\n## [1.0.0] - x\nA\n\n## [0.9.0] - y\nB\n')).toBe('## [1.0.0] - x\nA\n');
+    it('finds the 0.1.0 section of a changelog and stops at the link block', () => {
+        expect(firstRelease('# C\n\n## [0.2.0] - Unreleased\nA\n\n## [0.1.0] - y\nB\n\n[0.2.0]: u\n')).toBe('## [0.1.0] - y\nB\n');
     });
 
     for (const [file, note] of [

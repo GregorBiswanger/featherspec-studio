@@ -4,11 +4,14 @@ All notable changes to FeatherSpec Studio are documented in this file. The forma
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
-## [0.1.0] - 2026-11-20
-
-First release.
+## [0.2.0] - Unreleased
 
 ### Added
+
+- JetBrains IDEs, plugin 0.1.0, first release (0034): a FeatherSpec Studio tool window with the Specs tree, the same Overview, Board, Plan map, spec detail and next step as in VS Code, a status bar entry, the settings page and the Studio panel as an editor tab; tested in Rider and WebStorm, from IDE version 2025.3.1 on.
+
+- With an offered assistant the empty state `No specs yet. Start with /sdd-specify` shows the step action for
+  `/sdd-specify`, in VS Code and in JetBrains IDEs; without one it keeps its Copy prompt.
 
 - JetBrains IDEs, Send to Junie (0035, PD-112 amendment 2026-11-26, AC-054 to AC-056): Junie is also found as the agent that the AI Assistant installs into the IDE, not only as `junie` on the PATH, and Send starts it by its full path; an assistant that is not available stays in the *Assistant* list, greyed out with the reason.
 
@@ -25,8 +28,17 @@ First release.
 - In a project the IDE does not trust (Safe Mode) Send to Claude Code types only into a running `claude` tab and never starts `claude`; otherwise it copies the prompt and says `This project is not trusted, so Studio does not start claude. The prompt is copied.` (PD-110, review 20 S-3, AC-037).
 - Settings, JetBrains: *Assistant* lists each option only while its assistant is available (Junie, Claude Code and GitHub Copilot, each by its command on the IDE's PATH and the Terminal plugin); a stored value whose assistant is missing shows `None: Copy prompt` and is kept; the list follows plugins loaded or unloaded while the page is open. The description is `The assistant your next step goes to. Studio sends nothing; Copy prompt stays in the button's menu.` (review 20 S-5, S-6, AC-038, AC-039).
 - Gregor's decisions PD-110 and PD-112 (review 20 B-3, AC-033, AC-052): Studio itself starts no agent on its own and sends nothing. In JetBrains IDEs, Send to Junie, Claude Code or Copilot may start that assistant's command-line agent in a terminal tab when you click it.
-- With an offered assistant the empty state `No specs yet. Start with /sdd-specify` shows the step action for
-  `/sdd-specify`, in VS Code and in JetBrains IDEs; without one it keeps its Copy prompt.
+
+### Changed
+
+- README, *JetBrains IDEs*: install from the JetBrains Marketplace, or from the signed plugin ZIP of the GitHub release `jetbrains-v<version>` with *Install Plugin from Disk…* (0036); the sentence that the plugin is not on the Marketplace yet is gone.
+
+## [0.1.0] - 2026-11-20
+
+First release.
+
+### Added
+
 - Start via lifecycle (0033): a Ready spec offers `/sdd-lifecycle <spec> In Progress` first, under `Start: move the spec
   and its plan to active` (PD-096), and `Start implementing: T-001 …` once the pair sits in `active/`; Send attaches the
   files its prompt names, the start step spec and plan, `Implement <ID> of <plan>` the plan only (PD-097); the prompt
@@ -144,3 +156,6 @@ First release.
 - Local spec status history outside the workspace, kept for 90 days.
 - Restricted Mode: Studio only reads. It shows the project and the next step, and never runs workspace
   code or changes a file; Set up FeatherSpec needs a trusted workspace.
+
+[0.2.0]: https://github.com/GregorBiswanger/featherspec-studio/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/GregorBiswanger/featherspec-studio/releases/tag/v0.1.0

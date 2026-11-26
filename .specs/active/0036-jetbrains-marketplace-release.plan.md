@@ -158,8 +158,8 @@ Parallel: stage 1 — T-001, T-002 and T-003 share no file and each has its own 
   `bf236fc`, at most one `Unreleased` section" (note the amendment in the spec that owns the test). New
   `src/adapters/node/release0036.test.ts` for AC-020 with a negative control (one changed byte in 0.1.0).
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts src/adapters/node/release0036.test.ts src/adapters/node/docs0035.test.ts src/adapters/node/docs0035Review20B.test.ts src/core/assistant/filePaths0035.test.ts` red, then green.
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-26 — red first: `release0036.test.ts` 4 of 6 failed against the 0035 CHANGELOG (hash, heading, 0.2.0 text, links); `docsScan`, `docs0035`, `docs0035Review20B` 219/219 green with the amended helpers. Green: `npx vitest run --project node src/adapters/node/docsScan.test.ts src/adapters/node/release0036.test.ts src/adapters/node/docs0035.test.ts src/adapters/node/docs0035Review20B.test.ts` plus `docs0035PD112.test.ts` 233/233 (five files); `CHANGELOG.md` against `bf236fc` is 32 insertions, 0 deletions; `eslint` on the two test files clean.
+- **Notes:** `src/core/assistant/filePaths0035.test.ts` does not exist (0035 deleted it; the path in the Verify line is stale, not run). Byte identity is checked as the SHA-256 of the 0.1.0 section (`d75e0e69…`, the section of `bf236fc`), because CI checks out shallow. The AC-020 text says "Copy for Copilot and Copy for Junie"; the shipped wording is Send to Junie, Send to Claude Code and Send to Copilot (0035), so the 0.2.0 section uses the shipped names. `firstRelease()` reads the `## [0.1.0]` section up to the link block. The 0.2.0 Added block holds the 0034 bullet, the empty-state bullet and the 0035 bullets moved verbatim from 0.1.0.
 
 ### T-006 — Version 0.2.0 and the README install text
 
