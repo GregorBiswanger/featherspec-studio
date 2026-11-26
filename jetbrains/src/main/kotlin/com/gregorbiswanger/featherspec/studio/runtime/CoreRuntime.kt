@@ -218,6 +218,13 @@ class CoreRuntime(
         }
         if (state.resumeAfterSuspension()) {
             thisLogger().info("FeatherSpec core: page loaded after the suspended hint, recovering")
+            // The first timeout may have passed while the state was Unavailable; Ready gets a fresh window.
+            timeout?.cancel(false)
+            timeout = AppExecutorUtil.getAppScheduledExecutorService().schedule(
+                Runnable { onTimeout() },
+                READY_TIMEOUT_MS,
+                TimeUnit.MILLISECONDS,
+            )
         }
     }
 
