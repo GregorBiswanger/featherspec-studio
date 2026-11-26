@@ -117,13 +117,16 @@ data class SmokeReport(
 }
 
 object SmokeCompare {
+    const val LOADING_ROW = "AC-007 loading panel (editor → placeholder)"
+    const val LOADING_INCL_IDE_ROW = "AC-007 loading panel incl. IDE (open → visible)"
+
     fun smoke(json: String, rows: MutableList<BudgetRow>? = null): List<String> {
         val root = parse(json) ?: return listOf("the probe wrote no JSON object")
         val problems = ArrayList<String>()
         val timing = Timing(text(root, "os"), rows)
         val state = text(root, "stateAtOpen")
         if (state == "loading") {
-            within(problems, timing, "AC-007 loading panel", number(root, "loadingMs"), SmokeBudgets.LOADING_MS)
+            loadingPanel(problems, timing, root)
         }
         diagnostics(timing, root)
         within(problems, timing, "AC-007 first frame after Ready", number(root, "firstFrameMs"), null)
@@ -160,6 +163,25 @@ object SmokeCompare {
             problems.add("AC-025 files deleted from the project: $deleted")
         }
         return problems
+    }
+
+    /**
+     * PD-111 (amended 2026-11-26): the judged time is the part of the plugin, from the IDE creating the editor to the
+     * placeholder being added. The old time from openFile until the placeholder shows includes the IDE under CI load
+     * and stays as a value without a budget.
+     */
+    private fun loadingPanel(problems: MutableList<String>, timing: Timing, root: JsonObject) {
+        val created = number(root, "editorCreatedMs")
+        val added = number(root, "placeholderAddedMs")
+        val ownMs = if (created < 0 || added < 0) -1L else added - created
+        val row = BudgetVerdict.judge(LOADING_ROW, ownMs, SmokeBudgets.LOADING_MS, timing.os)
+        timing.rows?.add(row)
+        timing.rows?.add(BudgetVerdict.info(LOADING_INCL_IDE_ROW, number(root, "loadingMs"), timing.os))
+        if (ownMs < 0) {
+            problems.add("$LOADING_ROW was not observed: the probe saw no editor/placeholder for the loading panel (editorCreatedMs=$created, placeholderAddedMs=$added)")
+        } else {
+            BudgetVerdict.problem(row)?.let { problems.add(it) }
+        }
     }
 
     private fun diagnostics(timing: Timing, root: JsonObject) {

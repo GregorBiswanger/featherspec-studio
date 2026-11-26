@@ -14,6 +14,7 @@ class SmokeCompareTest {
         os: String = "Linux",
         state: String = "loading",
         loading: Long = 40,
+        own: Long = 5,
         first: Long = 9000,
         reopen: List<Long> = listOf(900, 800, 950),
         externalTree: Long = 1500,
@@ -26,7 +27,7 @@ class SmokeCompareTest {
         themes: List<ThemeRecord> = SmokeThemes.WANTED.map { theme(it) },
         restore: List<Long> = listOf(700, 650, 990),
         files: FileChanges = FileChanges(listOf(SmokeFiles.EXTERNAL), listOf(SmokeFiles.EDITED), emptyList()),
-        trace: OpenTrace = OpenTrace.NONE,
+        trace: OpenTrace = OpenTrace(1000, 1000 + own, -1, -1, emptyList()),
     ): String =
         SmokeReport(
             os, state, loading, first, reopen, externalTree, externalStatus, inIdeTree, inIdeStatus, inIdePanel,
@@ -52,10 +53,10 @@ class SmokeCompareTest {
     fun `a value on the budget passes and one millisecond over fails`() {
         assertEquals(
             emptyList<String>(),
-            SmokeCompare.smoke(report(loading = 1000, reopen = listOf(1000, 1000, 1000), externalTree = 2000, externalStatus = 2000, inIdeTree = 500, inIdeStatus = 500, inIdePanel = 500, restore = listOf(1000, 1000, 1000))),
+            SmokeCompare.smoke(report(own = 1000, reopen = listOf(1000, 1000, 1000), externalTree = 2000, externalStatus = 2000, inIdeTree = 500, inIdeStatus = 500, inIdePanel = 500, restore = listOf(1000, 1000, 1000))),
         )
         val over = SmokeCompare.smoke(
-            report(loading = 1001, reopen = listOf(1001, 1001, 1001), externalTree = 2001, externalStatus = 2001, inIdeTree = 501, inIdeStatus = 501, inIdePanel = 501, restore = listOf(1001, 1001, 1001)),
+            report(own = 1001, reopen = listOf(1001, 1001, 1001), externalTree = 2001, externalStatus = 2001, inIdeTree = 501, inIdeStatus = 501, inIdePanel = 501, restore = listOf(1001, 1001, 1001)),
         )
         assertEquals(8, over.size, over.toString())
     }
@@ -63,21 +64,21 @@ class SmokeCompareTest {
     @Test
     fun `on Windows the timings are a trend up to 1,49 times and every value reaches the rows`() {
         val rows = ArrayList<BudgetRow>()
-        val trend = report(os = "Windows 11", loading = 1490, reopen = listOf(1490, 2000, 3000), externalTree = 2980, externalStatus = 100, inIdeTree = 745, inIdeStatus = 100, inIdePanel = 100, restore = listOf(1490, 1490, 1490))
+        val trend = report(os = "Windows 11", own = 1490, reopen = listOf(1490, 2000, 3000), externalTree = 2980, externalStatus = 100, inIdeTree = 745, inIdeStatus = 100, inIdePanel = 100, restore = listOf(1490, 1490, 1490))
         assertEquals(emptyList<String>(), SmokeCompare.smoke(trend, rows))
         assertEquals(8, rows.count { it.verdict != Verdict.INFO })
         assertTrue(rows.all { it.os == "Windows 11" })
         assertEquals(Verdict.TREND, rows.first { it.name.startsWith("AC-007 loading") }.verdict)
         assertEquals(Verdict.PASSED, rows.first { it.name.contains("external change in the status") }.verdict)
-        val red = SmokeCompare.smoke(report(os = "Mac OS X", loading = 1500, inIdePanel = 750))
+        val red = SmokeCompare.smoke(report(os = "Mac OS X", own = 1500, inIdePanel = 750))
         assertEquals(2, red.size, red.toString())
-        assertEquals(emptyList<String>(), SmokeCompare.smoke(report(os = "Linux", loading = 1000), ArrayList()))
-        assertEquals(1, SmokeCompare.smoke(report(os = "Linux", loading = 1001)).size)
+        assertEquals(emptyList<String>(), SmokeCompare.smoke(report(os = "Linux", own = 1000), ArrayList()))
+        assertEquals(1, SmokeCompare.smoke(report(os = "Linux", own = 1001)).size)
     }
 
     @Test
     fun `on Windows the functional checks stay hard`() {
-        assertEquals(1, SmokeCompare.smoke(report(os = "Windows 11", state = "loading", loading = -1)).size)
+        assertEquals(1, SmokeCompare.smoke(report(os = "Windows 11", state = "loading", trace = OpenTrace.NONE)).size)
         assertEquals(1, SmokeCompare.smoke(report(os = "Windows 11", restoredArea = "overview")).size)
         assertEquals(1, SmokeCompare.smoke(report(os = "Windows 11", files = FileChanges(listOf(SmokeFiles.EXTERNAL), listOf(SmokeFiles.EDITED), listOf("AGENTS.md")))).size)
         assertEquals(1, SmokeCompare.smoke(report(os = "Windows 11", externalStatus = -1)).size)
@@ -118,10 +119,10 @@ class SmokeCompareTest {
     @Test
     fun `a measurement that never happened is a problem for the required values`() {
         val problems = SmokeCompare.smoke(
-            report(loading = -1, first = -1, reopen = listOf(-1, -1, -1), externalTree = -1, externalStatus = -1, inIdeTree = -1, inIdeStatus = -1, inIdePanel = -1),
+            report(loading = -1, trace = OpenTrace.NONE, first = -1, reopen = listOf(-1, -1, -1), externalTree = -1, externalStatus = -1, inIdeTree = -1, inIdeStatus = -1, inIdePanel = -1),
         )
         assertEquals(8, problems.size, problems.toString())
-        assertTrue(problems.all { it.endsWith("was not observed") }, problems.toString())
+        assertTrue(problems.all { it.contains("was not observed") }, problems.toString())
     }
 
     @Test
@@ -136,8 +137,43 @@ class SmokeCompareTest {
 
     @Test
     fun `the loading panel is judged only when the core was still loading as the tab opened`() {
-        assertEquals(emptyList<String>(), SmokeCompare.smoke(report(state = "ready", loading = -1)))
-        assertEquals(1, SmokeCompare.smoke(report(state = "loading", loading = -1)).size)
+        assertEquals(emptyList<String>(), SmokeCompare.smoke(report(state = "ready", loading = -1, trace = OpenTrace.NONE)))
+        val rows = ArrayList<BudgetRow>()
+        SmokeCompare.smoke(report(state = "ready", loading = -1, trace = OpenTrace.NONE), rows)
+        assertTrue(rows.none { it.name.startsWith("AC-007 loading") }, rows.toString())
+        assertEquals(1, SmokeCompare.smoke(report(state = "loading", trace = OpenTrace.NONE)).size)
+    }
+
+    @Test
+    fun `the loading panel is judged from the editor to the placeholder and the IDE part is only shown`() {
+        val rows = ArrayList<BudgetRow>()
+        val slowIde = OpenTrace(3995, 4000, -1, -1, emptyList())
+        assertEquals(emptyList<String>(), SmokeCompare.smoke(report(os = "Linux", loading = 4000, trace = slowIde), rows))
+        val judged = rows.single { it.name == SmokeCompare.LOADING_ROW }
+        assertEquals(5L, judged.measured)
+        assertEquals(Verdict.PASSED, judged.verdict)
+        val info = rows.single { it.name == SmokeCompare.LOADING_INCL_IDE_ROW }
+        assertEquals(4000L, info.measured)
+        assertEquals(Verdict.INFO, info.verdict)
+        assertEquals(BudgetVerdict.NO_BUDGET, info.budget)
+    }
+
+    @Test
+    fun `an own part over the budget fails on Linux and is a trend on Windows`() {
+        val slow = OpenTrace(100, 1300, -1, -1, emptyList())
+        val linux = SmokeCompare.smoke(report(os = "Linux", loading = 1300, trace = slow))
+        assertEquals(1, linux.size, linux.toString())
+        assertTrue(linux[0].contains("took 1200 ms"), linux.toString())
+        assertEquals(emptyList<String>(), SmokeCompare.smoke(report(os = "Windows 11", loading = 1300, trace = slow)))
+    }
+
+    @Test
+    fun `a loading panel without an observed editor or placeholder is a problem`() {
+        val noEditor = SmokeCompare.smoke(report(trace = OpenTrace(-1, 50, -1, -1, emptyList())))
+        assertEquals(1, noEditor.size, noEditor.toString())
+        assertTrue(noEditor[0].contains("the probe saw no editor/placeholder for the loading panel"), noEditor.toString())
+        val noPlaceholder = SmokeCompare.smoke(report(os = "Windows 11", trace = OpenTrace(50, -1, -1, -1, emptyList())))
+        assertEquals(1, noPlaceholder.size, noPlaceholder.toString())
     }
 
     @Test
@@ -207,7 +243,7 @@ class SmokeCompareTest {
         val rows = ArrayList<BudgetRow>()
         assertEquals(emptyList<String>(), SmokeCompare.smoke(report(os = "Mac OS X", trace = trace), rows))
         val info = rows.filter { it.verdict == Verdict.INFO }
-        assertEquals(listOf(1800L, 1900L, 3900L, 4200L, 4200L, 80L), info.map { it.measured })
+        assertEquals(listOf(40L, 1800L, 1900L, 3900L, 4200L, 4200L, 80L), info.map { it.measured })
         assertTrue(info.all { it.budget == BudgetVerdict.NO_BUDGET && it.limit == BudgetVerdict.NO_BUDGET })
         assertTrue(info.any { it.name.contains("stall #1, asked 120 ms") })
     }
@@ -216,7 +252,7 @@ class SmokeCompareTest {
     fun `a diagnostic that was not measured is shown and does not fail`() {
         val rows = ArrayList<BudgetRow>()
         assertEquals(emptyList<String>(), SmokeCompare.smoke(report(), rows))
-        assertEquals(listOf(-1L, -1L, -1L, -1L), rows.filter { it.verdict == Verdict.INFO }.map { it.measured })
+        assertEquals(listOf(40L, 1000L, 1005L, -1L, -1L), rows.filter { it.verdict == Verdict.INFO }.map { it.measured })
     }
 
     @Test
