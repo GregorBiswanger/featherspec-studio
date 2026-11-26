@@ -1,7 +1,7 @@
 # Spec Detail as a Situation Picture Beside the Content
 
-**Status:** In Progress
-**Plan:** [0019-detail-situation-picture.plan.md](0019-detail-situation-picture.plan.md)
+**Status:** Implemented
+**Plan:** [0019-detail-situation-picture.2026-11-26.plan.md](../plan-archive/0019-detail-situation-picture.2026-11-26.plan.md)
 
 *Amended by 0021 (PD-069): wherever this spec names the control "Copy" of a prompt (a next step or `/sdd-specify`), read `Copy prompt`, named as 0021 §6.4; the feedback stays; wherever it shows a next step line, 0021 §6.1 gives each line its intent.*
 
@@ -350,3 +350,7 @@ they describe the detail or "Open file"; Memory Bank synced.
 ## 15. Recommended next steps
 
 `/sdd-plan` after 0018 is done, against the code of that time (OP-002).
+
+## Plan history
+
+- 2026-11-26 — [0019-detail-situation-picture.2026-11-26.plan.md](../plan-archive/0019-detail-situation-picture.2026-11-26.plan.md) — 17 steps (T-001…T-017): the detail as a side panel; AC-001…AC-024 proven by tests (CI run 45728313993 at `6b75ef0` green), AC-008 void since 0020, AC-022 by the orchestrator's harness rounds 1–4 and the host test `src/test/board.smoke.test.ts:76`.

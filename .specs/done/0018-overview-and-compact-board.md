@@ -1,7 +1,7 @@
 # Overview and a Compact Board
 
-**Status:** In Progress
-**Plan:** [0018-overview-and-compact-board.plan.md](0018-overview-and-compact-board.plan.md)
+**Status:** Implemented
+**Plan:** [0018-overview-and-compact-board.2026-11-26.plan.md](../plan-archive/0018-overview-and-compact-board.2026-11-26.plan.md)
 
 *Amended by 0021 (PD-069): wherever this spec names the control "Copy" of a prompt (a next step or `/sdd-specify`), read `Copy prompt`, named as 0021 §6.4; the feedback stays; wherever it shows a next step line, 0021 §6.1 gives each line its intent.*
 
@@ -333,3 +333,7 @@ Ready: proxies recorded, 0016 and 0017 implemented, `/sdd-clarify` passed (OP-00
 ## 14. Recommended next steps
 
 `/sdd-plan` after 0017 is implemented, against the code of that time.
+
+## Plan history
+
+- 2026-11-26 — [0018-overview-and-compact-board.2026-11-26.plan.md](../plan-archive/0018-overview-and-compact-board.2026-11-26.plan.md) — 14 steps (T-001…T-014): Overview and compact Board built, AC-001…AC-030 proven by tests (CI run 45728313993 at `6b75ef0` green), AC-031 by the orchestrator's dated harness record.

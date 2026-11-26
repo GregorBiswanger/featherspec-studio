@@ -27,6 +27,12 @@ export function itemOf(text: string, number: number): string {
     return (end < 0 ? rest : rest.slice(0, end)).trimEnd();
 }
 
+const MOVED_TO_DONE = ['0018-overview-and-compact-board', '0019-detail-situation-picture'];
+
+function activeOrDoneSpec(name: string): string {
+    return `.specs/${MOVED_TO_DONE.includes(name) ? 'done' : 'active'}/${name}.md`;
+}
+
 async function read(file: string): Promise<string> {
     return fs.readFile(path.join(root, file), 'utf8');
 }
@@ -461,7 +467,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
     });
 
     it('the 0018 plan names the four describe groups that kept all their tests under new names', async () => {
-        const plan = await read(`.specs/active/${(await fs.readdir(path.join(root, '.specs', 'active'))).find((name) => name.startsWith('0018-') && name.endsWith('.plan.md'))}`);
+        const plan = await read(`.specs/plan-archive/${(await fs.readdir(path.join(root, '.specs', 'plan-archive'))).find((name) => name.startsWith('0018-') && name.endsWith('.plan.md'))}`);
         const sentence = plan.slice(plan.indexOf('24 `describe` group titles also changed'), plan.indexOf('- Kept unchanged by title: all of 0006'));
         expect(sentence).not.toContain('each held only tests listed below');
         for (const title of [
@@ -485,8 +491,8 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         ['.specs/active/0015-focus-on-visibility.md', 3],
         ['.specs/active/0016-honest-signals.md', 4],
         ['.specs/active/0017-next-step-everywhere.md', 2],
-        ['.specs/active/0018-overview-and-compact-board.md', 5],
-        ['.specs/active/0019-detail-situation-picture.md', 8],
+        ['.specs/done/0018-overview-and-compact-board.md', 5],
+        ['.specs/done/0019-detail-situation-picture.md', 8],
         ['docs/decisions/ADR-001-extension-architecture.md', 1],
     ] as const) {
         it(`${file} carries its ${note} notes of 0020 (the §5 rows, none fewer)`, async () => {
@@ -554,8 +560,8 @@ describe('product docs after 0022 (AC-016, AC-018)', () => {
         ['.specs/active/0015-focus-on-visibility.md', 1],
         ['.specs/active/0016-honest-signals.md', 7],
         ['.specs/active/0017-next-step-everywhere.md', 2],
-        ['.specs/active/0018-overview-and-compact-board.md', 13],
-        ['.specs/active/0019-detail-situation-picture.md', 12],
+        ['.specs/done/0018-overview-and-compact-board.md', 13],
+        ['.specs/done/0019-detail-situation-picture.md', 12],
         ['.specs/active/0020-native-spec-tree.md', 19],
     ] as const) {
         it(`${file} carries its ${note} notes of 0022`, async () => {
@@ -621,8 +627,8 @@ describe('product docs after 0021 (AC-021)', () => {
         ['.specs/active/0015-focus-on-visibility.md', 9],
         ['.specs/active/0016-honest-signals.md', 4],
         ['.specs/active/0017-next-step-everywhere.md', 18],
-        ['.specs/active/0018-overview-and-compact-board.md', 8],
-        ['.specs/active/0019-detail-situation-picture.md', 5],
+        ['.specs/done/0018-overview-and-compact-board.md', 8],
+        ['.specs/done/0019-detail-situation-picture.md', 5],
         ['.specs/active/0020-native-spec-tree.md', 4],
     ] as const) {
         it(`${file} carries its ${notes} notes of 0021`, async () => {
@@ -685,8 +691,8 @@ describe('product docs after 0023 (AC-017)', () => {
         ['.specs/active/0015-focus-on-visibility.md', 4],
         ['.specs/active/0016-honest-signals.md', 1],
         ['.specs/active/0017-next-step-everywhere.md', 1],
-        ['.specs/active/0018-overview-and-compact-board.md', 3],
-        ['.specs/active/0019-detail-situation-picture.md', 12],
+        ['.specs/done/0018-overview-and-compact-board.md', 3],
+        ['.specs/done/0019-detail-situation-picture.md', 12],
         ['.specs/active/0020-native-spec-tree.md', 7],
         ['.specs/active/0021-next-step-intent-and-guidance.md', 5],
         ['.specs/active/0022-layout-and-signal-polish.md', 8],
@@ -766,8 +772,8 @@ describe('product docs after 0024 (AC-015)', () => {
         ['.specs/active/0015-focus-on-visibility.md', 7],
         ['.specs/active/0016-honest-signals.md', 2],
         ['.specs/active/0017-next-step-everywhere.md', 3],
-        ['.specs/active/0018-overview-and-compact-board.md', 4],
-        ['.specs/active/0019-detail-situation-picture.md', 6],
+        ['.specs/done/0018-overview-and-compact-board.md', 4],
+        ['.specs/done/0019-detail-situation-picture.md', 6],
         ['.specs/active/0020-native-spec-tree.md', 4],
         ['.specs/active/0021-next-step-intent-and-guidance.md', 12],
         ['.specs/active/0022-layout-and-signal-polish.md', 11],
@@ -781,7 +787,7 @@ describe('product docs after 0024 (AC-015)', () => {
 
     it('the catch-all note heads 0015, 0018, 0019, 0021, 0022 and 0023', async () => {
         for (const name of ['0015-focus-on-visibility', '0018-overview-and-compact-board', '0019-detail-situation-picture', '0021-next-step-intent-and-guidance', '0022-layout-and-signal-polish', '0023-plan-map-stages-parallel-work']) {
-            const text = await read(`.specs/active/${name}.md`);
+            const text = await read(activeOrDoneSpec(name));
             const head = text.slice(0, text.indexOf('\n## '));
             expect(head, name).toContain('Amended by 0024 (PD-068): where Send is offered');
         }
@@ -911,7 +917,7 @@ describe('product docs after the final check of round 2 (0024 T-014 to T-022)', 
     it('0024 §5 lists 0019 AC-020, the note stands under it, and P-22 places useFocusHandoff in ui/focusHandoff.ts', async () => {
         const spec = await read('.specs/active/0024-send-next-step-to-assistant.md');
         expect(spec).toContain('| 0019 AC-020 — an offer change hands focus to the replacing Copy prompt (0024 AC-010) |');
-        const lines = (await read('.specs/active/0019-detail-situation-picture.md')).split('\n');
+        const lines = (await read('.specs/done/0019-detail-situation-picture.md')).split('\n');
         const at = lines.findIndex((line) => line.startsWith('- **AC-020**'));
         expect(at).toBeGreaterThan(-1);
         expect(lines[at + 1]).toContain('*Amended by 0024 (PD-068): AC-020 — ');
@@ -1083,7 +1089,7 @@ describe('product docs after 0025 (AC-021)', () => {
     });
 
     it('0025 AC-021: each statement of 0025 section 4 carries its note, and no PD row of the register names 0025 as an editor', async () => {
-        const files = ['.specs/active/0023-plan-map-stages-parallel-work.md', '.specs/active/0019-detail-situation-picture.md', '.specs/active/0021-next-step-intent-and-guidance.md', '.specs/active/0022-layout-and-signal-polish.md', '.specs/active/0024-send-next-step-to-assistant.md', '.specs/active/0020-native-spec-tree.md', '.specs/active/0018-overview-and-compact-board.md', '.specs/done/0005-studio-shell-navigation.md', '.specs/done/0006-mission-control-dashboard.md', '.specs/done/0013-studio-visual-design.md'];
+        const files = ['.specs/active/0023-plan-map-stages-parallel-work.md', '.specs/done/0019-detail-situation-picture.md', '.specs/active/0021-next-step-intent-and-guidance.md', '.specs/active/0022-layout-and-signal-polish.md', '.specs/active/0024-send-next-step-to-assistant.md', '.specs/active/0020-native-spec-tree.md', '.specs/done/0018-overview-and-compact-board.md', '.specs/done/0005-studio-shell-navigation.md', '.specs/done/0006-mission-control-dashboard.md', '.specs/done/0013-studio-visual-design.md'];
         for (const file of files) {
             expect(await read(file), file).toContain('Amended by 0025 (PD-082)');
         }
@@ -1128,7 +1134,7 @@ describe('product docs after 0026 (AC-002, AC-016)', () => {
     it('0026 AC-016: each statement of 0026 section 5 carries its note in the six specs it amends', async () => {
         const files = ['0017-next-step-everywhere', '0018-overview-and-compact-board', '0021-next-step-intent-and-guidance', '0022-layout-and-signal-polish', '0023-plan-map-stages-parallel-work', '0024-send-next-step-to-assistant'];
         for (const file of files) {
-            expect(await read(`.specs/active/${file}.md`), file).toContain('Amended by 0026 (PD-');
+            expect(await read(activeOrDoneSpec(file)), file).toContain('Amended by 0026 (PD-');
         }
         expect('no note here').not.toContain('Amended by 0026 (PD-');
     });
@@ -1158,7 +1164,7 @@ describe('product docs after 0027 (AC-015)', () => {
     it('0027 AC-015: each statement of 0027 section 5 carries its note, 0013 in done/ included', async () => {
         const active = ['0015-focus-on-visibility', '0016-honest-signals', '0017-next-step-everywhere', '0018-overview-and-compact-board', '0019-detail-situation-picture', '0020-native-spec-tree', '0021-next-step-intent-and-guidance', '0022-layout-and-signal-polish', '0023-plan-map-stages-parallel-work', '0024-send-next-step-to-assistant'];
         for (const file of active) {
-            expect(await read(`.specs/active/${file}.md`), file).toContain('Amended by 0027 (PD-');
+            expect(await read(activeOrDoneSpec(file)), file).toContain('Amended by 0027 (PD-');
         }
         for (const file of ['0002-spec-repository-parser', '0013-studio-visual-design', '0025-plan-map-navigation-and-progress', '0026-send-defaults-and-wording', '0028-plan-state-aware-next-step']) {
             expect(await read(`.specs/done/${file}.md`), file).toContain('Amended by 0027 (PD-');
@@ -1171,7 +1177,7 @@ describe('product docs after 0027 (AC-015)', () => {
             ['.specs/done/0006-mission-control-dashboard.md', 1],
             ['.specs/done/0007-spec-board-spec-detail.md', 1],
             ['.specs/active/0017-next-step-everywhere.md', 1],
-            ['.specs/active/0018-overview-and-compact-board.md', 3],
+            ['.specs/done/0018-overview-and-compact-board.md', 3],
             ['.specs/active/0020-native-spec-tree.md', 1],
         ];
         for (const [file, count] of notes) {

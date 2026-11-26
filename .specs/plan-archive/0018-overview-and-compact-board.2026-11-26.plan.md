@@ -1,8 +1,8 @@
 # Plan — Overview and a Compact Board
 
-**Spec:** [0018-overview-and-compact-board.md](0018-overview-and-compact-board.md)
+**Spec:** [0018-overview-and-compact-board.md](../done/0018-overview-and-compact-board.md)
 **Status:** Done
-**Last updated:** 2026-11-18
+**Last updated:** 2026-11-26
 **Current step:** —
 
 ## Approach
@@ -579,8 +579,8 @@ AC-030, from a throwaway script outside the repo (`/tmp/audit-0018/titles.py`, 2
 | AC-027 | T-001, T-010 | `src/core/shell/shellService.ts` (`refresh`, no re-read after a failed discovery), `src/extension.ts`, `commands.ts` | `shellService.test.ts` (incl. §8 failed discovery), host `shell.smoke.test.ts` (compiled; green on Windows and CI at `dc0077a`) | verified |
 | AC-028 | T-006 | read-only services (no new writer) | `noWrite.test.ts`, `overviewService.test.ts` (AC-023), host `board.smoke.test.ts` (compiled, not run here) | verified |
 | AC-029 | T-008, T-014 | texts in `src/shared/protocol/texts.ts` and `areas/overview/texts.ts`; the one `▸` left is `src/webview/areas/SpecExplorer.tsx` (excepted in the spec, PD-065) | `sourceScan.test.ts` (pins that file as the only one), `docsScan.test.ts`, literal assertions in the area tests | verified |
-| AC-030 | T-009, T-014 | this plan's *Test-title audit* (corrected in T-014), `/tmp/audit-0018/titles.py` (not in the repo) | audit table above; Windows 11 at `dc0077a` (2026-11-18): `npm run test:unit` 1979 passed, 7 skipped, 12 timing, `npm test` 26 + 1 + 1 + 1; CI run 44246134800 at `dc0077a` green on ubuntu-latest and windows-latest; re-run at the fix head open (orchestrator) | verified (at `dc0077a`) |
-| AC-031 | T-008, T-013 | — | manual: the orchestrator looked at Overview and Board in Dark, Light and High Contrast at 1400 px and at 640 px on 2026-11-18: one defect, V1 (at 640 px the Overview rows cut the title and the state, "Re…", "needs …"), fixed in T-013; the re-check after the fix is the orchestrator's; Gregor in a real window (release checklist) | built |
+| AC-030 | T-009, T-014 | this plan's *Test-title audit* (corrected in T-014), `/tmp/audit-0018/titles.py` (not in the repo) | audit table above; Windows 11 at `dc0077a` (2026-11-18): `npm run test:unit` 1979 passed, 7 skipped, 12 timing, `npm test` 26 + 1 + 1 + 1; CI run 44246134800 at `dc0077a` green on ubuntu-latest and windows-latest; later heads: Windows and CI in the plans of 0019…0024 and CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only | verified |
+| AC-031 | T-008, T-013 | — | manual: the orchestrator looked at Overview and Board in Dark, Light and High Contrast at 1400 px and at 640 px on 2026-11-18: one defect, V1 (at 640 px the Overview rows cut the title and the state, "Re…", "needs …"), fixed in T-013; the re-check after the fix by the orchestrator (Gregor's delegate): preview harness at `a42270f`, Overview at 640 px in Light and High Contrast, every row wraps, nothing cut, V1 closed (T-013 Notes); the AC allows Gregor or his delegate; Gregor's real window (release checklist) is an optional extra | verified |
 
 ## Session handoff
 
@@ -590,10 +590,8 @@ AC-030, from a throwaway script outside the repo (`/tmp/audit-0018/titles.py`, 2
   T-010…T-014 (PD-065). Gates 1–5 and `compile-tests` green in the sandbox at the fix head: 1,989 unit
   tests passed, 3 skipped, timing 12. Windows 11 at `dc0077a`: `npm run test:unit` 1979 passed, 7 skipped,
   12 timing; `npm test` 26 + 1 + 1 + 1; CI run 44246134800 at `dc0077a` green on both runners.
-- **Next action:** the orchestrator re-runs Windows (`npm run test:unit`, `npm test`) and CI at the fix head
-  (product code changed in T-010, T-011, T-013) and re-checks Overview at 640 px in the preview harness
-  (V1); Gregor reads PD-064 and PD-065 and checks a real window (release checklist); then a fresh
-  `/sdd-compile` decides the move to done. Do not move 0018 before that.
+- **Head evidence (2026-11-26):** CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only. The 640 px re-check (V1) is recorded in T-013 Notes (`a42270f`); the fresh `/sdd-compile` at `6b75ef0` read READY (manual items: 1, AC-031 covered by the delegate's record).
+- **Next action:** closed 2026-11-26: `/sdd-lifecycle` moved 0018 to done and archived this plan; Gregor's reading of PD-064 and PD-065 (OP-002) and an optional real-window check stay in the release checklist.
 - **Open decisions:** OP-002 (Gregor confirms the proxies, PD-064 and PD-065).
 - **Baseline:** `a992d08` (HEAD at the start of implementation); fix session base `dc0077a`.
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); CI and Gregor's Windows machine run it.
