@@ -700,6 +700,8 @@ Addendum 2026-11-23 (work list 3.6, Gregor brought it forward; review 20 §5 ite
 
 Addendum 2026-11-23 (reopen of the Studio tab, 1.2 s on Linux and 1.8 s on macOS against the budget of 1,000 ms; the cause is a new `JBCefBrowser` and a new page load for each open): `StudioEditor` no longer owns the browser; `PanelBrowser` does (browser, `JBCefJSQuery`, theme bridge, repaint nudge, page), registered under the project service. On dispose the editor parks it in `PanelParking` (`ParkRule`: the core was ready, no failure, a `shell` frame was shown, not dead), the next editor takes it and the core re-posts the frames of a `hello` through the new `PanelSession.resume()` (shared code, additive; VS Code never calls it). The theme bridge stays alive while parked, so a theme change updates the parked page in place and needs no new browser. No bridge message changes; `panelOpened` carries `{"resumed":true}` only for a parked browser. New criterion AC-042; parity row through the generator. VS Code unchanged.
 
+Addendum 2026-11-26 (first open of the Studio tab froze the IDE for about 2.4 s on the Windows runner, IDEA 2025.3.1; idea.log shows JBCefApp initialising in that window): the first `JBCefApp.getInstance()` ran on the EDT inside `StudioProjectService.launch`. `start()` now warms JCEF on a pooled thread (`WarmThenLaunch`) and queues the unchanged EDT `launch()` only afterwards, after the existing support check; a failing warm-up is swallowed so `launch()` reports it as before, and a disposed service queues nothing. No criterion changes.
+
 ### Amendment 2026-11-24: PD-112, Send to each CLI agent in the IDE terminal
 
 Source: PD-112 (Gregor, 2026-11-24; changes PD-108, extends PD-110 to all three agents), research of 2026-11-24 (plan
