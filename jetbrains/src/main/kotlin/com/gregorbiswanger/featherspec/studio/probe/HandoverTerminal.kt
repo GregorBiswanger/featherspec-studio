@@ -61,7 +61,8 @@ object HandoverTerminal {
         var screen: Screen? = null
         var failure: String? = null
         try {
-            screen = glue.screen(tab.key)
+            val agent = CliAgents.ALL.firstOrNull { it.isCommand(tab.command) } ?: CliAgents.CLAUDE_CODE
+            screen = glue.screen(tab.key, agent)
         } catch (error: Throwable) {
             failure = HandoverReflect.unavailable(error)
         }

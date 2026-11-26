@@ -193,7 +193,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: git diff --exit-code ${{ env.START_COMMIT }} -- test/fixtures/next-step-baseline test/fixtures/read-baseline src/core/setup/mergePrompt.golden.txt .github/workflows/ci.yml .github/workflows/publish.yml
+      - run: git diff --exit-code --diff-filter=MDR ${{ env.START_COMMIT }} -- test/fixtures/next-step-baseline test/fixtures/read-baseline src/core/setup/mergePrompt.golden.txt .github/workflows/ci.yml .github/workflows/publish.yml
       - run: npm ci
         working-directory: ${{ runner.temp }}/start
       - run: npm ci
