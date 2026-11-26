@@ -36,7 +36,7 @@ import com.gregorbiswanger.featherspec.studio.runtime.CoreStateHolder
 import com.gregorbiswanger.featherspec.studio.runtime.UnavailableKind
 import com.gregorbiswanger.featherspec.studio.ui.HostUi
 import com.intellij.ide.BrowserUtil
-import com.intellij.ide.plugins.PluginManagerCore
+import com.intellij.ide.plugins.PluginManager
 import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationActivationListener
@@ -45,7 +45,6 @@ import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
-import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
@@ -61,8 +60,6 @@ import com.intellij.util.concurrency.AppExecutorUtil
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
-
-private const val PLUGIN_ID = "com.gregorbiswanger.featherspec.studio"
 
 private const val OK_NULL = "{\"ok\":null}"
 
@@ -367,7 +364,7 @@ class StudioProjectService(private val project: Project) : Disposable {
         settings[SettingsTable.ASSISTANT_KEY] = JsonPrimitive(effective)
         return CoreConfig.json(
             platform = CoreConfig.platform(HostOs.windows, HostOs.mac),
-            studioVersion = PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID))?.version ?: "0.0.0",
+            studioVersion = PluginManager.getPluginByClass(StudioProjectService::class.java)?.version ?: "0.0.0",
             settings = settings,
             trusted = trusted,
             folders = folders,
