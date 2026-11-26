@@ -21,6 +21,8 @@ import java.nio.file.Path
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
 private class Events<T> {
@@ -33,6 +35,52 @@ private class Events<T> {
     fun mark(): Int = items.size
 
     fun after(mark: Int): List<Pair<Long, T>> = items.drop(mark)
+}
+
+/** Asks the event thread for an answer again and again and keeps how long each answer took, from the open on. */
+private class EdtSampler(private val stalls: EdtStalls) {
+    private val origin = AtomicLong(0L)
+    private val running = AtomicBoolean(true)
+    private val thread = Thread({ loop() }, "FeatherSpec smoke EDT sampler")
+
+    fun start() {
+        thread.isDaemon = true
+        thread.start()
+    }
+
+    fun opened(nanos: Long) {
+        origin.set(nanos)
+    }
+
+    fun stop() {
+        running.set(false)
+        thread.join(STOP_WAIT_MS)
+    }
+
+    private fun loop() {
+        while (running.get()) {
+            val asked = System.nanoTime()
+            val answeredAt = AtomicLong(0L)
+            val answered = CountDownLatch(1)
+            ApplicationManager.getApplication().invokeLater {
+                answeredAt.set(System.nanoTime())
+                answered.countDown()
+            }
+            val arrived = answered.await(ANSWER_WAIT_MS, TimeUnit.MILLISECONDS)
+            val start = origin.get()
+            if (start != 0L && asked >= start) {
+                val stall = if (arrived) Budgets.elapsedMs(asked, answeredAt.get()) else ANSWER_WAIT_MS
+                stalls.record(Budgets.elapsedMs(start, asked), stall)
+            }
+            Thread.sleep(SAMPLE_PAUSE_MS)
+        }
+    }
+
+    private companion object {
+        const val ANSWER_WAIT_MS = 60_000L
+        const val STOP_WAIT_MS = 5_000L
+        const val SAMPLE_PAUSE_MS = 5L
+    }
 }
 
 class SmokeProbe(private val project: Project, private val out: Path) {
@@ -65,19 +113,31 @@ class SmokeProbe(private val project: Project, private val out: Path) {
 
         val firstMark = frames.mark()
         val firstStart = System.nanoTime()
-        val opened = onEdt {
-            val start = System.nanoTime()
-            FileEditorManager.getInstance(project).openFile(service.studioFile, true)
-            val state = NoJcefState.of(service.state.value)
-            Triple(state, start, loadingShown())
+        val stalls = EdtStalls()
+        val sampler = EdtSampler(stalls)
+        SmokeTrace.arm()
+        sampler.start()
+        val (opened, loadingMs) = try {
+            val shown = onEdt {
+                val start = System.nanoTime()
+                sampler.opened(start)
+                FileEditorManager.getInstance(project).openFile(service.studioFile, true)
+                val state = NoJcefState.of(service.state.value)
+                Triple(state, start, loadingShown())
+            }
+            val ms = if (shown.third) {
+                Budgets.elapsedMs(shown.second, System.nanoTime())
+            } else {
+                pollMs(shown.second, LOADING_WAIT_MS) { onEdt { loadingShown() } }
+            }
+            awaitReady()
+            shown to ms
+        } finally {
+            sampler.stop()
+            SmokeTrace.disarm()
         }
         val stateAtOpen = opened.first
-        val loadingMs = if (opened.third) {
-            Budgets.elapsedMs(opened.second, System.nanoTime())
-        } else {
-            pollMs(opened.second, LOADING_WAIT_MS) { onEdt { loadingShown() } }
-        }
-        awaitReady()
+        val trace = OpenTrace.of(opened.second, SmokeTrace.editorNanos(), SmokeTrace.placeholderNanos(), stalls)
         val firstFrameMs = frameMs(firstMark, firstStart, READY_WAIT_MS)
         check(firstFrameMs >= 0) { "no panel frame arrived after the core was ready" }
         settle()
@@ -163,6 +223,7 @@ class SmokeProbe(private val project: Project, private val out: Path) {
             themes = themes,
             files = changes,
             notes = notes,
+            trace = trace,
         )
     }
 

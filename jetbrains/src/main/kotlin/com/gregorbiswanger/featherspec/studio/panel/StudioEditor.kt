@@ -16,6 +16,7 @@ import com.intellij.ui.SimpleTextAttributes
 import com.gregorbiswanger.featherspec.studio.probe.OpenMeasure
 import com.gregorbiswanger.featherspec.studio.probe.OpenTimingProbe
 import com.gregorbiswanger.featherspec.studio.probe.PanelFrames
+import com.gregorbiswanger.featherspec.studio.probe.SmokeTrace
 import java.awt.BorderLayout
 import java.awt.event.ActionListener
 import java.beans.PropertyChangeListener
@@ -26,7 +27,7 @@ import javax.swing.JPanel
 import javax.swing.OverlayLayout
 
 class StudioEditor(private val service: StudioProjectService) : UserDataHolderBase(), FileEditor {
-    private val measure: OpenMeasure? = OpenTimingProbe.begin(service)
+    private val measure: OpenMeasure? = OpenTimingProbe.begin(service).also { SmokeTrace.editorCreated() }
     private val holder: JPanel = if (measure == null) JPanel(BorderLayout()) else FirstPaintPanel { contentPainted() }
     private val lifecycle = PanelLifecycle()
     private val removers = ArrayList<() -> Unit>()
@@ -72,7 +73,10 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
         stack = null
         holder.removeAll()
         when (view) {
-            PanelView.Loading -> holder.add(LoadingPlaceholder(), BorderLayout.CENTER)
+            PanelView.Loading -> {
+                holder.add(LoadingPlaceholder(), BorderLayout.CENTER)
+                SmokeTrace.placeholderAdded()
+            }
             PanelView.Browser -> showBrowser()
             is PanelView.Failed -> holder.add(failedPanel(view), BorderLayout.CENTER)
             is PanelView.Unavailable -> holder.add(textPanel(PanelViews.text(view).orEmpty()), BorderLayout.CENTER)
@@ -147,6 +151,7 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
         placeholder = cap
         cover.put()
         holder.add(covered, BorderLayout.CENTER)
+        SmokeTrace.placeholderAdded()
         browserStart.request { startBrowser(covered) }
     }
 

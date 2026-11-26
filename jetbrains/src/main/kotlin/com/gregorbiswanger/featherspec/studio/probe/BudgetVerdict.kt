@@ -4,6 +4,7 @@ enum class Verdict(val label: String) {
     PASSED("passed"),
     TREND("trend"),
     FAILED("failed"),
+    INFO("info"),
 }
 
 data class BudgetRow(
@@ -22,6 +23,7 @@ data class BudgetRow(
  */
 object BudgetVerdict {
     const val TREND_FACTOR_PERCENT = 150L
+    const val NO_BUDGET = -1L
 
     fun isTrendOs(os: String): Boolean {
         val name = os.lowercase()
@@ -41,6 +43,9 @@ object BudgetVerdict {
         return BudgetRow(name, measured, budget, limit, os, verdict)
     }
 
+    /** A value without a budget: it is shown and never fails. */
+    fun info(name: String, measured: Long, os: String): BudgetRow = BudgetRow(name, measured, NO_BUDGET, NO_BUDGET, os, Verdict.INFO)
+
     /** The line of a failed row, with the wording of the earlier checks. */
     fun problem(row: BudgetRow): String? = when {
         row.verdict != Verdict.FAILED -> null
@@ -56,7 +61,9 @@ object BudgetVerdict {
         out.append("| --- | ---: | ---: | ---: | --- | --- |\n")
         rows.forEach { row ->
             val measured = if (row.measured < 0) "not observed" else row.measured.toString()
-            out.append("| ${row.name} | $measured | ${row.budget} | ${row.limit} | ${row.os} | ${row.verdict.label} |\n")
+            val budget = if (row.budget == NO_BUDGET) "-" else row.budget.toString()
+            val limit = if (row.limit == NO_BUDGET) "-" else row.limit.toString()
+            out.append("| ${row.name} | $measured | $budget | $limit | ${row.os} | ${row.verdict.label} |\n")
         }
         return out.append("\n").toString()
     }

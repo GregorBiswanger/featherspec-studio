@@ -26,10 +26,11 @@ class SmokeCompareTest {
         themes: List<ThemeRecord> = SmokeThemes.WANTED.map { theme(it) },
         restore: List<Long> = listOf(700, 650, 990),
         files: FileChanges = FileChanges(listOf(SmokeFiles.EXTERNAL), listOf(SmokeFiles.EDITED), emptyList()),
+        trace: OpenTrace = OpenTrace.NONE,
     ): String =
         SmokeReport(
             os, state, loading, first, reopen, externalTree, externalStatus, inIdeTree, inIdeStatus, inIdePanel,
-            "board", "0015-x", restoredArea, restoredSelection, restore, themes, files, emptyList(),
+            "board", "0015-x", restoredArea, restoredSelection, restore, themes, files, emptyList(), trace,
         ).toJson()
 
     @Test
@@ -64,7 +65,7 @@ class SmokeCompareTest {
         val rows = ArrayList<BudgetRow>()
         val trend = report(os = "Windows 11", loading = 1490, reopen = listOf(1490, 2000, 3000), externalTree = 2980, externalStatus = 100, inIdeTree = 745, inIdeStatus = 100, inIdePanel = 100, restore = listOf(1490, 1490, 1490))
         assertEquals(emptyList<String>(), SmokeCompare.smoke(trend, rows))
-        assertEquals(8, rows.size)
+        assertEquals(8, rows.count { it.verdict != Verdict.INFO })
         assertTrue(rows.all { it.os == "Windows 11" })
         assertEquals(Verdict.TREND, rows.first { it.name.startsWith("AC-007 loading") }.verdict)
         assertEquals(Verdict.PASSED, rows.first { it.name.contains("external change in the status") }.verdict)
@@ -198,5 +199,36 @@ class SmokeCompareTest {
     fun `text that is no JSON object is one problem`() {
         assertEquals(listOf("the probe wrote no JSON object"), SmokeCompare.smoke("nope"))
         assertEquals(listOf("the probe wrote no JSON object"), SmokeCompare.themes("[]"))
+    }
+
+    @Test
+    fun `the open diagnostics reach the rows as values without a budget and never fail`() {
+        val trace = OpenTrace(1800, 1900, 4200, 3900, listOf(StallSample(120, 4200), StallSample(2000, 80)))
+        val rows = ArrayList<BudgetRow>()
+        assertEquals(emptyList<String>(), SmokeCompare.smoke(report(os = "Mac OS X", trace = trace), rows))
+        val info = rows.filter { it.verdict == Verdict.INFO }
+        assertEquals(listOf(1800L, 1900L, 3900L, 4200L, 4200L, 80L), info.map { it.measured })
+        assertTrue(info.all { it.budget == BudgetVerdict.NO_BUDGET && it.limit == BudgetVerdict.NO_BUDGET })
+        assertTrue(info.any { it.name.contains("stall #1, asked 120 ms") })
+    }
+
+    @Test
+    fun `a diagnostic that was not measured is shown and does not fail`() {
+        val rows = ArrayList<BudgetRow>()
+        assertEquals(emptyList<String>(), SmokeCompare.smoke(report(), rows))
+        assertEquals(listOf(-1L, -1L, -1L, -1L), rows.filter { it.verdict == Verdict.INFO }.map { it.measured })
+    }
+
+    @Test
+    fun `the open diagnostics are written to the JSON`() {
+        val trace = OpenTrace(10, 20, 300, 250, listOf(StallSample(5, 300)))
+        val root = JsonParser.parseString(report(trace = trace)).asJsonObject
+        assertEquals(10L, root.get("editorCreatedMs").asLong)
+        assertEquals(20L, root.get("placeholderAddedMs").asLong)
+        assertEquals(300L, root.get("edtMaxStallMs").asLong)
+        assertEquals(250L, root.get("edtMaxStallToPlaceholderMs").asLong)
+        val sample = root.getAsJsonArray("edtStallSamples").get(0).asJsonObject
+        assertEquals(5L, sample.get("atMs").asLong)
+        assertEquals(300L, sample.get("stallMs").asLong)
     }
 }

@@ -47,6 +47,7 @@ data class SmokeReport(
     val themes: List<ThemeRecord>,
     val files: FileChanges,
     val notes: List<String>,
+    val trace: OpenTrace = OpenTrace.NONE,
 ) {
     val reopenFrameMs: Long get() = best(reopenFrameSamples)
     val restoreFrameMs: Long get() = best(restoreFrameSamples)
@@ -75,7 +76,19 @@ data class SmokeReport(
         root.add("changed", strings(files.changed))
         root.add("deleted", strings(files.deleted))
         root.add("notes", strings(notes))
+        root.addProperty("editorCreatedMs", trace.editorCreatedMs)
+        root.addProperty("placeholderAddedMs", trace.placeholderAddedMs)
+        root.addProperty("edtMaxStallMs", trace.edtMaxStallMs)
+        root.addProperty("edtMaxStallToPlaceholderMs", trace.edtMaxStallToPlaceholderMs)
+        root.add("edtStallSamples", JsonArray().also { array -> trace.edtStallSamples.forEach { array.add(stallJson(it)) } })
         return root.toString()
+    }
+
+    private fun stallJson(sample: StallSample): JsonObject {
+        val entry = JsonObject()
+        entry.addProperty("atMs", sample.atMs)
+        entry.addProperty("stallMs", sample.stallMs)
+        return entry
     }
 
     private fun themeJson(theme: ThemeRecord): JsonObject {
@@ -112,6 +125,7 @@ object SmokeCompare {
         if (state == "loading") {
             within(problems, timing, "AC-007 loading panel", number(root, "loadingMs"), SmokeBudgets.LOADING_MS)
         }
+        diagnostics(timing, root)
         within(problems, timing, "AC-007 first frame after Ready", number(root, "firstFrameMs"), null)
         samples(problems, "frame after reopening", root, "reopenFrameSamples")
         within(problems, timing, "AC-007 frame after reopening (best of ${SmokeBudgets.FRAME_SAMPLES})", number(root, "reopenFrameMs"), SmokeBudgets.FRAME_MS)
@@ -147,6 +161,25 @@ object SmokeCompare {
         }
         return problems
     }
+
+    private fun diagnostics(timing: Timing, root: JsonObject) {
+        val rows = timing.rows ?: return
+        if (!root.has("edtMaxStallMs")) {
+            return
+        }
+        rows.add(BudgetVerdict.info("AC-007 diag: editor created after openFile", number(root, "editorCreatedMs"), timing.os))
+        rows.add(BudgetVerdict.info("AC-007 diag: placeholder added after openFile", number(root, "placeholderAddedMs"), timing.os))
+        rows.add(BudgetVerdict.info("AC-007 diag: EDT worst round trip until the placeholder", number(root, "edtMaxStallToPlaceholderMs"), timing.os))
+        rows.add(BudgetVerdict.info("AC-007 diag: EDT worst round trip until Ready", number(root, "edtMaxStallMs"), timing.os))
+        stalls(root).forEachIndexed { index, sample ->
+            rows.add(BudgetVerdict.info("AC-007 diag: EDT stall #${index + 1}, asked ${sample.atMs} ms after openFile", sample.stallMs, timing.os))
+        }
+    }
+
+    private fun stalls(root: JsonObject): List<StallSample> =
+        root.get("edtStallSamples")?.takeIf { it.isJsonArray }?.asJsonArray?.mapNotNull { element ->
+            asObject(element)?.let { StallSample(number(it, "atMs"), number(it, "stallMs")) }
+        } ?: emptyList()
 
     fun themes(json: String, rows: MutableList<BudgetRow>? = null): List<String> {
         val root = parse(json) ?: return listOf("the probe wrote no JSON object")

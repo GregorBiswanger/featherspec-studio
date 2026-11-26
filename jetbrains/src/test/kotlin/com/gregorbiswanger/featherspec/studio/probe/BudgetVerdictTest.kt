@@ -79,4 +79,13 @@ class BudgetVerdictTest {
         assertTrue(table.contains("| broken | 1600 | 1000 | 1500 | Windows 11 | failed |"))
         assertTrue(table.contains("| missing | not observed | 1000 | 1500 | Windows 11 | failed |"))
     }
+
+    @Test
+    fun `an info row has no budget, never fails and shows dashes`() {
+        val row = BudgetVerdict.info("diag", 4200, "Mac OS X")
+        assertEquals(Verdict.INFO, row.verdict)
+        assertNull(BudgetVerdict.problem(row))
+        assertNull(BudgetVerdict.problem(BudgetVerdict.info("diag", -1, "Linux")))
+        assertTrue(BudgetVerdict.table("Panel", listOf(row)).contains("| diag | 4200 | - | - | Mac OS X | info |"))
+    }
 }
