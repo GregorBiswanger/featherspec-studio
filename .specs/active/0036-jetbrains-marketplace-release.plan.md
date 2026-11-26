@@ -145,7 +145,7 @@ Parallel: stage 1 — T-001, T-002 and T-003 share no file and each has its own 
   `jetbrains.yml` and `ci.yml` (PR) at that head: `plugin` × 3, `verify` × 5 with the new failure level, `vscode-guards`,
   `shared-guard`, `vscode-mirror`, `ide-tests`. A red verifier on internal API usage: stop, report the usages, insert a fix step.
 - **Verify:** `gh run list --branch jetbrains-host --limit 5` and `gh run view <id>`: every job green at one head; record run IDs.
-- [ ] **Verified (T-004):** — CI pending: local `node --test 'jetbrains/guards/*.test.mjs'` 99/99 is green; the push of `jetbrains-host` is Ask-first and every job at one head is still to be read.
+- [x] **Verified (T-004):** 2026-11-26 · run 45871033008 at 5b4ae59, all 25 jobs green: `plugin` ×3 (unit tests and guards), `verify` ×10 (idea, webstorm, rider, pycharm, phpstorm, goland, clion, rubymine, rustrover, recommended; no internal API usage reported), `ide-tests` ubuntu, windows and macos for 2025.3.1 and ubuntu and windows for 2026.3, no-JCEF unsupported and suspended, `vscode-guards`, `vscode-mirror` ×2, `shared-guard` ×2. Local `node --test 'jetbrains/guards/*.test.mjs'` 99/99 before the push.
 - **Notes:** the new jobs `verify (phpstorm|goland|clion|rubymine|rustrover)` and the stricter failure level are the new CI risk.
 
 ### T-005 — CHANGELOG: 0.1.0 as published, 0.2.0 new
@@ -251,12 +251,12 @@ Parallel: stage 1 — T-001, T-002 and T-003 share no file and each has its own 
 | AC-004 | T-001 | same | same (`checkOtherWorkflows`) | proven locally |
 | AC-005 | T-001, T-010 | `jetbrains-release.yml` | `releaseWorkflow.test.mjs` (order, artifact) | structure proven; the run: CI pending |
 | AC-006 | T-001 | `jetbrains-release.yml` | `releaseWorkflow.test.mjs` (publish last, only in mode publish) | structure proven; the first real publish run is the next update |
-| AC-007 | T-001, T-004 | — | same (`git diff` against `START_COMMIT`) | local proven; CI pending |
-| AC-008 | T-002, T-004 | `jetbrains/build.gradle.kts` | `releaseConfig.test.mjs` | Gradle effect: CI pending |
+| AC-007 | T-001, T-004 | — | same (`git diff` against `START_COMMIT`) · CI run 45871033008 at 5b4ae59, `vscode-guards` green (2026-11-26) | verified |
+| AC-008 | T-002, T-004 | `jetbrains/build.gradle.kts` | `releaseConfig.test.mjs` · CI run 45871033008 at 5b4ae59, every job of `jetbrains.yml` green (2026-11-26) | verified |
 | AC-009 | T-002 | `jetbrains/build.gradle.kts`, `.gitignore` | `releaseConfig.test.mjs` | proven locally |
 | AC-010 | T-010 | — | — | open |
-| AC-011 | T-002 | `jetbrains/build.gradle.kts` | `releaseConfig.test.mjs` | text proven; built `plugin.xml`: CI pending |
-| AC-012 | T-002, T-004, T-010 | `build.gradle.kts`, `jetbrains.yml` matrix | `releaseConfig.test.mjs` (levels, products) | levels and products built; verifier result: CI pending |
+| AC-011 | T-002 | `jetbrains/build.gradle.kts` | `releaseConfig.test.mjs` · CI run 45871033008 at 5b4ae59, `plugin` ×3 green (built `plugin.xml`, 2026-11-26) | verified |
+| AC-012 | T-002, T-004, T-010 | `build.gradle.kts`, `jetbrains.yml` matrix | `releaseConfig.test.mjs` (levels, products) · CI run 45871033008 at 5b4ae59: `verify` green on nine products and recommended, no internal API usage (2026-11-26) | verified |
 | AC-013 | T-007 | — | manual: Gregor, verifier versions | open |
 | AC-014 | T-003 | `plugin.xml` | `pluginPage.test.mjs` | proven locally |
 | AC-015 | T-003 | `plugin.xml` | `pluginPage.test.mjs` | proven locally |
