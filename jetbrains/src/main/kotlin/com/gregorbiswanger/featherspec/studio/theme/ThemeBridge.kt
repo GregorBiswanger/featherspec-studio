@@ -25,6 +25,11 @@ class ThemeBridge(parent: Disposable, private val onChange: (String) -> Unit) {
             object : LafManagerListener {
                 override fun lookAndFeelChanged(source: LafManager) {
                     SmokeTrace.themeNotified()
+                    // The IDE's own follow-up work of a switch queues ahead of an invokeLater (up to 560 ms on macOS CI),
+                    // so the new values go out now; the later pass catches what the IDE updates afterwards.
+                    if (ApplicationManager.getApplication().isDispatchThread) {
+                        refresh()
+                    }
                     ApplicationManager.getApplication().invokeLater { refresh() }
                 }
             },
@@ -41,6 +46,9 @@ class ThemeBridge(parent: Disposable, private val onChange: (String) -> Unit) {
             return
         }
         val next = capture()
+        if (next.updateScript == snapshot.updateScript) {
+            return
+        }
         snapshot = next
         onChange(next.updateScript)
         SmokeTrace.themeSent()
