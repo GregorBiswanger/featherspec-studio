@@ -169,8 +169,8 @@ Parallel: stage 1 — T-001, T-002 and T-003 share no file and each has its own 
   changes one line, README sentences, anchor heading `## JetBrains IDEs` unchanged.
 - **Verify:** `npx vitest run --project node src/adapters/node/release0036.test.ts src/adapters/node/docsScan.test.ts`;
   `npm run package && node jetbrains/guards/vsixFiles.mjs`; techContext gates 1–5.
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [ ] **Verified (T-006):** — not ticked: gate 4 (`npm run test:unit`) red, see Notes.
+- **Notes:** red first (`release0036.test.ts` 4 of 14 red: version, lock, README Marketplace path, old sentence). Green after the edit: `release0036` + `docsScan` + `docs0035` + `docs0035Review20B` + `docs0035PD112` 241/241; `npm run package` exit 0 (check-types, lint, bundle); `node jetbrains/guards/vsixFiles.mjs` matches the 11-file snapshot (`npx --yes @vscode/vsce ls` ran through the proxy); `npm run compile` exit 0. Gate 4: `npm run test:unit` 4498 passed, 1 failed: `src/core/lifecycle/problems.test.ts` AC-005 on `.specs/backlog/0038-panel-survives-dynamic-plugin-loading.md` (`**Status:** Backlog` is no known value and the folder does not match), present since `c957afa`, not from 0036; not edited here (not this task's file, Ask first). The AC-019 "diff against main" test was green before the edit (`main` holds the same bytes as `bf236fc` apart from the version), so its negative control is the second changed line. The lock's version lines: the first `"version"` at two spaces and the first at six spaces (the root package).
 
 ### T-007 — Checklist section and docs sync
 

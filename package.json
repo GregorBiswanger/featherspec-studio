@@ -2,7 +2,7 @@
   "name": "featherspec-studio",
   "displayName": "FeatherSpec Studio",
   "description": "Spec-driven development for GitHub Copilot and Claude Code: see every spec, its plan and next step, and send it to your agent.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "GregorBiswanger",
   "license": "MIT",
   "icon": "media/icon.png",

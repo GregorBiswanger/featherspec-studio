@@ -31,6 +31,25 @@ export function sha256(text: string): string {
     return createHash('sha256').update(text, 'utf8').digest('hex');
 }
 
+const PACKAGE_JSON_ON_MAIN_SHA256 = '4fc5894926000928985c72357e31f8fc18f50f4cc3aa561765d04b02cc3e2e56';
+const PACKAGE_LOCK_ON_MAIN_SHA256 = 'ba5001f24ce3493ba8fa11ef0adb509c56521f669e21b561ac0f342a59f600a1';
+
+export function withMainVersions(text: string): string {
+    return text
+        .replace('\n  "version": "0.2.0",', '\n  "version": "0.1.0",')
+        .replace('\n      "version": "0.2.0",', '\n      "version": "0.1.0",');
+}
+
+export function jetbrainsSection(readme: string): string {
+    const lines = readme.split('\n');
+    const start = lines.indexOf('## JetBrains IDEs');
+    if (start < 0) {
+        return '';
+    }
+    const stop = lines.findIndex((line, index) => index > start && line.startsWith('## '));
+    return lines.slice(start, stop < 0 ? undefined : stop).join('\n');
+}
+
 describe('0036 AC-020: CHANGELOG keeps 0.1.0 as published and holds 0.2.0', () => {
     it('extracts a section up to the next heading or the link block', () => {
         const text = '# C\n\n## [0.2.0] - Unreleased\nA\n\n## [0.1.0] - x\nB\n\n[0.2.0]: u\n';
@@ -73,5 +92,51 @@ describe('0036 AC-020: CHANGELOG keeps 0.1.0 as published and holds 0.2.0', () =
         expect((await read('CHANGELOG.md')).endsWith(
             `\n[0.2.0]: ${REPOSITORY}/compare/v0.1.0...v0.2.0\n[0.1.0]: ${REPOSITORY}/releases/tag/v0.1.0\n`,
         )).toBe(true);
+    });
+});
+
+describe('0036 AC-019: package.json and the lock carry 0.2.0 and change nothing else', () => {
+    it('negative control: a second changed line breaks the match with main', async () => {
+        const text = await read('package.json');
+        expect(sha256(withMainVersions(text.replace('"license"', '"licence"')))).not.toBe(PACKAGE_JSON_ON_MAIN_SHA256);
+    });
+
+    it('package.json is 0.2.0', async () => {
+        expect(JSON.parse(await read('package.json')).version).toBe('0.2.0');
+    });
+
+    it('its diff against main is the version value only', async () => {
+        expect(sha256(withMainVersions(await read('package.json')))).toBe(PACKAGE_JSON_ON_MAIN_SHA256);
+    });
+
+    it('the two root fields of package-lock.json are 0.2.0 and nothing else changed', async () => {
+        const text = await read('package-lock.json');
+        const lock = JSON.parse(text);
+        expect(lock.version).toBe('0.2.0');
+        expect(lock.packages[''].version).toBe('0.2.0');
+        expect(sha256(withMainVersions(text))).toBe(PACKAGE_LOCK_ON_MAIN_SHA256);
+    });
+});
+
+describe('0036 AC-021: README JetBrains IDEs says how to install', () => {
+    it('negative control: the old sentence is found in the section', () => {
+        expect(jetbrainsSection('## JetBrains IDEs\nThe plugin is not on the JetBrains Marketplace yet.\n## Next\n'))
+            .toContain('not on the JetBrains Marketplace yet');
+    });
+
+    it('names the Marketplace path and the release ZIP', async () => {
+        const section = jetbrainsSection(await read('README.md'));
+        for (const text of ['Settings | Plugins | Marketplace', '*FeatherSpec Studio*', 'jetbrains-v<version>', 'Install Plugin from Disk…']) {
+            expect(section, text).toContain(text);
+        }
+    });
+
+    it('no longer says the plugin is not on the Marketplace yet', async () => {
+        expect(await read('README.md')).not.toContain('not on the JetBrains Marketplace yet');
+    });
+
+    it('keeps the heading that gives the anchor #jetbrains-ides', async () => {
+        const headings = (await read('README.md')).split('\n').filter((line) => line === '## JetBrains IDEs');
+        expect(headings).toHaveLength(1);
     });
 });

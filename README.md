@@ -132,7 +132,7 @@ The settings are under **FeatherSpec Studio** in the Settings UI and apply at on
 
 FeatherSpec Studio also runs in JetBrains IDEs, with the same Overview, Board, Plan map and spec detail, and the same next step. It is tested in Rider and WebStorm; any IntelliJ-based IDE from version 2025.3.1 (build 253.29346) on can install it.
 
-**Install.** The plugin is not on the JetBrains Marketplace yet (a later spec, 0036, publishes it there). Until then, take the `plugin-zip` artifact of a green run of the *JetBrains* workflow on GitHub, unzip the download, and in the IDE choose **Settings | Plugins | gear | Install Plugin from Disk…** and pick the plugin ZIP. Restart the IDE when it asks.
+**Install.** Install it from the JetBrains Marketplace: in the IDE choose **Settings | Plugins | Marketplace**, search for *FeatherSpec Studio* and click **Install**. Or take the signed plugin ZIP of the GitHub release `jetbrains-v<version>`, and in the IDE choose **Settings | Plugins | gear | Install Plugin from Disk…** and pick that ZIP. Restart the IDE when it asks.
 
 **What you get.** A **FeatherSpec Studio** tool window with the **Specs** tree (the same four groups as in VS Code, with the context actions Open Spec, Open Plan, Show in Plan Map and Copy Next Step), a count of Review and Blocked specs on its title, the Studio panel as an editor tab (**FeatherSpec Studio: Open** in Find Action), a status bar entry with the next step, and **FeatherSpec Studio: Set Up FeatherSpec**. The Studio commands are reachable through Find Action under the prefix `FeatherSpec Studio:`. The Studio takes the colours of the IDE theme, including High Contrast.
 
