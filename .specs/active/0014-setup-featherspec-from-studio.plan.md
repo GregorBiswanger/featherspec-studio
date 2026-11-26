@@ -251,7 +251,7 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 | AC-023 | T-007 | in `src/core/setup`: `setupReport.ts` | `setupFinish.test.ts` | verified |
 | AC-024 | T-005 | `src/core/setup` (all), `src/adapters/node/nodeSetupTarget.ts`, `src/adapters/vscode/setupUi.ts` | `applySetup.test.ts` scan, `nodeSetupTarget.test.ts` | verified |
 | AC-025 | T-004, T-008 | `src/adapters/node/fetchReleaseHttp.ts`, `src/extension.ts` | `noNetwork.test.ts`, `fetchReleaseHttp.test.ts`, `releaseDownload.test.ts`; host `noProject.test.ts` sends nothing (green on CI run 45728313993 at `6b75ef0`) | verified |
-| AC-026 | T-010 | `docs/release-checklist.md` (M-1…M-3) | manual: Gregor M-1…M-3; no `manual:` record exists; `docs/release-checklist.md` M-1…M-3 unticked | open |
+| AC-026 | T-010 | `docs/release-checklist.md` (M-1…M-3) | manual: Gregor M-1…M-3; no `manual:` record exists; `docs/release-checklist.md` M-1…M-3 unticked · partial, manual 2026-11-26 (Claude via computer use, VS Code, VSIX `6b75ef0`, Windows 11): M-1 in one theme only (Amethyst Dark (Higher Contrast)) the S2 tree shows its sentence and a primary 'Set up FeatherSpec' button styled like Source Control's; M-2 on Windows 11 in a fresh folder (`setup-0014`, not `tip-splitter`) the button asks 'Set up FeatherSpec 1.10.0 in setup-0014? … 63 files will be created.', creates exactly 63 files, shows the notification with 'Copy /sdd-setup' and the tree switches to the setup step. Still open: M-1 in Light and Dark and in the panel; M-2 the Hands-On from `/sdd-setup` on; M-3 Restricted Mode (not touched). No state change | open |
 
 ## Session handoff
 

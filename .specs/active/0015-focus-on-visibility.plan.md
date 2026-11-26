@@ -420,7 +420,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 | AC-027 | T-015, T-016, T-017, T-020 | ## Test-title audit in this plan; 0004 AC-009 and 0007 filter and sort tests restored | src/adapters/node/fileRuntimeMedium.test.ts, src/core/runtime/testing/contract.ts, src/core/board/boardService.test.ts; `npm test` green on Windows at `c4f7a5d` (T-020 notes); CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only | verified |
 | AC-028 | T-013 | .specs/done/0008–0012 (Deprecated), .specs/done/0003–0007 and 0013 (notes) | grep checks of T-013 | verified |
 | AC-029 | T-015, T-019 | AGENTS.md (214 lines), .architecture/*.md, .memory-bank/*.md | grep check in T-015 Verify | verified |
-| AC-030 | T-014, T-015 | — | manual: Gregor, M-1 on `tip-splitter` | open |
+| AC-030 | T-014, T-015 | — | manual: Gregor, M-1 on `tip-splitter` · partial, manual 2026-11-26 (Claude via computer use, VS Code, VSIX `6b75ef0`, Windows 11): the tree groups specs and the panel shows Overview, Board and Plan map; NS lines and Copy visible on cards and rows. Still open: every point that needs the assistant (NS-7 line starts the step, NS-6/NS-5 lines run as commands), the S7-noise judgement (OP-006) and path resolution (OP-002). No state change | open |
 
 ## Session handoff
 

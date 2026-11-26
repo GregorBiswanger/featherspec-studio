@@ -443,7 +443,7 @@ Staying behaviour named by the task, with a home at the head: keyboard navigatio
 | AC-023 | T-005 | core/copyNextStep/copyNextStep.ts | copyNextStep.test.ts, noWrite.test.ts | verified |
 | AC-024 | T-009, T-011 (every step keeps staying tests) | — | Test-title audit below (0 staying titles lost); Windows and CI at `fbdab51` recorded in T-009; CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only | verified |
 | AC-025 | T-008, T-009 | README.md, CHANGELOG.md, docs/, .architecture, §5 notes | docsScan.test.ts | verified |
-| AC-026 | T-008 (checklist) | — | manual: Gregor, M-1 on `tip-splitter` | open |
+| AC-026 | T-008 (checklist) | — | manual: Gregor, M-1 on `tip-splitter` · partial, manual 2026-11-26 (Claude via computer use, VS Code, VSIX `6b75ef0`, Windows 11): status bar '0034 · Active · Implement T-035' names the spec, a click shows '✓ Copied' and after about 3 s the entry returns (screenshot latency, not a 2000 ms measurement); Board cards readable in Light 2026, Dark High Contrast, Dark 2026 and Amethyst. Still open: the Overview row in three themes, 'start the Ready spec' with the assistant, `/sdd-plan` then `continue` in one chat. No state change | open |
 
 ## Session handoff
 
