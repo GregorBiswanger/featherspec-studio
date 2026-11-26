@@ -183,4 +183,28 @@ class CliAgentsTest {
         assertFalse(CliAgents.JUNIE.isCommand("\"C:\\a b\\junie.ps1\""))
         assertFalse(CliAgents.COPILOT.isCommand("\"C:\\a b\\junie.exe\""))
     }
+
+    @Test
+    fun `K-1 the input screen of Junie 26_11_3 counts as ready, its MCP warning does not block it`() {
+        val screen = """
+            v.26.11.3
+
+            / available commands
+            @ search for a file or a folder
+            ! bash command
+            ? show help
+
+            § Agent heading down the wrong path?
+              Use Plan Mode (shift + tab or /plan) to review the approach first, then let Junie execute exactly what you approved.
+
+            ▲ 1 MCP Setup Issue — run /mcp to manage
+
+              > Tell me about this project
+
+            ~ tip-split-rider-test (main)   Brave on ctrl + b   GPT-6.1 Terra High Eco
+        """.trimIndent()
+        assertTrue(CliAgents.JUNIE.hasInputBox(screen))
+        assertFalse(CliAgents.JUNIE.hasInputBox("Do you trust the files in this folder?\n1. Yes"))
+        assertFalse(CliAgents.JUNIE.hasInputBox("? show help\nContinue with JetBrains account"))
+    }
 }
