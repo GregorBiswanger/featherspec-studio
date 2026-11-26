@@ -3,7 +3,6 @@ package com.gregorbiswanger.featherspec.studio
 import com.gregorbiswanger.featherspec.studio.probe.IdeaLogScan
 import com.gregorbiswanger.featherspec.studio.probe.NoJcefCompare
 import com.gregorbiswanger.featherspec.studio.probe.NoJcefProbe
-import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.TestCase
@@ -47,7 +46,7 @@ class NoJcefIdeTest {
         }
         PluginConfigurator(context).installPluginFromDir(Path.of(System.getProperty("path.to.build.plugin")))
         context.runIdeWithDriver().useDriverAndCloseIde {
-            waitForIndicators(5.minutes)
+            settleAfterStartup()
             val deadline = System.nanoTime() + 6.minutes.inWholeNanoseconds
             while (!Files.exists(report) && !Files.exists(errorFile) && System.nanoTime() < deadline) {
                 Thread.sleep(2000)

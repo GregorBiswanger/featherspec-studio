@@ -3,7 +3,6 @@ package com.gregorbiswanger.featherspec.studio
 import com.gregorbiswanger.featherspec.studio.probe.BudgetRow
 import com.gregorbiswanger.featherspec.studio.probe.Budgets
 import com.gregorbiswanger.featherspec.studio.probe.ConformanceCompare
-import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.TestCase
@@ -109,7 +108,7 @@ class CoreIdeTest {
         }
         PluginConfigurator(context).installPluginFromDir(Path.of(System.getProperty("path.to.build.plugin")))
         context.runIdeWithDriver().useDriverAndCloseIde {
-            waitForIndicators(5.minutes)
+            settleAfterStartup()
             val deadline = System.nanoTime() + 12.minutes.inWholeNanoseconds
             while (!Files.exists(budgetsFile) && !Files.exists(errorFile) && System.nanoTime() < deadline) {
                 Thread.sleep(2000)
