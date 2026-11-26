@@ -29,6 +29,7 @@ data class ThemeRecord(
     val notifiedMs: Long = -1L,
     val sentMs: Long = -1L,
     val switchCallMs: Long = -1L,
+    val refreshMs: Long = -1L,
 )
 
 data class SmokeReport(
@@ -105,6 +106,7 @@ data class SmokeReport(
         entry.addProperty("notifiedMs", theme.notifiedMs)
         entry.addProperty("sentMs", theme.sentMs)
         entry.addProperty("switchCallMs", theme.switchCallMs)
+        entry.addProperty("refreshMs", theme.refreshMs)
         entry.addProperty("incompleteScripts", theme.incompleteScripts)
         entry.add("missingVariables", strings(theme.missingVariables))
         entry.addProperty("evaluated", theme.contrast.evaluated)
@@ -235,6 +237,7 @@ object SmokeCompare {
         }
         rows.add(BudgetVerdict.info("AC-028 $name diag: IDE switch call returned", number(entry, "switchCallMs"), timing.os))
         rows.add(BudgetVerdict.info("AC-028 $name diag: IDE notified the plugin", number(entry, "notifiedMs"), timing.os))
+        rows.add(BudgetVerdict.info("AC-028 $name diag: plugin refresh started", number(entry, "refreshMs"), timing.os))
         rows.add(BudgetVerdict.info("AC-028 $name diag: plugin sent the script", number(entry, "sentMs"), timing.os))
     }
 

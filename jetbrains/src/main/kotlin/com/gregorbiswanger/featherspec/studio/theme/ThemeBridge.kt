@@ -36,6 +36,7 @@ class ThemeBridge(parent: Disposable, private val onChange: (String) -> Unit) {
     fun bodyClass(): String = snapshot.kind.bodyClass
 
     private fun refresh() {
+        SmokeTrace.themeRefreshStarted()
         if (disposed) {
             return
         }

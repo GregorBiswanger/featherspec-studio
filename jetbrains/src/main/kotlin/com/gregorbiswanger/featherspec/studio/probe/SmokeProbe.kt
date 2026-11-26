@@ -269,6 +269,7 @@ class SmokeProbe(private val project: Project, private val out: Path) {
                 contrast = Contrast.check(last?.variables ?: emptyMap()),
                 notifiedMs = Budgets.elapsedMs(start, SmokeTrace.themeNotifiedNanos()),
                 sentMs = Budgets.elapsedMs(start, SmokeTrace.themeSentNanos()),
+                refreshMs = Budgets.elapsedMs(start, SmokeTrace.themeRefreshNanos()),
                 switchCallMs = switchCallMs,
             )
         }
