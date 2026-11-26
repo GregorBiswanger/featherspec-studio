@@ -16,6 +16,8 @@ class CliAgent(
     val waitingMarkers: List<String>,
     val markersStatus: String,
     val pasteMode: PasteMode,
+    // Only Junie is started by its full path (the agent the IDE installs); the others stay exact (AC-015).
+    val acceptsFullPath: Boolean = false,
 ) {
     fun hasInputBox(text: String): Boolean {
         val input = lastIndexOfAny(text, inputMarkers)
@@ -30,6 +32,9 @@ class CliAgent(
         val first = trimmed.split(WHITESPACE, limit = 2).firstOrNull()
         if (!first.isNullOrEmpty() && COMMAND_SUFFIXES.any { suffix -> first.equals(command + suffix, ignoreCase = caseInsensitive) }) {
             return true
+        }
+        if (!acceptsFullPath) {
+            return false
         }
         val executable = executableOf(trimmed) ?: return false
         val name = executable.substringAfterLast('/').substringAfterLast('\\')
@@ -80,6 +85,7 @@ object CliAgents {
         waitingMarkers = JUNIE_WAITING_MARKERS,
         markersStatus = MARKERS_STATUS,
         pasteMode = PasteMode.BRACKETED,
+        acceptsFullPath = true,
     )
 
     val CLAUDE_CODE = CliAgent(

@@ -169,7 +169,8 @@ class CliAgentsTest {
             assertEquals(CliAgents.JUNIE, CliAgents.agentOf(text), text)
         }
         assertTrue(CliAgents.JUNIE.isCommand("\"C:\\a b\\JUNIE.EXE\""))
-        assertTrue(CliAgents.CLAUDE_CODE.isCommand("/usr/local/bin/claude"))
+        assertFalse(CliAgents.CLAUDE_CODE.isCommand("/usr/local/bin/claude"), "only Junie is started by its full path (AC-015)")
+        assertFalse(CliAgents.COPILOT.isCommand("C:\\tools\\copilot.exe"))
     }
 
     @Test

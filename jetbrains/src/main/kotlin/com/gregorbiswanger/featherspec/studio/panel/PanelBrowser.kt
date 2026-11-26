@@ -120,12 +120,15 @@ class PanelBrowser private constructor(private val service: StudioProjectService
         }
         postRequest = query.inject("request")
         theme = ThemeBridge(this) { script ->
-            ApplicationManager.getApplication().invokeLater {
+            val apply = Runnable {
                 if (alive) {
                     browser.cefBrowser.executeJavaScript(script, CORE_ORIGIN, 0)
                     service.themeScripts.set(script)
                 }
             }
+            // On the EDT already (the theme listener): run now, not behind the IDE's follow-up work of the switch.
+            val app = ApplicationManager.getApplication()
+            if (app.isDispatchThread) apply.run() else app.invokeLater(apply)
         }
         val documents = mapOf<String, () -> String>(
             "index.html" to { html },
