@@ -53,8 +53,8 @@ class StudioConfigurable : BoundConfigurable(DISPLAY_NAME) {
         return model
     }
 
-    private fun assistantRenderer(): SimpleListCellRenderer<AssistantOption> =
-        SimpleListCellRenderer.create<AssistantOption> { label, option, _ ->
+    private fun assistantRenderer(): SimpleListCellRenderer<AssistantOption?> =
+        SimpleListCellRenderer.create<AssistantOption?> { label, option, _ ->
             if (option != null) {
                 val reason = SettingsTable.unavailableReason(option.value, shownPlugins)
                 label.text = SettingsTable.rowLabel(option, shownPlugins)
