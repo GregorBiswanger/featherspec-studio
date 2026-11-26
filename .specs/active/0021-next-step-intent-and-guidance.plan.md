@@ -2,8 +2,8 @@
 
 **Spec:** [0021-next-step-intent-and-guidance.md](0021-next-step-intent-and-guidance.md)
 **Status:** Done
-**Last updated:** 2026-11-18
-**Current step:** none: all 16 steps verified; AC-020 (CI), AC-022 real window, AC-023–AC-025 open
+**Last updated:** 2026-11-26
+**Current step:** none: all 16 steps verified; AC-022 real window, AC-023–AC-025 open
 
 ## Approach
 
@@ -491,7 +491,7 @@ Titles that name the control "Copy" otherwise stay (catch-all of §5): the tests
 | AC-008 | T-003 | src/shared/protocol/nextStepTexts.ts:COPY_PROMPT_LABEL, src/webview/ui/CopyButton.tsx, src/core/copyNextStep/copyNextStep.ts | src/webview/ui/CopyButton.test.tsx 0021 AC-008; src/adapters/node/webviewBundle.test.ts 0021 AC-008 sweep; src/core/copyNextStep/copyNextStep.test.ts | verified |
 | AC-009 | T-005, T-007 | src/core/board/stepTips.ts:stepTips, src/core/board/detail.ts, src/core/overview/rows.ts:projectNow, src/webview/detail/NextStep.tsx, src/webview/areas/overview/SpecRow.tsx, src/webview/ui/Toggletip.tsx | src/core/board/stepTips.test.ts; src/webview/detail/SpecDetail.test.tsx 0021 AC-009; src/webview/areas/overview/Sections.test.tsx 0021 AC-009, AC-014; src/adapters/node/webviewCss.test.ts 0021 AC-001, AC-009 (coach colour) | verified |
 | AC-010 | T-005, T-006, T-007 | src/core/board/detail.ts, src/core/overview/rows.ts (tips only while showStepTips) | src/core/board/detail.test.ts 0021 AC-010; src/core/overview/rows.test.ts; src/webview/detail/SpecDetail.test.tsx 0021 AC-010; src/adapters/node/webviewBundle.test.ts | verified |
-| AC-011 | T-006 | src/core/board/boardService.ts, src/core/overview/overviewService.ts, src/adapters/vscode/settings.ts, src/extension.ts | src/core/board/boardService.test.ts; src/core/overview/overviewService.test.ts; src/core/board/boardService.timing.test.ts; src/core/overview/overviewService.timing.test.ts; src/adapters/vscode/settings.test.ts (section prefix); src/test/board.smoke.test.ts (CI) | verified |
+| AC-011 | T-006 | src/core/board/boardService.ts, src/core/overview/overviewService.ts, src/adapters/vscode/settings.ts, src/extension.ts | src/core/board/boardService.test.ts; src/core/overview/overviewService.test.ts; src/core/board/boardService.timing.test.ts; src/core/overview/overviewService.timing.test.ts; src/adapters/vscode/settings.test.ts (section prefix); src/test/board.smoke.test.ts (CI); host smoke green on CI run 45728313993 at `6b75ef0` | verified |
 | AC-012 | T-004, T-005 | src/core/settings/stepTipSettings.ts:parseStepTipSettings, src/core/board/stepTips.ts | src/core/settings/stepTipSettings.test.ts (the cut trims before the ellipsis); src/core/board/stepTips.test.ts | verified |
 | AC-013 | T-005 | src/shared/protocol/nextStepTexts.ts (no model name), package.json | src/adapters/node/sourceScan.test.ts 0021 AC-013; src/adapters/node/webviewBundle.test.ts coach sweep | verified |
 | AC-014 | T-007 | src/webview/ui/Toggletip.tsx, src/webview/detail/NextStep.tsx, src/webview/areas/overview/SpecRow.tsx, src/webview/main.css | src/webview/ui/Toggletip.test.tsx (Escape on the body, each closes only itself); src/webview/detail/SpecDetail.test.tsx 0021 AC-014; src/webview/detail/Close.test.tsx; src/webview/detail/ListOrDetail.test.tsx; src/webview/areas/overview/Sections.test.tsx; src/adapters/node/webviewCss.test.ts 0021 AC-014 | verified |
@@ -500,9 +500,9 @@ Titles that name the control "Copy" otherwise stay (catch-all of §5): the tests
 | AC-017 | T-006, T-007 | src/core/copyNextStep/noWrite.test.ts (guard), src/adapters/vscode/settings.ts (read-only) | src/core/copyNextStep/noWrite.test.ts 0021 AC-017; src/adapters/vscode/settings.test.ts; src/webview/ui/Toggletip.test.tsx (no message) | verified |
 | AC-018 | T-006 | src/core/board/stepTips.ts, src/core/board/detail.ts (no trust or writer input) | src/core/board/stepTips.test.ts 0021 AC-018 | verified |
 | AC-019 | T-001 | src/shared/protocol/nextStepTexts.ts:continueIntent, startIntent, src/core/board/shortTitle.ts:plainShort | src/core/board/nextStep.test.ts 0021 AC-019 | verified |
-| AC-020 | T-008 | src/adapters/node/docsScan.test.ts; plan section Test-title audit | plan section Test-title audit (18 absent titles, each with its §5 row or head title); npm run test:unit | verified |
+| AC-020 | T-008 | src/adapters/node/docsScan.test.ts; plan section Test-title audit | plan section Test-title audit (18 absent titles, each with its §5 row or head title); npm run test:unit; CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only | verified |
 | AC-021 | T-008 | README.md, CHANGELOG.md, docs/release-checklist.md, the §5 notes in .specs/ | src/adapters/node/docsScan.test.ts product docs after 0021 (AC-021) | verified |
-| AC-022 | T-008, T-016 | — | manual: orchestrator (Gregor's delegate) 2026-11-18, harness `r3check` at `196cf72` (section Manual evidence): PASS; real window: Gregor | open (harness part verified) |
+| AC-022 | T-008, T-016 | — | manual: orchestrator (Gregor's delegate) 2026-11-18, harness `r3check` at `196cf72` (section Manual evidence): PASS; real window: Gregor; harness part verified (see *Manual evidence*, `r3check` at `196cf72` and `8ce8cb7`); the real-window part has no `manual:` record | open |
 | AC-023 | T-008 | — | manual: Gregor, Settings UI | open |
 | AC-024 | T-008 | — | manual: Gregor on `tip-splitter` | open |
 | AC-025 | T-008 | — | manual: Gregor with Copilot and Claude Code | open |
@@ -532,7 +532,8 @@ manual: orchestrator (Gregor's delegate) 2026-11-18, harness `r3check` at `8ce8c
 ## Session handoff
 
 - **Done so far:** T-001…T-008 (`db15d7a` … `9a0c652`), then the fix stage after the compile S74 (NOT READY): T-009 Escape on the body (D1), T-010 and T-011 and T-012 the mutants M71, M26, M39, M52, M79, T-013 README (D2) and short forms, T-014 hint cut, T-015 `StepText` and stale fixtures, T-016 traceability, titles, Memory Bank, evidence. Gates green on Linux; Windows at `196cf72` (before the fix): unit 2621 passed, 7 skipped, +15 timing, `npm test` 31+1+1+1.
-- **Next action:** Windows run at the fix head, then Gregor's real-window part of AC-022 (watch D1 and the content pushed down), AC-023, AC-024 and AC-025 on `tip-splitter` (checklist section 0021); the PR for CI (AC-020); then a fresh `/sdd-compile` and, after READY, `/sdd-lifecycle`. The spec stays in active/ until then.
+- **Head evidence (2026-11-26):** CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only (AC-020).
+- **Next action:** Gregor's real-window part of AC-022 (watch D1 and the content pushed down), AC-023, AC-024 and AC-025 on `tip-splitter` (checklist section 0021); then a fresh `/sdd-compile` and, after READY, `/sdd-lifecycle`. The spec stays in active/ until then.
 - **Open decisions:** none for Gregor; proxies P-1…P-22 above plus those in the step notes (T-011 unreadable plan, T-014 hint cut, T-015 separator).
 - **Baseline:** `0ef5875` (head before the first step commit; moved to active/ 2026-11-18); the fix stage starts at `f9f4fe7`.
 - **Environment:** `npm test` (host smoke, including `src/test/board.smoke.test.ts`) only on Windows and CI; layout checks in the orchestrator's harness.

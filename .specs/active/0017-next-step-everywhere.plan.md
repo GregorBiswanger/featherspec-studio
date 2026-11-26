@@ -2,7 +2,7 @@
 
 **Spec:** [0017-next-step-everywhere.md](0017-next-step-everywhere.md)
 **Status:** Done
-**Last updated:** 2026-11-18
+**Last updated:** 2026-11-26
 **Current step:** —  (fix steps T-010…T-012 verified; AC-026 open)
 
 ## Approach
@@ -426,14 +426,14 @@ Staying behaviour named by the task, with a home at the head: keyboard navigatio
 | AC-006 | T-002, T-004 | webview/board/SpecBoard.tsx, Column.tsx | Keyboard.test.tsx | verified |
 | AC-007 | T-002 | webview/board/SpecBoard.tsx | Keyboard.test.tsx | verified |
 | AC-008 | T-002 | webview/board/SpecBoard.tsx | Keyboard.test.tsx | verified |
-| AC-009 | T-006, T-007 | package.json, adapters/vscode/commands.ts | manifest.test.ts, copyNextStep.smoke.test.ts (CI) | verified |
+| AC-009 | T-006, T-007 | package.json, adapters/vscode/commands.ts | manifest.test.ts, copyNextStep.smoke.test.ts (CI; green in run 45728313993 at `6b75ef0`) | verified |
 | AC-010 | T-006 | shared/protocol/messages.ts, shell messageRouter | messageRouter.test.ts | verified |
 | AC-011 | T-006 | removed move path across src | sourceScan.test.ts | verified |
 | AC-012 | T-001, T-004 | webview/missionControl/Attention.tsx | Sections.test.tsx | verified |
 | AC-013 | T-003 | core/copyNextStep/currentSpec.ts | currentSpec.test.ts | verified |
 | AC-014 | T-003, T-007 | core/copyNextStep/entryView.ts, statusEntry.ts; adapters/vscode/statusBar.ts | statusEntry.test.ts, manifest.test.ts | verified |
 | AC-015 | T-003 | core/copyNextStep/entryView.ts | statusEntry.test.ts | verified |
-| AC-016 | T-005, T-007 | core/copyNextStep/statusEntry.ts, adapters/vscode/statusBar.ts | statusEntry.test.ts, copyNextStep.smoke.test.ts (CI) | verified |
+| AC-016 | T-005, T-007 | core/copyNextStep/statusEntry.ts, adapters/vscode/statusBar.ts | statusEntry.test.ts, copyNextStep.smoke.test.ts (CI; green in run 45728313993 at `6b75ef0`) | verified |
 | AC-017 | T-003, T-012 | core/copyNextStep/entryView.ts (escapeMarkdown), statusEntry.ts | statusEntry.test.ts (incl. P3) | verified |
 | AC-018 | T-003 | core/copyNextStep/entryView.ts (accessibleText) | statusEntry.test.ts | verified |
 | AC-019 | T-005 | core/copyNextStep/copyNextStep.ts | copyNextStep.test.ts | verified |
@@ -441,7 +441,7 @@ Staying behaviour named by the task, with a home at the head: keyboard navigatio
 | AC-021 | T-005 | core/copyNextStep/copyNextStep.ts | copyNextStep.test.ts | verified |
 | AC-022 | T-005 | core/copyNextStep/copyNextStep.ts | copyNextStep.test.ts (real shell world, trust on and off) | verified |
 | AC-023 | T-005 | core/copyNextStep/copyNextStep.ts | copyNextStep.test.ts, noWrite.test.ts | verified |
-| AC-024 | T-009, T-011 (every step keeps staying tests) | — | Test-title audit below (0 staying titles lost); Windows and CI at `fbdab51` recorded in T-009 | verified |
+| AC-024 | T-009, T-011 (every step keeps staying tests) | — | Test-title audit below (0 staying titles lost); Windows and CI at `fbdab51` recorded in T-009; CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only | verified |
 | AC-025 | T-008, T-009 | README.md, CHANGELOG.md, docs/, .architecture, §5 notes | docsScan.test.ts | verified |
 | AC-026 | T-008 (checklist) | — | manual: Gregor, M-1 on `tip-splitter` | open |
 
@@ -449,7 +449,8 @@ Staying behaviour named by the task, with a home at the head: keyboard navigatio
 
 - **Done so far:** plan written 2026-11-18 (S38); moved to `active/`, T-001…T-009 verified 2026-11-18 (S39); fix steps T-010…T-012 (compile S40 findings D1, D2, D3 and the five test gaps) verified 2026-11-18 (S41).
 - **Recorded evidence at `fbdab51`:** Gregor's Windows 11 machine, 2026-11-18: `npm run test:unit` 1866 passed, 7 skipped, 12 timing passed; `npm test` 25 + 1 + 1 + 1 passing (incl. `copyNextStep.smoke`). GitHub Actions run 44232332957: ubuntu-latest and windows-latest green. The fix steps changed one CSS file and tests only (no host code): `npm test` was not re-run on the fix head.
-- **Next action:** Gregor: AC-026 (M-1 on `tip-splitter`, recorded as `manual: Gregor checked …, <date>`) and reading P-1…P-15; then a fresh `/sdd-compile`, then `/sdd-lifecycle` 0017 → done (retarget no links: the §5 notes carry none). The spec stays In Progress in `active/` until then.
+- **Head evidence (2026-11-26):** CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only; this replaces "`npm test` was not re-run on the fix head".
+- **Next action:** Gregor: AC-026 (M-1 on `tip-splitter`, recorded as `manual: Gregor checked …, <date>`; no record exists, the row stays `open`) and reading P-1…P-15; then a fresh `/sdd-compile`, then `/sdd-lifecycle` 0017 → done (retarget no links: the §5 notes carry none). The spec stays In Progress in `active/` until then.
 - **Open decisions:** proxy decisions P-1…P-15 (Research) await Gregor's reading; spec OP-002 stays his. Not covered by any test (host only, real VS Code): `isTrusted` allowlist and `supportHtml = false` in `statusBar.ts`, the `stepUi.ts` mapping, the `openStudio`/`selectProject` actions in `extension.ts`.
 - **Baseline:** `fe0bb37` (plan commit, before the first step); unit tests at the Baseline: 1818 passed, 3 skipped (after the lifecycle move); now 1875 passed, 3 skipped.
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked).

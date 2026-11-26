@@ -2,7 +2,7 @@
 
 **Spec:** [0015-focus-on-visibility.md](0015-focus-on-visibility.md)
 **Status:** Done
-**Last updated:** 2026-11-17
+**Last updated:** 2026-11-26
 **Current step:** — (all steps verified)
 
 ## Approach
@@ -417,7 +417,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 | AC-024 | T-004, T-011 | src/core/runtime/earlierRunData.ts, src/extension.ts | src/core/runtime/earlierRunData.test.ts, src/adapters/node/earlierRunData.endToEnd.test.ts | verified |
 | AC-025 | T-014, T-019 | README.md, docs/runtime-data.md, docs/release-checklist.md, docs/decisions/ADR-001-extension-architecture.md (§14), ADR-002, ADR-003 | src/adapters/node/docsScan.test.ts | verified |
 | AC-026 | T-006, T-010 | src/shared/protocol/areas.ts, src/shared/protocol/texts.ts, src/core/runtime/notices.ts | src/shared/protocol/messages.test.ts, src/webview/PanelStateView.test.tsx, src/core/runtime/runtimeSession.test.ts | verified |
-| AC-027 | T-015, T-016, T-017, T-020 | ## Test-title audit in this plan; 0004 AC-009 and 0007 filter and sort tests restored | src/adapters/node/fileRuntimeMedium.test.ts, src/core/runtime/testing/contract.ts, src/core/board/boardService.test.ts; `npm test` green on Windows at `c4f7a5d` (T-020 notes) | verified here; `npm test` at the fix head pending |
+| AC-027 | T-015, T-016, T-017, T-020 | ## Test-title audit in this plan; 0004 AC-009 and 0007 filter and sort tests restored | src/adapters/node/fileRuntimeMedium.test.ts, src/core/runtime/testing/contract.ts, src/core/board/boardService.test.ts; `npm test` green on Windows at `c4f7a5d` (T-020 notes); CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only | verified |
 | AC-028 | T-013 | .specs/done/0008–0012 (Deprecated), .specs/done/0003–0007 and 0013 (notes) | grep checks of T-013 | verified |
 | AC-029 | T-015, T-019 | AGENTS.md (214 lines), .architecture/*.md, .memory-bank/*.md | grep check in T-015 Verify | verified |
 | AC-030 | T-014, T-015 | — | manual: Gregor, M-1 on `tip-splitter` | open |
@@ -425,7 +425,8 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 ## Session handoff
 
 - **Done so far:** All five stages (T-001…T-015); stages 1 to 4: next step, copy, drop result; board and detail without runs; Mission Control without runs; run wiring, manifest entries and dead modules removed; three areas; the status-history store; the earlier-data removal wired at activation; the SDK uninstalled, the bundle and source scans. Stage 5: specs retired and amended (T-013), product docs (T-014), architecture, Memory Bank, test-title audit and final gates (T-015). Compile fixes 2026-11-17 (T-016…T-020): 0004 AC-009 test with the store opener, the board filter and sort tests, Copy texts on the command path, ADR-001 §14 note, AC-021 exceptions (OP-008), brief mission, stale docs, the completed audit.
-- **Next action:** Gregor: AC-030 / M-1 on `tip-splitter`; `npm test` on Windows and CI at the fix head (product code changed in T-016, T-018); then `/sdd-compile` again in a fresh session (not run here). 0015 stays `In Progress` in `active/` until then.
+- **Head evidence (2026-11-26):** CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only (AC-027's `npm run test:unit` and `npm test`).
+- **Next action:** Gregor: AC-030 / M-1 on `tip-splitter` (no `manual:` record exists, the row stays `open`); then `/sdd-compile` again in a fresh session (not run here). 0015 stays `In Progress` in `active/` until then.
 - **Open decisions:** — (Gregor approved the changed order and `npm uninstall @github/copilot-sdk`; the parallel stage runs in sequence; deletions listed per step are approved.)
 - **Baseline:** ea4a8bd
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); host suites run on Windows and CI. Gates: `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`.

@@ -2,7 +2,7 @@
 
 **Spec:** [0014-setup-featherspec-from-studio.md](0014-setup-featherspec-from-studio.md)
 **Status:** Done
-**Last updated:** 2026-11-17
+**Last updated:** 2026-11-26
 **Current step:** — (all steps done, fix steps T-011…T-016 included)
 
 ## Approach
@@ -226,8 +226,8 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001, T-008 | `src/shared/protocol/texts.ts` (`S2_WELCOME`, actions), `src/core/shell/treeModel.ts`, `package.json` | `panelStateTexts`, `treeModel`, `PanelStateView`, `manifest` tests; host `src/test/setup/noProject.test.ts` | verified |
-| AC-002 | T-008, T-014 | `package.json`, `src/extension.ts`, `src/adapters/vscode/shellActions.ts`, `src/adapters/vscode/setupUi.ts` | `manifest.test.ts`, `shellActions.test.ts`, `shellService.test.ts`; host `src/test/setup.smoke.test.ts` | verified |
+| AC-001 | T-001, T-008 | `src/shared/protocol/texts.ts` (`S2_WELCOME`, actions), `src/core/shell/treeModel.ts`, `package.json` | `panelStateTexts`, `treeModel`, `PanelStateView`, `manifest` tests; host `src/test/setup/noProject.test.ts` (green on CI run 45728313993 at `6b75ef0`) | verified |
+| AC-002 | T-008, T-014 | `package.json`, `src/extension.ts`, `src/adapters/vscode/shellActions.ts`, `src/adapters/vscode/setupUi.ts` | `manifest.test.ts`, `shellActions.test.ts`, `shellService.test.ts`; host `src/test/setup.smoke.test.ts` (green on CI run 45728313993 at `6b75ef0`, ubuntu-latest and windows-latest) | verified |
 | AC-003 | T-006 | in `src/core/setup`: `setupService.ts` | `setupService.test.ts` | verified |
 | AC-004 | T-006 | in `src/core/setup`: `setupService.ts` | `setupService.test.ts` | verified |
 | AC-005 | T-004, T-006 | in `src/core/setup`: `releaseDownload.ts`, `setupService.ts` | `releaseDownload.test.ts`, `setupService.test.ts`, `noWrite.test.ts` | verified |
@@ -250,15 +250,16 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 | AC-022 | T-006 | in `src/core/setup`: `setupService.ts` | `setupService.test.ts` | verified |
 | AC-023 | T-007 | in `src/core/setup`: `setupReport.ts` | `setupFinish.test.ts` | verified |
 | AC-024 | T-005 | `src/core/setup` (all), `src/adapters/node/nodeSetupTarget.ts`, `src/adapters/vscode/setupUi.ts` | `applySetup.test.ts` scan, `nodeSetupTarget.test.ts` | verified |
-| AC-025 | T-004, T-008 | `src/adapters/node/fetchReleaseHttp.ts`, `src/extension.ts` | `noNetwork.test.ts`, `fetchReleaseHttp.test.ts`, `releaseDownload.test.ts`; host `noProject.test.ts` sends nothing | verified |
-| AC-026 | T-010 | `docs/release-checklist.md` (M-1…M-3) | manual: Gregor M-1…M-3 | open (manual) |
+| AC-025 | T-004, T-008 | `src/adapters/node/fetchReleaseHttp.ts`, `src/extension.ts` | `noNetwork.test.ts`, `fetchReleaseHttp.test.ts`, `releaseDownload.test.ts`; host `noProject.test.ts` sends nothing (green on CI run 45728313993 at `6b75ef0`) | verified |
+| AC-026 | T-010 | `docs/release-checklist.md` (M-1…M-3) | manual: Gregor M-1…M-3; no `manual:` record exists; `docs/release-checklist.md` M-1…M-3 unticked | open |
 
 ## Session handoff
 
 - **Done so far:** T-001…T-010 implemented and verified; `/sdd-compile` (2026-11-17) found D1, D2 and gaps; Gregor's decisions A…J applied as T-011…T-016 (all verified). Spec stays `In Progress` in `active/` on Gregor's instruction: he tries the button first (M-2).
 - **Evidence:** at `b7b9fd1` on Gregor's Windows 11 machine and GitHub Actions run 44117895965 (ubuntu-latest, windows-latest), see T-016 Notes.
-- **Open evidence:** at the head of T-016: `npm test` and `npm run test:unit` on Windows and CI (the case-insensitive real-file-system test of T-013 runs there, skipped on Linux); the opt-in live test T-015 on Windows; M-1…M-3 (`manual:` records); the diff read of 0001/0005 (T-009); OP-004.
-- **Next action:** Gregor: M-2 with the button, the live test, the host suite; then `/sdd-compile` again in a fresh session; then `/sdd-lifecycle` (active → done).
+- **Head evidence (2026-11-26):** CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only. The case-insensitive real-file-system test of T-013 runs on the windows-latest job.
+- **Open evidence:** the opt-in live test T-015 on Windows; M-1…M-3 (`manual:` records: none exists, AC-026 stays `open`); the diff read of 0001/0005 (T-009); OP-004.
+- **Next action:** Gregor: M-1…M-3 (M-2 with the button), the live test; then `/sdd-compile` again in a fresh session; then `/sdd-lifecycle` (active → done).
 - **Open decisions:** —
 - **Baseline:** HEAD 0753a62 (clean tree), moved to active/ 2026-11-17; compile at `b7b9fd1`; fix steps from `b7b9fd1`.
 - **Environment:** `npm test` cannot run in the agent sandbox; GitHub is not reachable from it (live route checked only by T-015 on Windows and in M-2).

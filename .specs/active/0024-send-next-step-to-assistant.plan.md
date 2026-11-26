@@ -2,7 +2,7 @@
 
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
 **Status:** Done
-**Last updated:** 2026-11-18
+**Last updated:** 2026-11-26
 **Current step:** none (T-001…T-022 verified; manual AC-016 real window and AC-017…AC-019 open)
 
 ## Approach
@@ -810,22 +810,23 @@ keyboard walk onto both parts, Escape.
 | AC-006 | T-003, T-008, T-009 | `src/core/assistant/send.ts`, `wiring.ts` | `send.test.ts` (PD-074's exact calls, timeout, fallback, late results, causes), `wiring.test.ts` (production wiring) | verified |
 | AC-007 | T-003 | `src/core/assistant/assistants.ts`, `send.ts` | `send.test.ts`, `sourceScan.test.ts` (AC-007 scan), `assistant.test.ts` | verified |
 | AC-008 | T-006 | `src/webview/ui/SendButton.tsx`, `popup.ts`, `Toggletip.tsx` | `SendButton.test.tsx` (0024 AC-008), `Close.test.tsx`, `ListOrDetail.test.tsx`, `Toggletip.test.tsx` unchanged | verified |
-| AC-009 | T-005 | `src/webview/main.css`, `SendButton.tsx` | `webviewCss.test.ts` (0024 AC-009, AC-003) | verified; AC-016 manual |
+| AC-009 | T-005 | `src/webview/main.css`, `SendButton.tsx` | `webviewCss.test.ts` (0024 AC-009, AC-003); AC-016 is the manual part (its own row) | verified |
 | AC-010 | T-004, T-006, T-010, T-011 | `src/core/board/boardService.ts`, `overviewService.ts`, `SendButton.tsx`, `CopyButton.tsx`, `StepAction.tsx`, `focusHandoff.ts`, `popup.ts` | `boardService.test.ts`, `overviewService.test.ts`, both timing tests, `SpecDetail.test.tsx`, `Overview.test.tsx` | verified |
 | AC-011 | T-002, T-004, T-009 | `src/core/assistant/sendView.ts`, `src/shared/protocol/*` | `sendView.test.ts` (scan incl. `send.ts`), `assistant.test.ts`, `detail.test.ts`, `overview.test.ts` | verified |
 | AC-012 | T-003 | `src/core/board/boardRequests.ts`, `send.ts` | `noWrite.test.ts`, `boardRequests.test.ts`, `messageRouter.test.ts` | verified |
-| AC-013 | T-001, T-004 | `package.json`, `src/core/settings/openSettings.ts`, `shared/protocol/nextStepTexts.ts` | `manifest.test.ts`, `openSettings.test.ts`, `stepTips.test.ts`, `board.smoke.test.ts` (CI) | verified; host smoke on CI |
-| AC-014 | T-007 | this plan, *Test-title audit*; `/tmp/audit-0024/titles.py` (throwaway) | the audit: 3 absent titles, each listed; `npm run test:unit` 3069 passed; Windows 11 at `7c6d975`: unit 3065 passed, 7 skipped, +18 timing, `npm test` 32+1+1+1 (green, incl. the 0024 board smoke); CI at the PR | open: unit, audit and Windows verified; Windows at the fix head `5c70dbd`: unit 3109 passed, 7 skipped, +18 timing, `npm test` 32+1+1+1; CI open (at the PR) |
+| AC-013 | T-001, T-004 | `package.json`, `src/core/settings/openSettings.ts`, `shared/protocol/nextStepTexts.ts` | `manifest.test.ts`, `openSettings.test.ts`, `stepTips.test.ts`, `board.smoke.test.ts` (CI); host smoke `board.smoke.test.ts` green on CI run 45728313993 at `6b75ef0` | verified |
+| AC-014 | T-007 | this plan, *Test-title audit*; `/tmp/audit-0024/titles.py` (throwaway) | the audit: 3 absent titles, each listed; `npm run test:unit` 3069 passed; Windows 11 at `7c6d975`: unit 3065 passed, 7 skipped, +18 timing, `npm test` 32+1+1+1 (green, incl. the 0024 board smoke); CI at the PR; Windows at the fix head `5c70dbd`: unit 3109 passed, 7 skipped, +18 timing, `npm test` 32+1+1+1; CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only | verified |
 | AC-015 | T-007 | `README.md`, `CHANGELOG.md`, `docs/release-checklist.md`, §5 notes in 0013, 0015–0023 | `docsScan.test.ts` (product docs after 0024) | verified |
-| AC-016 | T-007 | — | manual: orchestrator (Gregor's delegate) 2026-11-18, harness r5check at 7c6d975 — PASS; recheck at 5c70dbd 2026-11-19, 60/60 pass; see *AC-016 harness evidence*; Gregor's real window | open: harness part recorded, Gregor's real-window part open |
-| AC-017 | T-007 | — | manual: Gregor per assistant on `tip-splitter`; with Copilot he records whether an unsent draft in the current chat is kept or replaced (OP-004) and decides NS-6's default if it is replaced | open |
-| AC-018 | T-007 | — | manual: Gregor, Settings UI and Restricted Mode | open |
-| AC-019 | T-007 | — | manual: draft part passed (PD-076, *Research*); build part in AC-017 | open |
+| AC-016 | T-007 | — | manual: orchestrator (Gregor's delegate) 2026-11-18, harness r5check at 7c6d975 — PASS; recheck at 5c70dbd 2026-11-19, 60/60 pass; see *AC-016 harness evidence*; Gregor's real window; harness part recorded (r5check at `7c6d975`, recheck at `5c70dbd`, 60/60); Gregor's real-window part (themes, menu visibility) has no `manual:` record | open |
+| AC-017 | T-007 | — | manual: Gregor per assistant on `tip-splitter`; with Copilot he records whether an unsent draft in the current chat is kept or replaced (OP-004) and decides NS-6's default if it is replaced; Gregor's general statement of 2026-11-26 (VSIX `6b75ef0`, VS Code: "vscode läuft auch alles bestens", Send to Copilot and Claude Code with attachments) is noted here; it names no versions, no `tip-splitter` step and not the draft question, so it is no `manual:` record and the row stays open | open |
+| AC-018 | T-007 | — | manual: Gregor, Settings UI and Restricted Mode; no `manual:` record exists | open |
+| AC-019 | T-007 | — | manual: draft part passed (PD-076, *Research*); build part in AC-017; no `manual:` record exists | open |
 
 ## Session handoff
 
 - **Done so far:** the fix round 2 after the final check of round 2, T-014…T-022, verified 2026-11-19, docs only (README shots and Plan map shot, `activeContext.md`, CHANGELOG, README text, checklist line, §5 row and 0019 note, the 0021 audit row, the evidence of the 0023 and 0024 plans, the `AGENTS.md` snapshot). T-001…T-007 verified 2026-11-18 (f50bc4c, f0b011d, abf1925, 42e9cda, d683b82, de5a1cc, 7c6d975); the fix round after the compile S82, T-008…T-013, verified 2026-11-18 (D1 Send by the effective value, D2 focus decided at the moment of the change, D3 the handoff scoped to the place, F1 narrow scan exemptions, F2 comments, F4, F6 causes, M10, M36, M37, M72, M78 closed; M63 and M73 noted only). Plan Done; the spec stays In Progress in `active/`.
-- **Next action:** CI at the PR (AC-014; Windows at the fix head `5c70dbd` is recorded); Gregor's AC-016 real window, AC-017 per assistant (with OP-004), AC-018, AC-019 build part; then a fresh `/sdd-compile 0024`.
+- **Head evidence (2026-11-26):** CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only (AC-014).
+- **Next action:** Gregor's AC-016 real window, AC-017 per assistant (with OP-004), AC-018, AC-019 build part; then a fresh `/sdd-compile 0024`.
 - **Open decisions:** OP-004 / F7 (Gregor's, AC-017): does Copilot's `open` replace an unsent draft in the current chat? If it does, Gregor decides whether the current chat stays NS-6's default target with Copilot; the default is not changed. OP-002 and OP-003 are not blocking.
 - **Baseline:** d756fa9 (head before the first step commit; started 2026-11-18 on Gregor's delegated start signal); compile S82 at 7c6d975.
 - **Environment:** `npm test` cannot run here (VS Code download blocked); host smoke runs on CI and Windows

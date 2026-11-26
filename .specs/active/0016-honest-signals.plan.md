@@ -2,7 +2,7 @@
 
 **Spec:** [0016-honest-signals.md](0016-honest-signals.md)
 **Status:** Done
-**Last updated:** 2026-11-18
+**Last updated:** 2026-11-26
 **Current step:** —
 
 ## Approach
@@ -411,7 +411,7 @@ No test file was deleted. Every missing title is a criterion that spec 0016 §5 
 | AC-005 | T-003 | `src/core/lifecycle/readiness.ts`:hasProblem | `src/core/lifecycle/problems.test.ts` (AC-005) | verified |
 | AC-006 | T-004, T-005 | `src/core/board/cards.ts`:buildCards, `src/core/board/detail.ts`, `src/core/missionControl/attention.ts`, `src/webview/board/Card.tsx`, `src/webview/detail/SpecDetail.tsx` | `cards.test.ts`, `detail.test.ts`, `attention.test.ts`, `SpecBoard.test.tsx`, `SpecDetail.test.tsx` | verified |
 | AC-007 | T-004, T-005 | `src/webview/ui/FormatNotes.tsx`, `src/core/board/cards.ts` | `SpecDetail.test.tsx` (toggle), `cards.test.ts`, `attention.test.ts` | verified |
-| AC-008 | T-004 | `src/core/missionControl/specFigures.ts`:projectHeader, `src/webview/areas/missionControl/{Header.tsx,requests.ts}` | `specFigures.test.ts` (incl. several Problems on one spec), `Drilldown.test.tsx`, `MissionControl.test.tsx`, `src/test/missionControl.smoke.test.ts` (CI) | verified |
+| AC-008 | T-004 | `src/core/missionControl/specFigures.ts`:projectHeader, `src/webview/areas/missionControl/{Header.tsx,requests.ts}` | `specFigures.test.ts` (incl. several Problems on one spec), `Drilldown.test.tsx`, `MissionControl.test.tsx`, `src/test/missionControl.smoke.test.ts` (CI; green in run 45728313993 at `6b75ef0`) | verified |
 | AC-009 | T-005 | `src/core/board/cards.ts`:buildBanner, `src/webview/board/Banner.tsx` | `cards.test.ts`, `SpecBoard.test.tsx`, `boardFilter.test.ts` | verified |
 | AC-010 | T-003 | `src/core/lifecycle/readiness.ts` | `src/core/lifecycle/problems.test.ts` | verified |
 | AC-011 | T-007, T-008 | `src/shared/protocol/texts.ts`, `src/webview/ui/RuleText.tsx`, `src/webview/detail/SpecDetail.tsx` | `src/webview/userLanguage.test.tsx` (detail, card, row, Mission Control, banner), `RuleText.test.tsx`, `whenTexts.test.ts`, `SpecDetail.test.tsx` | verified |
@@ -426,14 +426,15 @@ No test file was deleted. Every missing title is a criterion that spec 0016 §5 
 | AC-020 | T-007 | `src/shared/protocol/texts.ts`:S2_SETUP_SENTENCE, S2_WELCOME, `package.json` viewsWelcome | `panelStateTexts.test.ts`, `PanelStateView.test.tsx`, `manifest.test.ts` | verified |
 | AC-021 | T-009 | `src/shared/protocol/texts.ts` (all New texts) | `src/adapters/node/sourceScan.test.ts` (AC-021 with negative control) | verified |
 | AC-022 | T-005 | `src/shared/protocol/nextStepTexts.ts` | `SpecDetail.test.tsx` | verified |
-| AC-023 | T-010, T-013 | plan section Test-title audit | audit script `/tmp/audit/titles.py` (counts in the plan); Windows 11 at `870dc63`: `npm run test:unit` 1801 passed, 7 skipped, 12 timing; `npm test` 24 + 1 + 1 + 1. **CI at `870dc63` not recorded: open** | built |
+| AC-023 | T-010, T-013 | plan section Test-title audit | audit script `/tmp/audit/titles.py` (counts in the plan); Windows 11 at `870dc63`: `npm run test:unit` 1801 passed, 7 skipped, 12 timing; `npm test` 24 + 1 + 1 + 1; GitHub Actions run 44216130674 at `870dc63` green on ubuntu-latest and windows-latest (handoff); CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only | verified |
 | AC-024 | T-009 | `.specs/{active,done}/00{02,03,05,06,07,13,14,15}-*.md`, `docs/product/product-decisions.md` (PD-063), `README.md`, `CHANGELOG.md`, `docs/release-checklist.md` | `ls … | xargs grep -c "Amended by 0016"` ≥ 1 each; `docsScan.test.ts` | verified |
-| AC-025 | T-010 | preview harness (`/home/claude/orch/preview/run.sh`) | screenshots in `/tmp/shots-out`: need line, collapsed format-note toggle, S2 sentence in Dark, Light, High Contrast; Gregor's Hands-On on `tip-splitter` open | built |
+| AC-025 | T-010 | preview harness (`/home/claude/orch/preview/run.sh`) | screenshots in `/tmp/shots-out`: need line, collapsed format-note toggle, S2 sentence in Dark, Light, High Contrast; Gregor's Hands-On on `tip-splitter` open; no `manual:` record with a date exists, the screenshot files are not in the repository | built |
 
 ## Session handoff
 
 - **Done so far:** T-001…T-013 verified (2026-11-18); T-011…T-013 are the fixes from the compile of S36 (documents, eight test gaps, evidence). Unit tests 1818 + 3 skipped, timing 12 (Baseline 1688 + 3, 12). Windows 11 at `870dc63`: `npm run test:unit` 1801 passed, 7 skipped, 12 timing; `npm test` 24 + 1 + 1 + 1.
 - **CI (orchestrator, 2026-11-18):** GitHub Actions run 44216130674 at `870dc63`: ubuntu-latest and windows-latest green (AC-023's CI part).
+- **Head evidence (2026-11-26):** CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only (AC-023).
 - **Next action:** open: AC-025: Gregor's Hands-On on `tip-splitter`, the S2 sentence in the Activity Bar view, Copy's label change without shift and a problem badge in a real window, recorded as `manual: <who> checked <what>, <date>`; then `/sdd-compile` in a fresh session. The spec stays in `active/`.
 - **Open decisions:** none blocking; Q-1…Q-12 (Research) are proxy readings that Gregor may overrule.
 - **Baseline:** 3cdab90 (code identical to the move commit; unit tests 1688 passed + 3 skipped, timing 12)

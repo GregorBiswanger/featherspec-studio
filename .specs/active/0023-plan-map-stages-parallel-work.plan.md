@@ -2,7 +2,7 @@
 
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
 **Status:** Done
-**Last updated:** 2026-11-18
+**Last updated:** 2026-11-26
 **Current step:** none
 
 ## Approach
@@ -610,7 +610,7 @@ re-cut `tip-splitter` with both assistants.
 | AC-001 | T-001, T-013 | `src/core/planMap/planMap.ts`, `src/shared/protocol/planMap.ts`, `planMapTexts.ts` | `planMap.test.ts` (0023 AC-001), `src/shared/protocol/planMap.test.ts` | verified |
 | AC-002 | T-001, T-002, T-013 | `src/core/planMap/planMap.ts` | `planMap.test.ts` (0023 AC-002) | verified |
 | AC-003 | T-003, T-005 | `src/core/board/detail.ts`, `src/core/board/boardService.ts`, `src/webview/detail/PlanSection.tsx`, `src/webview/ui/StepChip.tsx` | `planMap.test.ts`, `detail.test.ts`, `boardService.test.ts`, `PlanSection.test.tsx`, `SpecDetail.test.tsx` (0023 AC-003) | verified |
-| AC-004 | T-005, T-014 | `src/webview/detail/PlanSection.tsx`, `src/webview/ui/StepChip.tsx` | `PlanSection.test.tsx` (0023 AC-004) | verified |
+| AC-004 | T-005, T-014, T-018 | `src/webview/detail/PlanSection.tsx`, `src/webview/ui/StepChip.tsx` | `PlanSection.test.tsx` (0023 AC-004); T-018 (PR #1 comment 5): `ui/FileLink.tsx` names a chip by the failure text; `PlanSection.test.tsx` 15 tests | verified |
 | AC-005 | T-005 | `src/webview/detail/PlanSection.tsx`, `src/webview/areas/planMap/focus.ts` | `PlanSection.test.tsx` (0023 AC-005) | verified |
 | AC-006 | T-004, T-016 | `src/shared/protocol/areas.ts`, `src/adapters/vscode/commands.ts`, `package.json`, `src/webview/areas/registry.tsx`, `src/webview/board/icons.tsx` | `messages.test.ts`, `App.test.tsx`, `shellService.navigation.test.ts` (0023 AC-006), `manifest.test.ts` | verified |
 | AC-007 | T-004 | `src/webview/App.tsx`, `src/webview/areas/planMap/PlanMap.tsx`, `src/core/planMap/planSpecs.ts` | `PlanMap.test.tsx` (0023 AC-007), `SidePanel.test.tsx` | verified |
@@ -622,11 +622,11 @@ re-cut `tip-splitter` with both assistants.
 | AC-013 | T-002 | `src/core/board/nextStep.ts`, `src/shared/protocol/nextStepTexts.ts` | `nextStep.test.ts`, `stepTips.test.ts` (0023 AC-013) | verified |
 | AC-014 | T-003 | `src/core/planMap/planMap.ts` | `noWrite.test.ts`, `planMap.test.ts` (0023 AC-014) | verified |
 | AC-015 | T-007 | `src/shared/protocol/planMapTexts.ts`, `src/shared/protocol/nextStepTexts.ts` | `userLanguage.test.tsx` (0023 AC-015), `webviewBundle.test.ts` | verified |
-| AC-016 | T-008, T-017 | `/tmp/audit-0023/titles.py` (throwaway), this plan's *Test-title audit* | the audit: 7 absent titles, every one listed; `npm run test:unit` green; `npm test` on Windows and CI open | open: unit and the audit verified; Windows at `c9845e1` (before the fix round): unit 2788 passed, 7 skipped, +16 timing, `npm test` 31+1+1+1 green; Windows at the fix head `d756fa9`: unit 2812 passed, 7 skipped, +16 timing, `npm test` 31+1+1+1 (*Manual checks recorded*); CI at the PR open |
+| AC-016 | T-008, T-017 | `/tmp/audit-0023/titles.py` (throwaway), this plan's *Test-title audit* | the audit: 7 absent titles, every one listed; `npm run test:unit` green; Windows at `c9845e1` (before the fix round): unit 2788 passed, 7 skipped, +16 timing, `npm test` 31+1+1+1; at the fix head `d756fa9`: unit 2812 passed, 7 skipped, +16 timing, `npm test` 31+1+1+1 (*Manual checks recorded*); CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only | verified |
 | AC-017 | T-008 | `README.md`, `CHANGELOG.md`, `docs/release-checklist.md`, `.claude/rules/ux-guidelines.md`, `docs/product/ux-guidelines.md`, §4 notes in 0005, 0013, 0015–0022 and ADR-001 | `docsScan.test.ts` (product docs after 0023) | verified |
-| AC-018 | T-008, T-017 | `docs/release-checklist.md` (Plan map (0023)) | manual: orchestrator (Gregor's delegate) 2026-11-18, harness r4check at c9845e1 (PASS, *Manual checks recorded*); then the recheck at d756fa9 (PASS, 60 views incl. `par-odd`); then Gregor in a real window | open (Gregor) |
-| AC-019 | T-008 | `docs/release-checklist.md` (Plan map (0023)) | manual: Gregor; draft part answered by PD-076 (*Research*), build part open | open |
-| AC-020 | T-008 | `docs/release-checklist.md` (Plan map (0023)) | manual: Gregor with two assistants on a re-cut `tip-splitter` | open |
+| AC-018 | T-008, T-017 | `docs/release-checklist.md` (Plan map (0023)) | manual: orchestrator (Gregor's delegate) 2026-11-18, harness r4check at c9845e1 (PASS, *Manual checks recorded*); then the recheck at d756fa9 (PASS, 60 views incl. `par-odd`); then Gregor in a real window; no `manual:` record of Gregor's real-window check exists | open |
+| AC-019 | T-008 | `docs/release-checklist.md` (Plan map (0023)) | manual: Gregor; draft part answered by PD-076 (*Research*), build part open; no `manual:` record exists | open |
+| AC-020 | T-008 | `docs/release-checklist.md` (Plan map (0023)) | manual: Gregor with two assistants on a re-cut `tip-splitter`; no `manual:` record exists | open |
 
 ## Session handoff
 
@@ -637,7 +637,8 @@ re-cut `tip-splitter` with both assistants.
   M105, M107, M108 and M54 closed, the comment, the `any` and the dead constant gone, the evidence recorded. The plan is Done;
   the spec stays In Progress until AC-016 (CI), AC-018 (real window), AC-019 and AC-020 are checked and a fresh `/sdd-compile`
   reads READY.
-- **Next action:** CI at the PR (AC-016; Windows and the harness recheck at the fix head `d756fa9` are recorded); then Gregor: AC-018 in a real window, AC-019 (build part) and AC-020 on a re-cut `tip-splitter`;
+- **Head evidence (2026-11-26):** CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only (AC-016).
+- **Next action:** Gregor (Windows and the harness recheck at the fix head `d756fa9` are recorded): AC-018 in a real window, AC-019 (build part) and AC-020 on a re-cut `tip-splitter`;
   then `/sdd-compile` in a fresh session. 0024 (planned, `eac4559`) waits for this fix and is not built.
 - **Open decisions:** none for Gregor beyond the manual checks; proxies P-1…P-28 above and those in the step Notes (M74 and
   M76 are notes only, F3 is not done: P-27, P-28).

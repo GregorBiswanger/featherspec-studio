@@ -2,7 +2,7 @@
 
 **Spec:** [0020-native-spec-tree.md](0020-native-spec-tree.md)
 **Status:** Done
-**Last updated:** 2026-11-18
+**Last updated:** 2026-11-26
 **Current step:** — (all steps verified)
 
 ## Approach
@@ -590,11 +590,11 @@ Not at the Baseline, homed for the record: `areas.timing.test.tsx` describe "002
 | AC-002 | T-001, T-005 | src/core/shell/specTree.ts:rowId, groupsOf | specTree.test.ts "AC-002: expand state and IDs" | verified |
 | AC-003 | T-001, T-009 | src/core/shell/specTree.ts:compareRows | specTree.test.ts "AC-003: the order" (equal numbers by path, entries in model order and reversed) | verified |
 | AC-004 | T-001 | src/core/shell/specTree.ts:rowOf | specTree.test.ts "AC-004: the row texts" | verified |
-| AC-005 | T-001 | src/core/shell/specTree.ts:STATE_ICONS | specTree.test.ts "AC-005: icons and colours" | verified. Note (0022): `STATE_ICONS` was removed by 0022 T-004; icon and colour now come from `shared/protocol/stateLook.ts` (`STATE_LOOK`) |
+| AC-005 | T-001 | src/core/shell/specTree.ts:STATE_ICONS | specTree.test.ts "AC-005: icons and colours"; `STATE_ICONS` was removed by 0022 T-004; icon and colour now come from `shared/protocol/stateLook.ts` (`STATE_LOOK`) | verified |
 | AC-006 | T-002, T-005 | src/core/shell/specTree.ts:tooltipOf | specTree.test.ts "AC-006: the tooltip" | verified |
 | AC-007 | T-004 | src/core/shell/treeActions.ts:copy; src/core/copyNextStep/copyNextStep.ts:copy | treeActions.test.ts "AC-007"; copyNextStep.test.ts "AC-007" | verified |
 | AC-008 | T-004 | src/core/shell/treeActions.ts:open; src/adapters/vscode/editor.ts; src/core/board/openFile.ts | treeActions.test.ts "AC-008"; editor.test.ts "AC-008"; openFile.test.ts "AC-008" | verified |
-| AC-009 | T-004, T-005, T-010 | src/core/shell/treeActions.ts:select | treeActions.test.ts "AC-009" (incl. the start path: a target set before the panel closed is gone); host "AC-009 (0020)" | verified |
+| AC-009 | T-004, T-005, T-010 | src/core/shell/treeActions.ts:select | treeActions.test.ts "AC-009" (incl. the start path: a target set before the panel closed is gone); host "AC-009 (0020)"; host test green on CI run 45728313993 at `6b75ef0` | verified |
 | AC-010 | T-002, T-005 | src/core/shell/specTree.ts:badgeOf | specTree.test.ts "AC-010: the badge" | verified |
 | AC-011 | T-002, T-005, T-011 | package.json; src/adapters/vscode/studioTree.ts; src/adapters/vscode/commands.ts | manifest.test.ts "AC-011 (0020)"; studioTree.test.ts; specTreeService.test.ts (view description with two projects, one active) | verified |
 | AC-012 | T-002, T-005 | src/core/shell/specTree.ts:buildSpecTree | specTree.test.ts "AC-012: the states of the view" | verified |
@@ -604,14 +604,15 @@ Not at the Baseline, homed for the record: `areas.timing.test.tsx` describe "002
 | AC-016 | T-006, T-007 | src/shared/protocol/areas.ts; src/webview/areas/registry.tsx | messages.test.ts "AC-016"; App.test.tsx "AC-016" | verified |
 | AC-017 | T-006 | src/core/shell/uiMemory.ts:parseUiMemory | uiMemory.test.ts "AC-017"; shellService.navigation.test.ts "AC-017" | verified |
 | AC-018 | T-007, T-008, T-013, T-014 | src/core/shell/uiMemory.ts (the one mapping); src/webview/main.css; README, checklist, design brief, `.architecture` | sourceScan.test.ts "AC-018"; webviewCss.test.ts "AC-018"; docsScan.test.ts "product docs after 0020 (AC-018, AC-020)" | verified |
-| AC-019 | T-005 | src/extension.ts; src/test/shell.smoke.test.ts | shell.smoke.test.ts "AC-019" (host, CI) | verified |
+| AC-019 | T-005 | src/extension.ts; src/test/shell.smoke.test.ts | shell.smoke.test.ts "AC-019" (host, CI); green on CI run 45728313993 at `6b75ef0` (ubuntu-latest, windows-latest) | verified |
 | AC-020 | T-008, T-014, T-015 | the nine files with `Amended by 0020` notes | docsScan.test.ts "carries its n notes of 0020" (nine, the §5 counts) | verified |
-| AC-021 | T-008, T-015 | `## Test-title audit` in this plan | the audit script; `npm run test:unit` (`npm test` on Windows and CI at 77f585b and again at 338a532: unit 2217 passed, 7 skipped + 13 timing, `npm test` 30+1+1+1, CI run 44287407889 green, and the host suite also against the VSIX unpacked from 338a532); the re-run at the fix head homes all 50 absent titles (T-015) | verified |
-| AC-022 | T-008 | docs/release-checklist.md "The native Specs tree (0020)" | manual: Gregor or his delegate (pre-release checklist) | open |
+| AC-021 | T-008, T-015 | `## Test-title audit` in this plan | the audit script; `npm run test:unit` (`npm test` on Windows and CI at 77f585b and again at 338a532: unit 2217 passed, 7 skipped + 13 timing, `npm test` 30+1+1+1, CI run 44287407889 green, and the host suite also against the VSIX unpacked from 338a532); the re-run at the fix head homes all 50 absent titles (T-015); CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only | verified |
+| AC-022 | T-008 | docs/release-checklist.md "The native Specs tree (0020)" | manual: Gregor or his delegate (pre-release checklist); no `manual:` record exists; checklist "The native Specs tree (0020)" unticked | open |
 
 ## Session handoff
 
 - **Done so far:** T-001…T-008 (the implementation) and T-009…T-016 (the fixes of the compile, NOT READY with D1-D3, G1-G5, F1-F9) and T-017…T-025 (release readiness after the final check of the UX round: plan 0019 whole, one CHANGELOG entry, the checklist in spec order, the README, PD-067, text modules, the sort select's focus outline, the 0018 audit sentence, these records) verified and committed; the plan is Done. The spec stays `In Progress` in `active/` (no `/sdd-compile`, no move to done). Fixed: equal numbers by path (D1, G1), gap tests for the start path, the view description, the README and the note counts (G2-G5), the timing title and three weak tests (F2, F3), the leftovers of the removal (F4: `RuleText`, `VIEW_NAME`, `TITLE_NOT_AVAILABLE`, a dead selector, `SpecDetail`'s dead branch), the wording (F6), the audit homes, the 0013 note and the 0005 pointers (D2, D3, F1), three outdated or unreferenced screenshots deleted and two current ones added (F9).
+- **Head evidence (2026-11-26):** CI run 45728313993 at `6b75ef0` (2026-11-26): job `vscode-mirror` green on ubuntu-latest and windows-latest (eslint, both `tsc`, `npm run test:unit`, `npm run compile`, extension-host `npm test`) and `vscode-guards` green; `e77a246` changes plans and the Memory Bank only.
 - **Next action:** Gregor's manual checks from `docs/release-checklist.md` (AC-022 on `tip-splitter` and the keyboard item among them; he also decides whether `spec-detail-light.png`, which shows this repository's own specs, stays), then a fresh `/sdd-compile` for each of 0014…0020, then Go (set the date of the 0.1.0 entry in CHANGELOG.md first). Validation of the fix head is recorded: Windows, CI and the VSIX were green at `338a532` (unit 2217 passed, 7 skipped + 13 timing; `npm test` 30+1+1+1; CI run 44287407889). T-017…T-025 changed texts, one CSS rule and docs; Windows and CI at the release head are repeated by the checklist item "Host suite" only if the head moved.
 - **Open decisions:** none; P-1…P-24 stand unless Gregor changes them. Proxy decisions of the fix round: see the T-009…T-016 notes.
 - **Baseline:** `16fc52b` (HEAD before the first step commit; started 2026-11-18 on Gregor's delegated start signal); fix round from `77f585b`.
