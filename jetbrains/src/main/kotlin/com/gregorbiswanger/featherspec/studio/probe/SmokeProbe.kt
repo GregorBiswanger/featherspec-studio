@@ -176,11 +176,20 @@ class SmokeProbe(private val project: Project, private val out: Path) {
         val inIdeTreeMark = trees.mark()
         val inIdeStatusMark = statuses.mark()
         val inIdeFrameMark = frames.mark()
+        SmokeTrace.arm()
+        SmokeTrace.editBegin(SmokeFiles.EDITED)
         val inIdeStart = System.nanoTime()
-        onEdt { ApplicationManager.getApplication().runWriteAction { VfsUtil.saveText(file, edited) } }
-        val inIdeTreeMs = eventMs(trees, inIdeTreeMark, inIdeStart, EXTERNAL_WAIT_MS)
-        val inIdePanelMs = frameMs(inIdeFrameMark, inIdeStart, EXTERNAL_WAIT_MS, PANEL_UPDATES)
-        val inIdeStatusMs = eventMs(statuses, inIdeStatusMark, inIdeStart, EXTRA_WAIT_MS) { it != inIdeStatusBefore }
+        val inIdeTimes = try {
+            onEdt { ApplicationManager.getApplication().runWriteAction { VfsUtil.saveText(file, edited) } }
+            val tree = eventMs(trees, inIdeTreeMark, inIdeStart, EXTERNAL_WAIT_MS)
+            val panel = frameMs(inIdeFrameMark, inIdeStart, EXTERNAL_WAIT_MS, PANEL_UPDATES)
+            val status = eventMs(statuses, inIdeStatusMark, inIdeStart, EXTRA_WAIT_MS) { it != inIdeStatusBefore }
+            Triple(tree, panel, status)
+        } finally {
+            SmokeTrace.disarm()
+        }
+        val (inIdeTreeMs, inIdePanelMs, inIdeStatusMs) = inIdeTimes
+        val editTrace = EditTrace.of(inIdeStart)
 
         val expectedArea = "board"
         val node = specNode()
@@ -229,6 +238,7 @@ class SmokeProbe(private val project: Project, private val out: Path) {
             files = changes,
             notes = notes,
             trace = trace,
+            edit = editTrace,
         )
     }
 

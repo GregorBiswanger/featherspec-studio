@@ -2,6 +2,7 @@ package com.gregorbiswanger.featherspec.studio.ports
 
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.gregorbiswanger.featherspec.studio.probe.SmokeTrace
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationActivationListener
 import com.intellij.openapi.application.ApplicationManager
@@ -45,6 +46,7 @@ class SpecWatch(
             }
             val seen = HashSet<String>()
             for (event in events) {
+                traceRelative(event.path) { SmokeTrace.editVfs(it) }
                 routePath(event.path, seen)
             }
         }
@@ -66,6 +68,7 @@ class SpecWatch(
             }
             val file = FileDocumentManager.getInstance().getFile(event.document) ?: return
             if (file.isInLocalFileSystem && isReportedPath(file.path)) {
+                traceRelative(file.path) { SmokeTrace.editDocument(it) }
                 documentChanges.submit(file.path)
             }
         }
@@ -135,6 +138,7 @@ class SpecWatch(
 
     private fun onWatcher(root: Path, relative: String) {
         val entry = byPath[root] ?: return
+        SmokeTrace.editWatcher(relative)
         route(entry, relative)
         queueRefresh(root.resolve(relative))
     }
@@ -148,6 +152,16 @@ class SpecWatch(
         }
     }
 
+    /** Probe only: the path relative to the watched root, for the stamp of the smoke trace. */
+    private inline fun traceRelative(path: String, stamp: (String) -> Unit) {
+        for (entry in entries.values) {
+            val relative = WatchedPaths.relativeInside(entry.text, path, caseInsensitive)
+            if (relative != null && relative.isNotEmpty()) {
+                stamp(relative)
+            }
+        }
+    }
+
     private fun isReportedPath(path: String): Boolean = entries.values.any { entry ->
         WatchedPaths.relativeInside(entry.text, path, caseInsensitive)?.let { WatchedPaths.isReported(it) } == true
     }
@@ -156,6 +170,7 @@ class SpecWatch(
         val everything = relative.isEmpty()
         try {
             if ((everything || WatchedPaths.isReported(relative)) && registry.has(entry.uri, KIND_FILES)) {
+                SmokeTrace.editDispatched(relative)
                 dispatch("fileChanged", ChangeEvents.fileChanged(entry.uri, relative))
             }
             if ((everything || WatchedPaths.isMarker(relative)) && registry.has(entry.uri, KIND_MARKERS)) {

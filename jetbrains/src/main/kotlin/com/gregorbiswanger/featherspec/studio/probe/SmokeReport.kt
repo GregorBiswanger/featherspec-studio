@@ -52,6 +52,7 @@ data class SmokeReport(
     val files: FileChanges,
     val notes: List<String>,
     val trace: OpenTrace = OpenTrace.NONE,
+    val edit: EditTrace? = null,
 ) {
     val reopenFrameMs: Long get() = best(reopenFrameSamples)
     val restoreFrameMs: Long get() = best(restoreFrameSamples)
@@ -85,6 +86,16 @@ data class SmokeReport(
         root.addProperty("edtMaxStallMs", trace.edtMaxStallMs)
         root.addProperty("edtMaxStallToPlaceholderMs", trace.edtMaxStallToPlaceholderMs)
         root.add("edtStallSamples", JsonArray().also { array -> trace.edtStallSamples.forEach { array.add(stallJson(it)) } })
+        edit?.let {
+            root.addProperty("editVfsMs", it.vfsMs)
+            root.addProperty("editDocumentMs", it.documentMs)
+            root.addProperty("editWatcherMs", it.watcherMs)
+            root.addProperty("editDispatchMs", it.dispatchMs)
+            root.addProperty("editScanMs", it.scanMs)
+            root.addProperty("editReadMs", it.readMs)
+            root.addProperty("editReads", it.reads)
+            root.addProperty("editReadFailures", it.readFailures)
+        }
         return root.toString()
     }
 
@@ -137,6 +148,7 @@ object SmokeCompare {
             loadingPanel(problems, timing, root)
         }
         diagnostics(timing, root)
+        editDiagnostics(timing, root)
         within(problems, timing, "AC-007 first frame after Ready", number(root, "firstFrameMs"), null)
         samples(problems, "frame after reopening", root, "reopenFrameSamples")
         within(problems, timing, "AC-007 frame after reopening (best of ${SmokeBudgets.FRAME_SAMPLES})", number(root, "reopenFrameMs"), SmokeBudgets.FRAME_MS)
@@ -204,6 +216,23 @@ object SmokeCompare {
         stalls(root).forEachIndexed { index, sample ->
             rows.add(BudgetVerdict.info("AC-007 diag: EDT stall #${index + 1}, asked ${sample.atMs} ms after openFile", sample.stallMs, timing.os))
         }
+    }
+
+    /** AC-020: where the time after the in-IDE save went on the way to the core, as values without a budget. */
+    private fun editDiagnostics(timing: Timing, root: JsonObject) {
+        val rows = timing.rows ?: return
+        if (!root.has("editDispatchMs")) {
+            return
+        }
+        val os = timing.os
+        rows.add(BudgetVerdict.info("AC-020 diag: SpecWatch got the VFS event", number(root, "editVfsMs"), os))
+        rows.add(BudgetVerdict.info("AC-020 diag: SpecWatch got a document event", number(root, "editDocumentMs"), os))
+        rows.add(BudgetVerdict.info("AC-020 diag: file watcher reported the change", number(root, "editWatcherMs"), os))
+        rows.add(BudgetVerdict.info("AC-020 diag: change dispatched to the core", number(root, "editDispatchMs"), os))
+        rows.add(BudgetVerdict.info("AC-020 diag: core's first scan through the host", number(root, "editScanMs"), os))
+        rows.add(BudgetVerdict.info("AC-020 diag: core's first read of the spec through the host", number(root, "editReadMs"), os))
+        rows.add(BudgetVerdict.info("AC-020 diag: reads of the spec through the host (count, not ms)", number(root, "editReads"), os))
+        rows.add(BudgetVerdict.info("AC-020 diag: failed reads of the spec (count, not ms)", number(root, "editReadFailures"), os))
     }
 
     private fun stalls(root: JsonObject): List<StallSample> =

@@ -61,4 +61,51 @@ class SmokeTraceTest {
         assertTrue(first != 0L)
         assertEquals(first, SmokeTrace.editorNanos())
     }
+
+    @Test
+    fun `the edited spec is recognised whatever the separators or the case`() {
+        assertTrue(SmokeTrace.samePath(".specs/a/b.md", ".specs\\A/./b.md"))
+        assertTrue(!SmokeTrace.samePath(".specs/a/b.md", ".specs/a/c.md"))
+        assertTrue(!SmokeTrace.samePath(null, ".specs/a/b.md"))
+    }
+
+    @Test
+    fun `the change trace keeps the first moment, counts reads and ignores other paths`() {
+        SmokeTrace.arm()
+        SmokeTrace.editBegin(".specs/a/b.md")
+        SmokeTrace.editVfs(".specs/other.md")
+        assertEquals(0L, SmokeTrace.editVfsNanos())
+        SmokeTrace.editVfs(".specs/a/b.md")
+        val first = SmokeTrace.editVfsNanos()
+        SmokeTrace.editVfs(".specs/a/b.md")
+        SmokeTrace.editRead(".specs/a/b.md")
+        SmokeTrace.editRead(".specs/a/b.md")
+        SmokeTrace.editReadFailed(".specs/a/b.md")
+        SmokeTrace.editRead(".specs/other.md")
+        SmokeTrace.disarm()
+        assertTrue(first != 0L)
+        assertEquals(first, SmokeTrace.editVfsNanos())
+        assertEquals(2, SmokeTrace.editReadCount())
+        assertEquals(1, SmokeTrace.editReadFailureCount())
+        assertEquals(0L, SmokeTrace.editDispatchNanos())
+        val trace = EditTrace.of(first - 5_000_000L)
+        assertEquals(5L, trace.vfsMs)
+        assertEquals(-1L, trace.dispatchMs)
+        assertEquals(2, trace.reads)
+    }
+
+    @Test
+    fun `an unarmed change trace records nothing and begin forgets the earlier stamps`() {
+        SmokeTrace.arm()
+        SmokeTrace.editBegin(".specs/a/b.md")
+        SmokeTrace.editDispatched(".specs/a/b.md")
+        SmokeTrace.disarm()
+        assertTrue(SmokeTrace.editDispatchNanos() != 0L)
+        SmokeTrace.editBegin(".specs/a/b.md")
+        assertEquals(0L, SmokeTrace.editDispatchNanos())
+        SmokeTrace.editDispatched(".specs/a/b.md")
+        SmokeTrace.editRead(".specs/a/b.md")
+        assertEquals(0L, SmokeTrace.editDispatchNanos())
+        assertEquals(0, SmokeTrace.editReadCount())
+    }
 }

@@ -6,6 +6,7 @@ import com.google.gson.JsonNull
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
+import com.gregorbiswanger.featherspec.studio.probe.SmokeTrace
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.AccessDeniedException
@@ -53,6 +54,7 @@ class FilePorts(
 
     fun scan(root: String, dirs: List<String>): Map<String, ScanEntry> {
         val entries = LinkedHashMap<String, ScanEntry>()
+        SmokeTrace.editScanned()
         dirs.forEach { scanInto(root, it, entries, 0) }
         return entries
     }
@@ -75,10 +77,16 @@ class FilePorts(
 
     fun readBytes(root: String, relativePath: String): ByteArray {
         val path = resolve(root, relativePath)
-        if (WatchedPaths.hasUnsavedOverlay(relativePath)) {
-            unsaved.unsaved(path)?.let { return it.bytes }
+        SmokeTrace.editRead(relativePath)
+        try {
+            if (WatchedPaths.hasUnsavedOverlay(relativePath)) {
+                unsaved.unsaved(path)?.let { return it.bytes }
+            }
+            return Files.readAllBytes(path)
+        } catch (failure: IOException) {
+            SmokeTrace.editReadFailed(relativePath)
+            throw failure
         }
-        return Files.readAllBytes(path)
     }
 
     private fun overlaid(path: Path, relativePath: String, disk: Stat): Stat {

@@ -28,10 +28,11 @@ class SmokeCompareTest {
         restore: List<Long> = listOf(700, 650, 990),
         files: FileChanges = FileChanges(listOf(SmokeFiles.EXTERNAL), listOf(SmokeFiles.EDITED), emptyList()),
         trace: OpenTrace = OpenTrace(1000, 1000 + own, -1, -1, emptyList()),
+        edit: EditTrace? = null,
     ): String =
         SmokeReport(
             os, state, loading, first, reopen, externalTree, externalStatus, inIdeTree, inIdeStatus, inIdePanel,
-            "board", "0015-x", restoredArea, restoredSelection, restore, themes, files, emptyList(), trace,
+            "board", "0015-x", restoredArea, restoredSelection, restore, themes, files, emptyList(), trace, edit,
         ).toJson()
 
     @Test
@@ -292,5 +293,46 @@ class SmokeCompareTest {
         assertEquals(emptyList<String>(), SmokeCompare.themes(json.toString(), rows))
         assertEquals(0, rows.count { it.verdict == Verdict.INFO })
         assertEquals(-1L, SmokeThemes.WANTED.map { theme(it) }.first().sentMs)
+    }
+
+    @Test
+    fun `the in-IDE change diagnostics reach the rows as values without a budget and never fail`() {
+        val edit = EditTrace(vfsMs = 3, documentMs = 4, watcherMs = 250, dispatchMs = 5, scanMs = 220, readMs = 230, reads = 2, readFailures = 1)
+        val rows = ArrayList<BudgetRow>()
+        assertEquals(emptyList<String>(), SmokeCompare.smoke(report(os = "Windows 11", edit = edit), rows))
+        val diag = rows.filter { it.name.startsWith("AC-020 diag: ") }
+        assertEquals(listOf(3L, 4L, 250L, 5L, 220L, 230L, 2L, 1L), diag.map { it.measured })
+        assertTrue(diag.all { it.verdict == Verdict.INFO && it.budget == BudgetVerdict.NO_BUDGET && it.limit == BudgetVerdict.NO_BUDGET })
+        assertEquals(3, rows.count { it.name.startsWith("AC-020 in-IDE") })
+    }
+
+    @Test
+    fun `an in-IDE change point that never happened is shown as not observed and does not fail`() {
+        val rows = ArrayList<BudgetRow>()
+        assertEquals(emptyList<String>(), SmokeCompare.smoke(report(edit = EditTrace.NONE), rows))
+        val diag = rows.filter { it.name.startsWith("AC-020 diag: ") }
+        assertEquals(listOf(-1L, -1L, -1L, -1L, -1L, -1L, 0L, 0L), diag.map { it.measured })
+        assertTrue(diag.all { it.verdict == Verdict.INFO })
+    }
+
+    @Test
+    fun `a report without the in-IDE change trace has no diagnostic rows`() {
+        val rows = ArrayList<BudgetRow>()
+        SmokeCompare.smoke(report(), rows)
+        assertEquals(0, rows.count { it.name.startsWith("AC-020 diag: ") })
+    }
+
+    @Test
+    fun `the in-IDE change diagnostics are written to the JSON`() {
+        val root = JsonParser.parseString(report(edit = EditTrace(1, 2, 3, 4, 5, 6, 7, 8))).asJsonObject
+        assertEquals(1L, root.get("editVfsMs").asLong)
+        assertEquals(2L, root.get("editDocumentMs").asLong)
+        assertEquals(3L, root.get("editWatcherMs").asLong)
+        assertEquals(4L, root.get("editDispatchMs").asLong)
+        assertEquals(5L, root.get("editScanMs").asLong)
+        assertEquals(6L, root.get("editReadMs").asLong)
+        assertEquals(7L, root.get("editReads").asLong)
+        assertEquals(8L, root.get("editReadFailures").asLong)
+        assertEquals(false, JsonParser.parseString(report()).asJsonObject.has("editVfsMs"))
     }
 }
