@@ -1,12 +1,17 @@
 package com.gregorbiswanger.featherspec.studio.assistant
 
+import com.gregorbiswanger.featherspec.studio.ports.HostOs
+import com.gregorbiswanger.featherspec.studio.ports.ShellCommand
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.frontend.toolwindow.TerminalToolWindowTabsManager
 import com.intellij.ui.content.Content
 import javax.swing.JComponent
 
-class TerminalGlue(private val project: Project) : TerminalAccess {
+class TerminalGlue(
+    private val project: Project,
+    private val launch: (CliAgent) -> String = { it.command },
+) : TerminalAccess {
     override fun tabs(): List<TerminalTab> = onEdt {
         val listed = ArrayList<TerminalTab>()
         for (tab in TerminalToolWindowTabsManager.getInstance(project).tabs) {
@@ -32,7 +37,8 @@ class TerminalGlue(private val project: Project) : TerminalAccess {
     override fun shellReady(key: Any): Boolean = onEdt { shellIntegration(viewOf(key)) != null }
 
     override fun runAgent(key: Any, agent: CliAgent) {
-        onEdt { send(viewOf(key), agent.command, execute = true, bracketed = false) }
+        val executable = launch(agent)
+        onEdt { send(viewOf(key), typedCommand(executable, agent), execute = true, bracketed = false) }
     }
 
     override fun screen(key: Any, agent: CliAgent): Screen? = onEdt {
@@ -55,6 +61,21 @@ class TerminalGlue(private val project: Project) : TerminalAccess {
             window?.activate(null)
             (TerminalReflect.callOrNull(viewOf(key), "getPreferredFocusableComponent") as? JComponent)?.requestFocusInWindow()
         }
+    }
+
+    // A full path is quoted for the shell the terminal runs; the plain command is typed as it is.
+    private fun typedCommand(executable: String, agent: CliAgent): String =
+        if (executable == agent.command) executable else ShellCommand.launch(executable, ShellCommand.shellOf(shellPath(), HostOs.windows))
+
+    private fun shellPath(): String? = try {
+        val options = Class.forName(OPTIONS_PROVIDER).getMethod("getInstance", Project::class.java).invoke(null, project)
+        TerminalReflect.callOrNull(options, "getShellPath") as? String
+    } catch (failure: ReflectiveOperationException) {
+        null
+    } catch (failure: RuntimeException) {
+        null
+    } catch (failure: LinkageError) {
+        null
     }
 
     private class CommandState(val ready: Boolean, val executing: Boolean, val command: String?, val workingDirectory: String?)
@@ -117,6 +138,7 @@ class TerminalGlue(private val project: Project) : TerminalAccess {
 
     private companion object {
         const val TOOL_WINDOW_ID = "Terminal"
+        const val OPTIONS_PROVIDER = "org.jetbrains.plugins.terminal.TerminalProjectOptionsProvider"
         const val EXECUTING = "ExecutingCommand"
         const val TEXT_TAIL = 20_000
     }

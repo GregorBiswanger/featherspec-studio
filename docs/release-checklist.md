@@ -360,7 +360,8 @@ Evidence for spec 0035 AC-027 and AC-053; plugin ZIP, Rider 2026.3 and `C:\proje
 
 - [ ] **Send to Claude Code** (AC-027): *Assistant* Claude Code; in the `NS-7-start` situation the main part puts the prompt with two `@` mentions into a running `claude` tab, and with no such tab into a new `Claude Code` tab after `claude` is ready; nothing is sent; Enter in the tab sends it with both files.
 - [ ] **Send to Junie and Send to Copilot** (AC-053): each with its CLI on the PATH, in the `NS-7-start` situation: the prompt with its two `@` mentions in a running agent tab, a new tab `Junie` or `GitHub Copilot` otherwise; nothing sent, no escape characters; the waiting text at the trust or login screen; Safe Mode starts no tab; note whether the `@` paths become file references (A-011) and whether the paste mode holds (A-010).
-- [ ] **Options and setting** (AC-053): without the CLI on the PATH the option is missing and the hint shows; unset follows Junie; a change of *Assistant* shows in the panel without an IDE restart.
+- [ ] **Options and setting** (AC-053): without the CLI on the PATH the option is greyed out with its reason and the hint shows (AC-056); unset follows Junie; a change of *Assistant* shows in the panel without an IDE restart.
+- [ ] **IDE-managed Junie** (AC-054, AC-055, AC-056): Rider with Junie only as the AI Assistant's agent (no `junie` on the PATH): the option `Junie` is selectable, Send to Junie opens a tab `Junie` that starts the agent from `acp-agents/junie/<version>` and types the prompt without Enter; Claude Code and GitHub Copilot without their command are greyed out with the reason.
 - [ ] **VS Code** (AC-053): the empty state with Send to Copilot on a project without specs.
 
 ## Go

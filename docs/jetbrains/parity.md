@@ -813,6 +813,9 @@ Generated from `.specs/done/` and `.specs/active/` by `src/adapters/node/parity.
 | 0035 | AC-051 | deliberately different | PD-112 (the host passes the effective Assistant value to the core) |  |
 | 0035 | AC-052 | deliberately different | PD-112 (the README sentence about starting an agent concerns JetBrains only) |  |
 | 0035 | AC-053 | deliberately different | PD-112 (manual check in Rider with Junie and GitHub Copilot) |  |
+| 0035 | AC-054 | deliberately different | PD-112 (amendment 2026-11-26: the Junie agent that the IDE installs) |  |
+| 0035 | AC-055 | deliberately different | PD-112 (amendment 2026-11-26: Send starts the full path) |  |
+| 0035 | AC-056 | deliberately different | PD-112 (amendment 2026-11-26: unavailable agents stay listed) |  |
 | 0036 | AC-001 | n-a | Release process of both products (0036 §1): no product behaviour to mirror in JetBrains |  |
 | 0036 | AC-002 | n-a | Release process of both products (0036 §1): no product behaviour to mirror in JetBrains |  |
 | 0036 | AC-003 | n-a | Release process of both products (0036 §1): no product behaviour to mirror in JetBrains |  |

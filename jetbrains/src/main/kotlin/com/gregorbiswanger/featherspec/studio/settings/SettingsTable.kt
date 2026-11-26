@@ -3,6 +3,8 @@ package com.gregorbiswanger.featherspec.studio.settings
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
+import com.gregorbiswanger.featherspec.studio.assistant.CliAgents
+import com.gregorbiswanger.featherspec.studio.ports.PluginIds
 
 data class SettingsModel(
     val showStepTips: Boolean = SettingsTable.SHOW_STEP_TIPS_DEFAULT,
@@ -47,13 +49,17 @@ object SettingsTable {
     const val ASSISTANT_DESCRIPTION = "The assistant your next step goes to. Studio sends nothing; Copy prompt stays in the button's menu."
 
     const val ASSISTANT_HINT =
-        "Junie, Claude Code and GitHub Copilot appear here once their command is on the IDE's PATH. Installed one just now? Restart the IDE."
+        "Assistants that are not available are greyed out with the reason. Installed one just now? Restart the IDE."
+
+    const val REASON_SEPARATOR = " \u2014 "
+    const val REASON_TERMINAL_DISABLED = "Terminal plugin is disabled"
+    const val REASON_JUNIE_NOT_FOUND = "not found (install the Junie CLI or the Junie agent in AI Assistant)"
 
     val ASSISTANT_OPTIONS: List<AssistantOption> = listOf(
         AssistantOption(
             ASSISTANT_JUNIE,
             "Junie",
-            "Send to Junie types the prompt into the Junie CLI in the IDE terminal and sends nothing. Needs the junie command and the Terminal plugin.",
+            "Send to Junie types the prompt into the Junie CLI in the IDE terminal and sends nothing. Needs the junie command or the Junie agent of AI Assistant, and the Terminal plugin.",
         ),
         AssistantOption(
             ASSISTANT_CLAUDE_CODE,
@@ -78,6 +84,20 @@ object SettingsTable {
 
     fun options(plugins: List<String>): List<AssistantOption> =
         ASSISTANT_OPTIONS.filter { assistantAvailable(it.value, plugins) }
+
+    // Why an agent cannot be selected, or null when it can (and for "None" and unknown values).
+    fun unavailableReason(value: String, plugins: List<String>): String? {
+        val agent = CliAgents.byId(value)
+        return when {
+            agent == null || EffectiveAssistant.available(value, plugins) -> null
+            PluginIds.TERMINAL !in plugins -> REASON_TERMINAL_DISABLED
+            agent.id == CliAgents.JUNIE.id -> REASON_JUNIE_NOT_FOUND
+            else -> "`${agent.command}` not on the PATH"
+        }
+    }
+
+    fun rowLabel(option: AssistantOption, plugins: List<String>): String =
+        unavailableReason(option.value, plugins)?.let { option.label + REASON_SEPARATOR + it } ?: option.label
 
     fun assistantHint(plugins: List<String>): String? =
         if (ASSISTANT_OPTIONS.any { !assistantAvailable(it.value, plugins) }) ASSISTANT_HINT else null

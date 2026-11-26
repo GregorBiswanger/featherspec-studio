@@ -64,8 +64,8 @@ describe('0035 review 20 S-6 and S-5 / AC-038, AC-039: the settings page names o
 
     it('AC-039 the README says that each option appears only while its assistant is available, and the stored value stays', async () => {
         const readme = await read('README.md');
-        expect(readme).toContain('Each assistant appears in the setting only while the Terminal plugin and its command are available.');
-        expect(readme).toContain('A stored value whose assistant is missing shows `None: Copy prompt` and is kept.');
+        expect(readme).toContain('Each assistant is selectable only while the Terminal plugin and its command are available');
+        expect(readme).toContain('A stored value whose assistant is not available shows `None: Copy prompt` and is kept.');
         expect(readme).not.toContain('*Junie* appears in the setting only while a Junie plugin is available');
     });
 
@@ -73,7 +73,7 @@ describe('0035 review 20 S-6 and S-5 / AC-038, AC-039: the settings page names o
         const [table, page] = await Promise.all([read(TABLE), read('jetbrains/src/main/kotlin/com/gregorbiswanger/featherspec/studio/settings/StudioConfigurable.kt')]);
         expect(table).toContain('fun assistantAvailable(value: String, plugins: List<String>): Boolean');
         expect(page).not.toContain('junieAvailable');
-        expect(page).toContain('SettingsTable.options(plugins())');
+        expect(page).toContain('SettingsTable.unavailableReason(');
     });
 });
 

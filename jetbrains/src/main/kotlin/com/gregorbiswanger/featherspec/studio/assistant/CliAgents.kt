@@ -23,11 +23,34 @@ class CliAgent(
     }
 
     fun isCommand(text: String?, caseInsensitive: Boolean = false): Boolean {
-        val first = text?.trim()?.split(WHITESPACE, limit = 2)?.firstOrNull()
-        if (first.isNullOrEmpty()) {
+        val trimmed = text?.trim()
+        if (trimmed.isNullOrEmpty()) {
             return false
         }
-        return COMMAND_SUFFIXES.any { suffix -> first.equals(command + suffix, ignoreCase = caseInsensitive) }
+        val first = trimmed.split(WHITESPACE, limit = 2).firstOrNull()
+        if (!first.isNullOrEmpty() && COMMAND_SUFFIXES.any { suffix -> first.equals(command + suffix, ignoreCase = caseInsensitive) }) {
+            return true
+        }
+        val executable = executableOf(trimmed) ?: return false
+        val name = executable.substringAfterLast('/').substringAfterLast('\\')
+        return COMMAND_SUFFIXES.any { suffix -> name.equals(command + suffix, ignoreCase = true) }
+    }
+
+    // A full path as the command (PD-112 amendment 2026-11-26): `"C:\a b\junie.exe"`, `& 'C:\a b\junie.exe'` or `/opt/x/junie`.
+    private fun executableOf(text: String): String? {
+        var rest = text
+        if (rest.startsWith("& ")) {
+            rest = rest.substring(2).trimStart()
+        }
+        val quote = rest.firstOrNull() ?: return null
+        val path = if (quote == '"' || quote == '\'') {
+            val end = rest.indexOf(quote, 1)
+            if (end < 0) return null
+            rest.substring(1, end)
+        } else {
+            rest.split(WHITESPACE, limit = 2).firstOrNull().orEmpty()
+        }
+        return path.takeIf { it.contains('/') || it.contains('\\') }
     }
 
     private fun lastIndexOfAny(text: String, markers: List<String>): Int = markers.maxOf { text.lastIndexOf(it) }

@@ -8,7 +8,7 @@
 <li><b>Specs tool window</b>: your specs in four groups, each with its next step.</li>
 <li><b>Overview, Board and Plan map</b> in an editor tab, in the colours of your IDE theme.</li>
 <li><b>Copy prompt</b>: the exact FeatherSpec prompt on your clipboard, ready to paste into your AI assistant.</li>
-<li><b>Send to Junie, Claude Code or GitHub Copilot</b> types the prompt and its file mentions into that assistant's command-line agent in the IDE terminal (<code>junie</code>, <code>claude</code>, <code>copilot</code>); when you click it, it may start the agent in a new terminal tab. It never presses Enter. An assistant is offered only while its command is on the IDE's PATH.</li>
+<li><b>Send to Junie, Claude Code or GitHub Copilot</b> types the prompt and its file mentions into that assistant's command-line agent in the IDE terminal (<code>junie</code>, <code>claude</code>, <code>copilot</code>); when you click it, it may start the agent in a new terminal tab. It never presses Enter. An assistant can be chosen only while its command is on the IDE's PATH (Junie also as the agent that AI Assistant installs); the others are listed greyed out with the reason.</li>
 </ul>
 <p>The Studio sends nothing. It is local and read-only: no account, no telemetry; the one network call is the FeatherSpec download you start with Set up FeatherSpec. It needs the IDE's embedded browser (JCEF).</p>
 <p>It runs in IntelliJ-based IDEs from version 2025.3.1: Rider, WebStorm, PhpStorm, IntelliJ IDEA, PyCharm, GoLand, CLion, RubyMine and RustRover. It is tested in Rider and WebStorm; the other IDEs are checked with the JetBrains Plugin Verifier.</p>

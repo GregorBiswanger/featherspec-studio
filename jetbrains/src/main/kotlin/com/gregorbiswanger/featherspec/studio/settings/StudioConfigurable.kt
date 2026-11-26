@@ -6,6 +6,7 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.builder.bindItem
 import com.intellij.ui.dsl.builder.bindSelected
@@ -20,6 +21,7 @@ class StudioConfigurable : BoundConfigurable(DISPLAY_NAME) {
     private var assistantDescription: JBLabel? = null
     private var assistantHint: JBLabel? = null
     private var unsubscribe: (() -> Unit)? = null
+    private var shownPlugins: List<String> = emptyList()
 
     private fun plugins(): List<String> = PluginOptionsBus.shared.last
 
@@ -36,6 +38,32 @@ class StudioConfigurable : BoundConfigurable(DISPLAY_NAME) {
             },
         )
     }
+
+    // Every assistant is listed; the ones that are not available stay visible, greyed out with the reason, and cannot be selected.
+    private fun guardedModel(available: List<String>): DefaultComboBoxModel<AssistantOption> {
+        val model = object : DefaultComboBoxModel<AssistantOption>(SettingsTable.ASSISTANT_OPTIONS.toTypedArray()) {
+            override fun setSelectedItem(anObject: Any?) {
+                if (anObject is AssistantOption && SettingsTable.unavailableReason(anObject.value, available) != null) {
+                    return
+                }
+                super.setSelectedItem(anObject)
+            }
+        }
+        shownPlugins = available
+        return model
+    }
+
+    private fun assistantRenderer(): SimpleListCellRenderer<AssistantOption> =
+        SimpleListCellRenderer.create<AssistantOption> { label, option, _ ->
+            if (option != null) {
+                val reason = SettingsTable.unavailableReason(option.value, shownPlugins)
+                label.text = SettingsTable.rowLabel(option, shownPlugins)
+                label.isEnabled = reason == null
+                if (reason != null) {
+                    label.foreground = UIUtil.getLabelDisabledForeground()
+                }
+            }
+        }
 
     private fun showAssistantHint(available: List<String>) {
         val hint = SettingsTable.assistantHint(available)
@@ -54,14 +82,19 @@ class StudioConfigurable : BoundConfigurable(DISPLAY_NAME) {
         draft = change(draft ?: stored())
     }
 
-    override fun createPanel(): DialogPanel = panel {
+    override fun createPanel(): DialogPanel {
+        shownPlugins = plugins()
+        return buildPanel()
+    }
+
+    private fun buildPanel(): DialogPanel = panel {
         row {
             checkBox(SettingsTable.SHOW_STEP_TIPS_LABEL)
                 .bindSelected({ stored().showStepTips }, { value -> edit { it.copy(showStepTips = value) } })
                 .comment(SettingsTable.SHOW_STEP_TIPS_DESCRIPTION)
         }
         row(SettingsTable.ASSISTANT_LABEL) {
-            val combo = comboBox(SettingsTable.options(plugins()))
+            val combo = comboBox(SettingsTable.ASSISTANT_OPTIONS, assistantRenderer())
                 .bindItem(
                     { SettingsTable.displayed(stored().assistant, plugins()) },
                     { option ->
@@ -116,7 +149,7 @@ class StudioConfigurable : BoundConfigurable(DISPLAY_NAME) {
 
     override fun reset() {
         draft = null
-        assistantCombo?.model = DefaultComboBoxModel(SettingsTable.options(plugins()).toTypedArray())
+        assistantCombo?.model = guardedModel(plugins())
         super.reset()
         showAssistantDescription()
         showAssistantHint(plugins())
@@ -133,7 +166,7 @@ class StudioConfigurable : BoundConfigurable(DISPLAY_NAME) {
         val combo = assistantCombo ?: return
         val chosen = combo.selectedItem as? AssistantOption
         val options = SettingsTable.options(available)
-        combo.model = DefaultComboBoxModel(options.toTypedArray())
+        combo.model = guardedModel(available)
         combo.selectedItem = options.firstOrNull { it == chosen } ?: SettingsTable.displayed((draft ?: stored()).assistant, available)
         showAssistantDescription()
         showAssistantHint(available)

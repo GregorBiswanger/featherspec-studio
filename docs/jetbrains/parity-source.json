@@ -1762,6 +1762,18 @@
                 "AC-053": {
                     "category": "deliberately different",
                     "reference": "PD-112 (manual check in Rider with Junie and GitHub Copilot)"
+                },
+                "AC-054": {
+                    "category": "deliberately different",
+                    "reference": "PD-112 (amendment 2026-11-26: the Junie agent that the IDE installs)"
+                },
+                "AC-055": {
+                    "category": "deliberately different",
+                    "reference": "PD-112 (amendment 2026-11-26: Send starts the full path)"
+                },
+                "AC-056": {
+                    "category": "deliberately different",
+                    "reference": "PD-112 (amendment 2026-11-26: unavailable agents stay listed)"
                 }
             }
         },

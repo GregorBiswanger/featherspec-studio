@@ -7,6 +7,7 @@ import com.intellij.ide.plugins.DynamicPluginListener
 import com.intellij.ide.plugins.IdeaPluginDescriptor
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.progress.ProcessCanceledException
@@ -53,8 +54,15 @@ class IdePlugins : PluginQuery {
         if (PluginIds.TERMINAL !in plugins) {
             return plugins
         }
-        val found = CliAvailability.finder({ CliAvailability.pathOf(::idePath) { System.getenv("PATH") } }, File.pathSeparatorChar, CliOnPath::existsOnDisk)
+        val onPath = CliAvailability.finder({ CliAvailability.pathOf(::idePath) { System.getenv("PATH") } }, File.pathSeparatorChar, CliOnPath::existsOnDisk)
+        val found = CliAvailability.orManaged(onPath) { agent -> IdeManagedJunie.managedPath(agent, ::managedJunie) }
         return CliAvailability.snapshot(plugins, found)
+    }
+
+    private fun managedJunie(): String? = try {
+        IdeManagedJunie.findOnDisk(PathManager.getSystemPath(), HostOs.windows)
+    } catch (failure: RuntimeException) {
+        null
     }
 
     private fun idePath(): String? {

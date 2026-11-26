@@ -10,6 +10,8 @@ First release.
 
 ### Added
 
+- JetBrains IDEs, Send to Junie (0035, PD-112 amendment 2026-11-26, AC-054 to AC-056): Junie is also found as the agent that the AI Assistant installs into the IDE, not only as `junie` on the PATH, and Send starts it by its full path; an assistant that is not available stays in the *Assistant* list, greyed out with the reason.
+
 - JetBrains IDEs, setting *Assistant* (0035, PD-112): **Send to Junie**, **Send to Claude Code** and **Send to Copilot** type the
   prompt and its `@` file mentions into a tab of the IDE terminal that runs the command-line agent (`junie`, `claude`,
   `copilot`; a new tab runs the bare command first) and never press Enter. PD-112 removed the Copy-for handover of PD-108

@@ -506,6 +506,15 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 - [x] **Verified (T-024):** 2026-11-24 · red first (the 3 known tests: `docs0035` AC-025 every criterion has a row, `parity` AC-001 and AC-002; plus the docs tests that still demanded the Copy for text, 13 in all); green after: `parity-source.json` (15 struck criteria `n-a` with PD-112 and their successor, AC-043 to AC-045 and AC-047 to AC-053 `deliberately different`, AC-046 `shared`; the ranges AC-007..AC-010, AC-016..AC-017, AC-019..AC-020, AC-027..AC-028 were split so that no criterion is listed twice) regenerated with `FEATHERSPEC_WRITE_PARITY=1`; README (AC-052's sentence in the three places, section *JetBrains IDEs* now *Send*), CHANGELOG (PD-112, removal of the Copy-for handover), `docs/release-checklist.md` (AC-027, AC-053), `.architecture/{core,hosts,jetbrains}.md`, `.memory-bank/{systemPatterns,techContext,activeContext}.md`, `jetbrains/AGENTS.md`; new `docs0035PD112.test.ts` (8); `docs0035.test.ts`, `docs0035Review20B.test.ts` and `docsScan.test.ts` follow the new texts; `EXEMPT_UNTIL_DOCS` is empty. Gates (G10): `npx vitest run --project node --project webview`: 4485 green, 0 red, 6 skipped · timing projects 35/35 · `npm run check-types` 0 · `eslint src --max-warnings 0` 0 · `node --test 'jetbrains/guards/*.test.mjs'` 75/75 · `sharedGuard` against a worktree at `1765403`: no test missing · local Kotlin 186/186 · AGENTS.md 14991 B (< 15000), activeContext.md < 7000 B. *Deviation:* the CHANGELOG says `Copy-for` (hyphen) so that AC-050's scan stays literal-free; AC-052's `the removal of Copy for` is met in meaning.
 - **Notes:** then T-014 and T-015 (AC-027 and AC-053).
 
+### T-025 — The IDE-managed Junie and unavailable agents in the settings (PD-112 amendment 2026-11-26)
+
+- **Covers:** AC-054, AC-055, AC-056
+- **Files:** `ports/IdeManagedJunie.kt` (`IdeManagedJunie`, `ShellCommand`), `ports/{CliAvailability,IdePlugins}.kt`, `assistant/{CliAgents,TerminalGlue,IdeAssistantCalls}.kt`, `settings/{SettingsTable,StudioConfigurable}.kt`, tests `IdeManagedJunieTest.kt`, `CliAgentsTest.kt`, `CliAvailabilityTest.kt`, `SettingsTableTest.kt`; README, CHANGELOG, `plugin.xml`, `docs/jetbrains/parity-source.json`.
+- **Tests first:** the version choice (ignored folders, numeric order), the executable name per OS, PATH over IDE-managed, `isCommand` on a full path, the quoting per shell, the unavailable reasons.
+- **Verify:** `node --test jetbrains/guards/*.test.mjs`; `npx vitest run --project node`; CI `plugin` on 3 OS runs `IdeManagedJunieTest`, `CliAgentsTest`, `CliAvailabilityTest`, `SettingsTableTest`.
+- [x] **Verified (T-025):** 2026-11-26 · built; Kotlin not compiled locally, CI pending · manual check on Rider 2026.3 (Windows, Junie only as the AI Assistant's agent): open.
+- **Notes:** the terminal's shell is read by reflection (`TerminalProjectOptionsProvider.getShellPath`); where that fails Windows assumes PowerShell and other systems a POSIX shell.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -550,6 +559,9 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 | AC-051 | T-020 | `settings/EffectiveAssistant.kt`, `StudioSettings.kt`, `StudioProjectService.kt` | `EffectiveAssistantTest.kt`; VS Code `assistantTable0035.test.ts` · local gates and CI `plugin` 3 OS at `6b75ef0` (run 45728313993) | verified |
 | AC-052 | T-024 | `README.md`, `CHANGELOG.md`, `docs/release-checklist.md` | `docs0035PD112.test.ts` · local gates and CI `plugin` 3 OS at `6b75ef0` (run 45728313993) | verified |
 | AC-053 | T-015 | — | manual: Gregor, Rider, Junie CLI and Copilot CLI · partial: Send to Copilot seen (terminal, CLI, prompt); Junie not seen; the rest of the criterion not recorded · partial, manual 2026-11-26 (Claude via computer use, Rider 2026.3.0.1, plugin `6b75ef0`): Settings → Tools → FeatherSpec Studio offers Claude Code, GitHub Copilot and None: Copy prompt; Junie is absent because the Junie CLI is not on the IDE's PATH, and the hint 'Junie, Claude Code and GitHub Copilot appear here once their command is on the IDE's PATH. Installed one just now? Restart the IDE.' shows (covers 'without the CLI on the PATH the option is missing and the hint shows' for Junie). Still open: everything with a running Junie or Copilot CLI tab, Safe Mode, the unset-setting default, CLI versions, `/sdd-overview` as a command. No state change | open |
+| AC-054 | T-025 | `ports/IdeManagedJunie.kt`, `ports/{CliAvailability,IdePlugins}.kt` | `IdeManagedJunieTest.kt`, `CliAvailabilityTest.kt` · CI pending · manual on Rider open | built |
+| AC-055 | T-025 | `ports/IdeManagedJunie.kt` (`ShellCommand`), `assistant/{CliAgents,TerminalGlue,IdeAssistantCalls}.kt` | `IdeManagedJunieTest.kt`, `CliAgentsTest.kt` · CI pending · manual on Rider open | built |
+| AC-056 | T-025 | `settings/{SettingsTable,StudioConfigurable}.kt` | `SettingsTableTest.kt` · CI pending · manual on Rider open | built |
 
 ## Session handoff
 

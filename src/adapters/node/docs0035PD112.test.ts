@@ -9,9 +9,9 @@ async function read(file: string): Promise<string> {
 }
 
 const SPEC = '.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md';
-const HINT = "Junie, Claude Code and GitHub Copilot appear here once their command is on the IDE's PATH. Installed one just now? Restart the IDE.";
+const HINT = "Assistants that are not available are greyed out with the reason. Installed one just now? Restart the IDE.";
 const STRUCK = ['AC-001', 'AC-003', 'AC-004', 'AC-009', 'AC-016', 'AC-017', 'AC-018', 'AC-019', 'AC-020', 'AC-022', 'AC-028', 'AC-030', 'AC-033', 'AC-034', 'AC-039'];
-const NEW_DIFFERENT = ['AC-043', 'AC-044', 'AC-045', 'AC-047', 'AC-048', 'AC-049', 'AC-050', 'AC-051', 'AC-052', 'AC-053'];
+const NEW_DIFFERENT = ['AC-043', 'AC-044', 'AC-045', 'AC-047', 'AC-048', 'AC-049', 'AC-050', 'AC-051', 'AC-052', 'AC-053', 'AC-054', 'AC-055', 'AC-056'];
 
 describe('0035 PD-112 AC-052: README, CHANGELOG and checklist', () => {
     it('the section JetBrains IDEs names the three Sends, the three commands, the Terminal plugin, the hint, Safe Mode and the waiting text', async () => {

@@ -105,7 +105,7 @@ class SettingsTableTest {
         assertEquals(listOf("Junie", "Claude Code", "GitHub Copilot", "None: Copy prompt"), SettingsTable.ASSISTANT_OPTIONS.map { it.label })
         assertEquals(
             listOf(
-                "Send to Junie types the prompt into the Junie CLI in the IDE terminal and sends nothing. Needs the junie command and the Terminal plugin.",
+                "Send to Junie types the prompt into the Junie CLI in the IDE terminal and sends nothing. Needs the junie command or the Junie agent of AI Assistant, and the Terminal plugin.",
                 "Send to Claude Code types the prompt into Claude Code in the IDE terminal and sends nothing. Needs the claude command and the Terminal plugin.",
                 "Send to Copilot types the prompt into the GitHub Copilot CLI in the IDE terminal and sends nothing. Needs the copilot command and the Terminal plugin.",
                 "Copy the prompt and paste it into any assistant.",
@@ -114,7 +114,7 @@ class SettingsTableTest {
         )
         assertEquals("Junie", SettingsTable.ASSISTANT_OPTIONS[0].toString())
         assertEquals(
-            "Junie, Claude Code and GitHub Copilot appear here once their command is on the IDE's PATH. Installed one just now? Restart the IDE.",
+            "Assistants that are not available are greyed out with the reason. Installed one just now? Restart the IDE.",
             SettingsTable.ASSISTANT_HINT,
         )
     }
@@ -281,5 +281,32 @@ class SettingsTableTest {
         assertEquals("", settings.get("assistant").asString)
         assertFalse(settings.get("showStepTips").asBoolean)
         assertEquals("S", settings.getAsJsonObject("modelHints").get("strong").asString)
+    }
+
+    @Test
+    fun `AC-056 an agent that is not available is listed with its reason and cannot be chosen`() {
+        val none = emptyList<String>()
+        assertEquals(
+            "Junie \u2014 not found (install the Junie CLI or the Junie agent in AI Assistant)",
+            SettingsTable.rowLabel(SettingsTable.ASSISTANT_OPTIONS[0], listOf(terminal)),
+        )
+        assertEquals("Claude Code \u2014 `claude` not on the PATH", SettingsTable.rowLabel(SettingsTable.ASSISTANT_OPTIONS[1], listOf(terminal)))
+        assertEquals("GitHub Copilot \u2014 `copilot` not on the PATH", SettingsTable.rowLabel(SettingsTable.ASSISTANT_OPTIONS[2], listOf(terminal, "cli:junie")))
+        assertEquals("Claude Code \u2014 Terminal plugin is disabled", SettingsTable.rowLabel(SettingsTable.ASSISTANT_OPTIONS[1], none))
+        assertEquals("Terminal plugin is disabled", SettingsTable.unavailableReason("junie", listOf("cli:junie")))
+    }
+
+    @Test
+    fun `AC-056 an available agent, None and an unknown value have no reason and keep their label`() {
+        assertEquals(null, SettingsTable.unavailableReason("junie", listOf(terminal, "cli:junie")))
+        assertEquals(null, SettingsTable.unavailableReason("none", emptyList()))
+        assertEquals(null, SettingsTable.unavailableReason("bogus", emptyList()))
+        assertEquals("Junie", SettingsTable.rowLabel(SettingsTable.ASSISTANT_OPTIONS[0], listOf(terminal, "cli:junie")))
+        assertEquals("None: Copy prompt", SettingsTable.rowLabel(SettingsTable.ASSISTANT_OPTIONS[3], emptyList()))
+    }
+
+    @Test
+    fun `AC-056 a stored value of an unavailable agent still shows None`() {
+        assertEquals("none", SettingsTable.displayed("junie", listOf(terminal)).value)
     }
 }

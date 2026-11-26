@@ -21,6 +21,10 @@ object CliAvailability {
         return { agent -> found(agent, path, separator, exists) }
     }
 
+    // Available on the PATH (preferred) or, for Junie, as the agent the AI Assistant installed into the IDE system directory.
+    fun orManaged(onPath: (CliAgent) -> Boolean, managed: (CliAgent) -> String?): (CliAgent) -> Boolean =
+        { agent -> onPath(agent) || managed(agent) != null }
+
     fun pathOf(ide: () -> String?, process: () -> String?): String? {
         val fromIde = try {
             ide()

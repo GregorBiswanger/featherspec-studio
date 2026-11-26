@@ -773,3 +773,43 @@ the three Sends; AC-027 stays for Claude Code beside AC-053. Parity: the struck 
 
 **Why not keep Copy for:** it asked one more paste and promised references it could not prove (AC-030); a CLI agent in the IDE
 terminal takes the prompt in its input exactly as Claude Code does, and the developer still presses Enter.
+
+### Amendment 2026-11-26: PD-112, the Junie agent that the IDE installs itself; unavailable agents stay listed
+
+Source: Gregor's finding on Rider 2026.3 (Windows) and his decision of 2026-11-26. JetBrains installs Junie as the AI Assistant's
+ACP agent into the IDE system directory (`<system path>/acp-agents/junie/<version>/`, with `.installed`, `junie/junie.exe`,
+`junie/app`, `junie/runtime`), not on the PATH, so §16's availability (a name on the PATH) never offered Junie there. This
+amendment widens Junie's availability, makes Send start that executable by its full path, and lists the agents that are not
+available instead of hiding them. It changes AC-043 (list and hint), AC-044 (availability) and AC-048 (tab recognition); nothing
+else. VS Code is unchanged.
+
+- **AC-054** *(PD-112; extends AC-044)* Junie shall be available while the Terminal plugin is available and either a `junie`
+  name lies on the PATH (AC-044, unchanged and preferred) or an IDE-managed Junie exists: a folder `<system path>/acp-agents/junie/<version>/`
+  (the system path of `PathManager.getSystemPath()`) that holds the file `.installed` and the regular file `junie/junie.exe` on
+  Windows or `junie/junie` on any other system, `<version>` being only numbers separated by dots. Folders whose name is not of that
+  form, folders without `.installed` and folders without the executable shall be ignored; among the rest the highest version,
+  compared by its numeric segments (`4171.4.0` above `4100.11.0`, `10.0` above `9.9`), shall be the one used. The search shall
+  run the executable never, use no network and treat a missing or unreadable directory as no Junie. Pure logic (name check,
+  version order, choice, candidate path) shall sit in one platform-free object that takes the directory listing and the
+  file test as functions.
+- **AC-055** *(PD-112; extends AC-047, AC-048)* When Junie is available by the PATH, Send shall start the plain command `junie`
+  as before. When it is available only as the IDE-managed one, Send shall start the tab with that executable's full path, quoted
+  for the shell of the terminal (PowerShell: `& '<path>'`, cmd: `"<path>"`, a POSIX shell: `'<path>'`; no quote where the path
+  holds only letters, digits and `_./:\@%+=,-`, and none for a backslash in a POSIX shell), and shall change nothing else:
+  the prompt typed without Enter, the markers, the readiness wait and the 15 000 ms budget. A terminal tab whose command is
+  the agent's name, or a full path (quoted, or after `& `) whose file name without extension (`.exe`, `.bat`, `.cmd`) equals the
+  agent's command, ignoring case, shall be that agent's tab (`isCommand`, the probe's tab report); `echo junie` and `junie2`
+  shall not. A *not installed* failure shall not be told while the IDE-managed Junie exists.
+- **AC-056** *(PD-112; changes AC-043)* The *Assistant* combo shall list `Junie`, `Claude Code`, `GitHub Copilot` and `None: Copy
+  prompt` always. An agent that is not available shall be shown greyed out and cannot be selected, its label followed by ` — ` and
+  the reason: `Junie — not found (install the Junie CLI or the Junie agent in AI Assistant)`, `Claude Code — `claude` not on
+  the PATH`, `GitHub Copilot — `copilot` not on the PATH`, and for every agent while the Terminal plugin is not available `<label> —
+  Terminal plugin is disabled`. The hint under the combo, shown while one of the three is not available, shall read `Assistants that are not available are greyed out with
+  the reason. Installed one just now? Restart the IDE.` (replaces §16's hint); the Junie option description shall read `Send to Junie types the prompt
+  into the Junie CLI in the IDE terminal and sends nothing. Needs the junie command or the Junie agent of AI Assistant, and the
+  Terminal plugin.` A stored value of an unavailable agent shall behave as before (OP-013): the combo shows `None: Copy prompt`
+  and the value stays stored until another one is applied; `None` stays selectable.
+
+Proof: unit tests (`IdeManagedJunieTest`, `CliAgentsTest`, `CliAvailabilityTest`, `SettingsTableTest`); manual check on Rider 2026.3
+(Windows, Junie only as the AI Assistant's agent) is open. Parity: AC-054 to AC-056 `deliberately different` with PD-112.
+

@@ -160,4 +160,26 @@ class CliAgentsTest {
         assertFalse(CliOnPath.existsOnDisk("/definitely/not/here", "junie"))
         assertFalse(CliOnPath.existsOnDisk("\u0000", "junie"))
     }
+
+    @Test
+    fun `AC-055 a full path is the agent's command by its file name without extension, with or without quotes`() {
+        val windows = "C:\\Users\\Gregor B\\AppData\\Local\\JetBrains\\Rider2026.3\\acp-agents\\junie\\4171.4.0\\junie\\junie.exe"
+        for (text in listOf("\"$windows\"", "& '$windows'", "\"$windows\" --help", "C:\\tools\\junie.exe", "/home/gregor/.cache/junie/4171.4.0/junie/junie", "'/opt/a b/junie'", "./junie")) {
+            assertTrue(CliAgents.JUNIE.isCommand(text), text)
+            assertEquals(CliAgents.JUNIE, CliAgents.agentOf(text), text)
+        }
+        assertTrue(CliAgents.JUNIE.isCommand("\"C:\\a b\\JUNIE.EXE\""))
+        assertTrue(CliAgents.CLAUDE_CODE.isCommand("/usr/local/bin/claude"))
+    }
+
+    @Test
+    fun `AC-055 a path of another file name, an unclosed quote or a command that only mentions a path is no agent tab`() {
+        assertFalse(CliAgents.JUNIE.isCommand("\"C:\\a b\\junie2.exe\""))
+        assertFalse(CliAgents.JUNIE.isCommand("/opt/junie/bin/other"))
+        assertFalse(CliAgents.JUNIE.isCommand("\"C:\\a b\\junie.exe"))
+        assertFalse(CliAgents.JUNIE.isCommand("& "))
+        assertFalse(CliAgents.JUNIE.isCommand("cat /opt/junie"))
+        assertFalse(CliAgents.JUNIE.isCommand("\"C:\\a b\\junie.ps1\""))
+        assertFalse(CliAgents.COPILOT.isCommand("\"C:\\a b\\junie.exe\""))
+    }
 }
