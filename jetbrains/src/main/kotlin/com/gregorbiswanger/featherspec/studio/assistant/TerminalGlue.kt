@@ -115,12 +115,24 @@ class TerminalGlue(
 
     private fun executedCommand(block: Any): String? = TerminalReflect.callOrNull(block, "getExecutedCommand") as? String
 
+    // Full-screen agents (Junie) draw into the alternate screen buffer, others into the regular one: read both,
+    // the alternate one last so a running full-screen agent's input box is what the markers see last.
     private fun regularText(view: Any): String {
         val models = TerminalReflect.call(view, "getOutputModels") ?: return ""
-        val regular = TerminalReflect.call(models, "getRegular") ?: return ""
-        val start = TerminalReflect.call(regular, "getStartOffset")
-        val end = TerminalReflect.call(regular, "getEndOffset")
-        return TerminalReflect.call(regular, "getText", start, end).toString().takeLast(TEXT_TAIL)
+        val regular = TerminalReflect.call(models, "getRegular")?.let { textOf(it) }.orEmpty()
+        val alternative = try {
+            TerminalReflect.callOrNull(models, "getAlternative")?.let { textOf(it) }.orEmpty()
+        } catch (failure: RuntimeException) {
+            ""
+        }
+        val text = if (alternative.isBlank()) regular else regular + "\n" + alternative
+        return text.takeLast(TEXT_TAIL)
+    }
+
+    private fun textOf(model: Any): String {
+        val start = TerminalReflect.call(model, "getStartOffset")
+        val end = TerminalReflect.call(model, "getEndOffset")
+        return TerminalReflect.call(model, "getText", start, end).toString()
     }
 
     private fun send(view: Any, text: String, execute: Boolean, bracketed: Boolean) {
