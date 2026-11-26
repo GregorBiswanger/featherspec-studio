@@ -36,7 +36,7 @@ class CliAgentsTest {
 
     @Test
     fun `AC-049 the markers are the provisional ones of the spec`() {
-        assertEquals(listOf("? for shortcuts", "shift+tab"), CliAgents.JUNIE.inputMarkers)
+        assertEquals(listOf("? for shortcuts", "shift+tab", "? show help", "/ available commands", "shift + tab"), CliAgents.JUNIE.inputMarkers)
         assertEquals(
             listOf("Continue with JetBrains account", "Use a Junie API key", "Do you trust", "integration plugin"),
             CliAgents.JUNIE.waitingMarkers,

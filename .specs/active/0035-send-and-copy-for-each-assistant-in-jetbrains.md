@@ -541,6 +541,9 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   says otherwise; the *Handover Screen* probe shall report for every terminal tab the agent its command belongs to, that agent's
   verdict, and the hits of every marker of all three agents; after K-1, the redacted `lastLines` of each recorded state shall be
   the fixtures of a replay test whose verdicts equal the probe's.
+  *Amended 2026-11-26 (K-1, Junie):* Junie 26.11.3, the agent Rider 2026.3 installs, shows `? show help`,
+  `/ available commands` and `shift + tab` on its input screen and none of the provisional input markers; Junie's input
+  markers are `? for shortcuts`, `shift+tab`, `? show help`, `/ available commands`, `shift + tab` (waiting markers unchanged).
 - **AC-050** *(PD-112; replaces AC-016, AC-017, AC-019, AC-020, AC-022, AC-030, AC-034)* In JetBrains no step action shall be a
   Copy for: the menu of each Send shall hold `Send to the current chat`, `Send to a new chat` and `Copy prompt` in this order,
   and Copy prompt shall put the line alone on the clipboard and open nothing; the toggletip's Send paragraph shall be 0024's
