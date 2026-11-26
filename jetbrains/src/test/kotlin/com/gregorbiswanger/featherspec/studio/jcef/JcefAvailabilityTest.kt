@@ -1,5 +1,7 @@
 package com.gregorbiswanger.featherspec.studio.jcef
 
+import com.gregorbiswanger.featherspec.studio.runtime.CoreState
+import com.gregorbiswanger.featherspec.studio.runtime.UnavailableKind
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -36,5 +38,34 @@ class JcefAvailabilityTest {
     @Test
     fun `the threshold is 30 s`() {
         assertEquals(30_000L, JcefAvailability.SUSPENDED_AFTER_MS)
+    }
+
+    private val suspended = CoreState.Unavailable(UnavailableKind.SUSPENDED)
+
+    @Test
+    fun `no load after 30 s shows the suspended hint and keeps the core`() {
+        assertEquals(suspended, JcefAvailability.nextState(CoreState.Loading, false, 30_000L))
+        assertEquals(CoreState.Loading, JcefAvailability.nextState(CoreState.Loading, false, 29_999L))
+    }
+
+    @Test
+    fun `a load after the suspended hint goes back to loading`() {
+        assertEquals(CoreState.Loading, JcefAvailability.nextState(suspended, true, 45_000L))
+        assertEquals(suspended, JcefAvailability.nextState(suspended, false, 45_000L))
+    }
+
+    @Test
+    fun `a load before 30 s never shows suspended`() {
+        assertEquals(CoreState.Loading, JcefAvailability.nextState(CoreState.Loading, true, 30_000L))
+        assertEquals(CoreState.Loading, JcefAvailability.nextState(CoreState.Loading, true, 5_000L))
+    }
+
+    @Test
+    fun `unsupported ready and failed are unchanged`() {
+        val unsupported = CoreState.Unavailable(UnavailableKind.UNSUPPORTED)
+        assertEquals(unsupported, JcefAvailability.nextState(unsupported, true, 60_000L))
+        assertEquals(unsupported, JcefAvailability.nextState(unsupported, false, 60_000L))
+        assertEquals(CoreState.Ready, JcefAvailability.nextState(CoreState.Ready, false, 60_000L))
+        assertEquals(CoreState.Failed("x"), JcefAvailability.nextState(CoreState.Failed("x"), true, 60_000L))
     }
 }

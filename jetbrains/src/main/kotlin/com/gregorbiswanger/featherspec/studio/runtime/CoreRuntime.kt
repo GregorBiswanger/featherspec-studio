@@ -216,6 +216,9 @@ class CoreRuntime(
             loaded = true
             config?.let { launchCore(it) }
         }
+        if (state.resumeAfterSuspension()) {
+            thisLogger().info("FeatherSpec core: page loaded after the suspended hint, recovering")
+        }
     }
 
     private fun launchCore(configJson: String) {

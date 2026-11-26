@@ -277,17 +277,18 @@ class StudioProjectService(private val project: Project) : Disposable {
     }
 
     private fun checkSuspended(core: CoreRuntime) {
-        if (Disposer.isDisposed(this) || state.value != CoreState.Loading) {
+        if (Disposer.isDisposed(this)) {
             return
         }
-        val loadedAfterMs = if (core.loadedAtNanos == 0L) null else TimeUnit.NANOSECONDS.toMillis(core.loadedAtNanos - core.createdAtNanos)
-        if (JcefAvailability.decide(true, loadedAfterMs, JcefAvailability.SUSPENDED_AFTER_MS) != Availability.SUSPENDED) {
+        val loaded = core.loadedAtNanos != 0L
+        val next = JcefAvailability.nextState(state.value, loaded, JcefAvailability.SUSPENDED_AFTER_MS)
+        if (next != CoreState.Unavailable(UnavailableKind.SUSPENDED) || state.value != CoreState.Loading) {
             return
         }
-        state.set(CoreState.Unavailable(UnavailableKind.SUSPENDED))
-        if (state.value is CoreState.Unavailable) {
-            runtime = null
-            core.dispose()
+        thisLogger().warn("FeatherSpec core: no page load after 30 s, showing the suspended hint and keeping the core")
+        state.set(next)
+        if (core.loadedAtNanos != 0L) {
+            state.resumeAfterSuspension()
         }
     }
 

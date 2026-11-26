@@ -1322,6 +1322,14 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
 - **Change:** `jcef/JsQueries.kt` is the only caller of `JBCefJSQuery.create`; `CoreRuntime` builds with `setCreateImmediately(false)`, creates the query, then `createImmediately()`; `PanelBrowser` builds with `setCreateImmediately(false)` and creates the query in `wire`. A client-wide `JS_QUERY_POOL_SIZE` was left out on purpose: it would rescue the wrong order and hide the regression from CI.
 - **Guard:** `jetbrains/guards/jsQueryOrder.test.mjs` (stray calls, order in both browsers, negative controls). Kotlin result: CI only.
 
+### T-043 — Keep the core when the suspended hint shows (appended 2026-11-26)
+
+- **Covers:** AC-030
+- **Files:** `jcef/JcefAvailability.kt`, `runtime/CoreState.kt`, `runtime/CoreRuntime.kt`, `StudioProjectService.kt`
+- **Do:** after 30 s without a page load show Unavailable(SUSPENDED) but keep the core and `runtime` (WARN log); a later page load takes SUSPENDED back to Loading (INFO log) and on the normal path to Ready. Decision in the pure `JcefAvailability.nextState`; `CoreStateHolder.resumeAfterSuspension` is the only way out of Unavailable.
+- **Status:** built (2026-11-26)
+- **Verify:** `JcefAvailabilityTest` (`no load after 30 s shows the suspended hint and keeps the core`, `a load after the suspended hint goes back to loading`, `a load before 30 s never shows suspended`, `unsupported ready and failed are unchanged`), `CoreStateTest` (`suspendedResumesToLoadingAndThenReady`, `onlySuspendedResumes`); CI: `ide-tests` `coreConformance` on Windows and macOS (was "the core state is Unavailable(kind=SUSPENDED)"); `NoJcefIdeTest` suspended unchanged.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |

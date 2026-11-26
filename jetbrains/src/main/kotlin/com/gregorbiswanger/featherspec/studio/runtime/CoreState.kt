@@ -1,5 +1,7 @@
 package com.gregorbiswanger.featherspec.studio.runtime
 
+import com.gregorbiswanger.featherspec.studio.jcef.JcefAvailability
+
 enum class UnavailableKind { UNSUPPORTED, SUSPENDED }
 
 sealed interface CoreState {
@@ -27,6 +29,18 @@ class CoreStateHolder {
             listeners.values.toList()
         }
         notified.forEach { it(next) }
+    }
+
+    fun resumeAfterSuspension(): Boolean {
+        val notified = synchronized(lock) {
+            if (JcefAvailability.nextState(current, true, 0L) != CoreState.Loading || current == CoreState.Loading) {
+                return false
+            }
+            current = CoreState.Loading
+            listeners.values.toList()
+        }
+        notified.forEach { it(CoreState.Loading) }
+        return true
     }
 
     fun onChange(listener: (CoreState) -> Unit): () -> Unit {

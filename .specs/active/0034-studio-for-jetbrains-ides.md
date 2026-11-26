@@ -398,6 +398,7 @@ WebStorm by hand in AC-040 and AC-041.
   status entry shall show unavailable; *Open*, Copy Next Step and Set up FeatherSpec shall show a notification with the
   same reason and *Open help*; the settings page shall keep working; and the IDE shall report no plugin error. (Changed
   2026-11-21, OP-025: the core runs in JCEF, so tree, status entry, Copy Next Step and Set up no longer work without it.)
+  *Amended 2026-11-26: "suspended" is shown when the core page has not loaded 30 s after the browser was created, but the core is kept (not disposed). A page that loads later takes the state back to Loading and on the normal path to Ready, so a slow start (CI runners: EDT freezes, core ready after up to 24 s) is no longer a dead Studio until the IDE restarts. Without JCEF support (not supported) nothing changes.*
 - **AC-031** While no handover of §6.7 is proven, every step action in the panel shall be Copy prompt, the settings page
   shall not show the Assistant setting, and no text shall name Send.
   *Amended by 0035 (PD-108): the step actions hold while *Assistant* is `none`; the page shows the row of 0035 AC-001 and a chosen value the handovers of 0035 §6.1 (0035 AC-004).*

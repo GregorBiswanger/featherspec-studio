@@ -44,6 +44,34 @@ class CoreStateTest {
     }
 
     @Test
+    fun suspendedResumesToLoadingAndThenReady() {
+        val holder = CoreStateHolder()
+        val seen = mutableListOf<CoreState>()
+        holder.onChange { seen.add(it) }
+        holder.set(CoreState.Unavailable(UnavailableKind.SUSPENDED))
+        assertEquals(true, holder.resumeAfterSuspension())
+        holder.set(CoreState.Ready)
+        assertEquals(CoreState.Ready, holder.value)
+        assertEquals(
+            listOf(CoreState.Unavailable(UnavailableKind.SUSPENDED), CoreState.Loading, CoreState.Ready),
+            seen,
+        )
+    }
+
+    @Test
+    fun onlySuspendedResumes() {
+        val unsupported = CoreStateHolder()
+        unsupported.set(CoreState.Unavailable(UnavailableKind.UNSUPPORTED))
+        assertEquals(false, unsupported.resumeAfterSuspension())
+        assertEquals(CoreState.Unavailable(UnavailableKind.UNSUPPORTED), unsupported.value)
+        val loading = CoreStateHolder()
+        assertEquals(false, loading.resumeAfterSuspension())
+        val failed = CoreStateHolder()
+        failed.set(CoreState.Failed("x"))
+        assertEquals(false, failed.resumeAfterSuspension())
+    }
+
+    @Test
     fun readyCanFail() {
         val holder = CoreStateHolder()
         holder.set(CoreState.Ready)
