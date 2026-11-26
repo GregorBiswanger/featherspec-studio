@@ -521,26 +521,26 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 | --- | --- | --- | --- | --- |
 | AC-001 | T-009 | `settings/{SettingsTable,StudioSettings,StudioConfigurable}.kt` | `SettingsTableTest.kt`; combo row CI/manual · struck by PD-112, successor AC-043 | built |
 | AC-002 | T-009 | `StudioSettings.kt` (change events), `SettingsTable.changeEvents` | `SettingsTableTest.kt`; 500 ms by CI `ide-tests`/manual | built |
-| AC-003 | T-001, T-007, T-009 | `src/hosts/embedded/{assistants,mirrors,ports}.ts`, `ports/{PluginAvailability,IdePlugins}.kt`, `plugin.xml` listener | `assistant0035.test.ts`, `PluginAvailabilityTest.kt`, `CoreConfigTest.kt` · struck by PD-112, successor AC-044 | built |
-| AC-004 | T-002, T-007 | `src/core/assistant/assistants.ts`, `src/hosts/embedded/assistants.ts` | `assistantTable0035.test.ts`, `assistant0035.test.ts` (matrix) · struck by PD-112, successor AC-045 | built |
+| AC-003 | T-001, T-007, T-009 | `src/hosts/embedded/{assistants,mirrors,ports}.ts`, `ports/{PluginAvailability,IdePlugins}.kt`, `plugin.xml` listener | `assistant0035.test.ts`, `PluginAvailabilityTest.kt`, `CoreConfigTest.kt` · struck by PD-112, successor AC-044 · CI run 45849432799 at fb70806 green (2026-11-26) | verified |
+| AC-004 | T-002, T-007 | `src/core/assistant/assistants.ts`, `src/hosts/embedded/assistants.ts` | `assistantTable0035.test.ts`, `assistant0035.test.ts` (matrix) · struck by PD-112, successor AC-045 · CI run 45849432799 at fb70806 green (2026-11-26) | verified |
 | AC-005 | T-002, T-008, T-014 | `src/core/assistant/{assistants,offer}.ts`, `jetbrains.yml › shared-guard` | `assistantTable0035.test.ts` · T-014 2026-11-26: local gates and CI run 45728313993 at `6b75ef0` | verified |
 | AC-006 | T-006, T-007 | `src/hosts/embedded/assistants.ts`, `src/core/assistant/sendView.ts` | `assistant0035.test.ts` (14 worlds, welcome, messages scan) | verified |
 | AC-007 | T-004 | `src/core/assistant/welcome.ts`, `overviewView.ts`, `boardService.ts` | `emptyState0035.test.ts`, `emptyState0035.test.tsx` | verified |
 | AC-008 | T-004, T-014 | same | `emptyState0035.test.*` · T-014 2026-11-26: local gates and CI run 45728313993 at `6b75ef0` | verified |
-| AC-009 | T-003 | `src/core/assistant/references.ts`, `src/hosts/embedded/assistants.ts` | `references0035.test.ts`, `assistant0035.test.ts` · struck by PD-112, successor AC-046 | built |
-| AC-010 | T-005, T-011 | `src/core/assistant/send.ts:copyFor` | `copyFor0035.test.ts` (Copy for); Claude part: the byte record of `ClaudeTerminalTest.kt` | built |
-| AC-011 | T-007, T-011 | `src/hosts/embedded/{assistants,ports}.ts`, `assistant/{ClaudeTerminal,TerminalGlue,IdeAssistantCalls}.kt` | `assistant0035.test.ts`; `ClaudeTerminalTest.kt` | built |
+| AC-009 | T-003 | `src/core/assistant/references.ts`, `src/hosts/embedded/assistants.ts` | `references0035.test.ts`, `assistant0035.test.ts` · struck by PD-112, successor AC-046 · CI run 45849432799 at fb70806 green (2026-11-26) | verified |
+| AC-010 | T-005, T-011 | `src/core/assistant/send.ts:copyFor` | `copyFor0035.test.ts` (Copy for); Claude part: the byte record of `ClaudeTerminalTest.kt` · CI run 45849432799 at fb70806 green (2026-11-26) | verified |
+| AC-011 | T-007, T-011 | `src/hosts/embedded/{assistants,ports}.ts`, `assistant/{ClaudeTerminal,TerminalGlue,IdeAssistantCalls}.kt` | `assistant0035.test.ts`; `ClaudeTerminalTest.kt` · CI run 45849432799 at fb70806 green (2026-11-26) | verified |
 | AC-012 | T-011 | `assistant/ClaudeTerminal.kt` (`ClaudeSender`, `ClaudeReadiness`, `ActiveRoot`), `TerminalGlue.kt` | `ClaudeTerminalTest.kt`; real `claude` manual (AC-027) | built |
-| AC-013 | T-007, T-011 | `src/hosts/embedded/assistants.ts` (`causes`), `assistant/{ClaudeTerminal,IdeAssistantCalls}.kt` | `assistant0035.test.ts`; `ClaudeTerminalTest.kt`, `AssistantPortTest.kt` | built |
-| AC-014 | T-010, T-011 | `assistant/AssistantPort.kt` (`hasControlCharacter`), `ClaudeTerminal.kt` | `AssistantPortTest.kt`, `ClaudeTerminalTest.kt` (byte record) | built |
-| AC-015 | T-011 | `assistant/ClaudeTerminal.kt` (`ClaudeTabs`, `LastTyped`) | `ClaudeTerminalTest.kt` (fake tabs) | built |
+| AC-013 | T-007, T-011 | `src/hosts/embedded/assistants.ts` (`causes`), `assistant/{ClaudeTerminal,IdeAssistantCalls}.kt` | `assistant0035.test.ts`; `ClaudeTerminalTest.kt`, `AssistantPortTest.kt` · CI run 45849432799 at fb70806 green (2026-11-26) | verified |
+| AC-014 | T-010, T-011 | `assistant/AssistantPort.kt` (`hasControlCharacter`), `ClaudeTerminal.kt` | `AssistantPortTest.kt`, `ClaudeTerminalTest.kt` (byte record) · CI run 45849432799 at fb70806 green (2026-11-26) | verified |
+| AC-015 | T-011 | `assistant/ClaudeTerminal.kt` (`ClaudeTabs`, `LastTyped`) | `ClaudeTerminalTest.kt` (fake tabs) · CI run 45849432799 at fb70806 green (2026-11-26) | verified |
 | AC-016 | T-003, T-005, T-012 | `src/core/assistant/send.ts:copyFor`, `assistant/{ChatWindows,IdeChatWindows}.kt` | `copyFor0035.test.ts`, `ChatWindowsTest.kt`; IDs manual (A-008) · struck by PD-112, successor AC-050 | built |
-| AC-017 | T-003, T-005, T-012 | `send.ts:copyFor`, `references.ts`, `assistant/ChatWindows.kt` | `copyFor0035.test.ts`, `assistant0035.test.ts`, `ChatWindowsTest.kt` · struck by PD-112, successor AC-050 | built |
-| AC-018 | T-003 | `src/core/assistant/references.ts` | `references0035.test.ts` · struck by PD-112, successor AC-046 | built |
-| AC-019 | T-005, T-012 | `send.ts:copyFor`, `assistant/ChatWindows.kt` | `copyFor0035.test.ts`, `ChatWindowsTest.kt` · struck by PD-112, successor AC-050 | built |
-| AC-020 | T-005, T-006 | `src/webview/ui/SendButton.tsx` | `SendButton0035.test.tsx`, `copyFor0035.test.ts` · struck by PD-112, successor AC-050 | built |
+| AC-017 | T-003, T-005, T-012 | `send.ts:copyFor`, `references.ts`, `assistant/ChatWindows.kt` | `copyFor0035.test.ts`, `assistant0035.test.ts`, `ChatWindowsTest.kt` · struck by PD-112, successor AC-050 · CI run 45849432799 at fb70806 green (2026-11-26) | verified |
+| AC-018 | T-003 | `src/core/assistant/references.ts` | `references0035.test.ts` · struck by PD-112, successor AC-046 · CI run 45849432799 at fb70806 green (2026-11-26) | verified |
+| AC-019 | T-005, T-012 | `send.ts:copyFor`, `assistant/ChatWindows.kt` | `copyFor0035.test.ts`, `ChatWindowsTest.kt` · struck by PD-112, successor AC-050 · CI run 45849432799 at fb70806 green (2026-11-26) | verified |
+| AC-020 | T-005, T-006 | `src/webview/ui/SendButton.tsx` | `SendButton0035.test.tsx`, `copyFor0035.test.ts` · struck by PD-112, successor AC-050 · CI run 45849432799 at fb70806 green (2026-11-26) | verified |
 | AC-021 | T-002, T-003, T-005, T-006, T-014 | `src/shared/protocol/assistantTexts.ts` | `copyFor0035.test.ts`, `SendButton0035.test.tsx` · T-014 2026-11-26: local gates and CI run 45728313993 at `6b75ef0` | verified |
-| AC-022 | T-006 | `src/core/assistant/sendView.ts:tipClosingOf` | `tipCopyFor0035.test.ts` · struck by PD-112, successor AC-050 | built |
+| AC-022 | T-006 | `src/core/assistant/sendView.ts:tipClosingOf` | `tipCopyFor0035.test.ts` · struck by PD-112, successor AC-050 · CI run 45849432799 at fb70806 green (2026-11-26) | verified |
 | AC-023 | T-007, T-010 | `src/hosts/embedded/ports.ts`, `panelSession.ts`, `HostRouter.kt`, `assistant/AssistantPort.kt` | `assistant0035.test.ts`, `HostRouterTest.kt`, `AssistantPortTest.kt` · CI run 45728313993 at `6b75ef0` | verified |
 | AC-024 | T-001, T-009, T-011 | `plugin.xml` (one optional `<depends>`, `featherspec-terminal.xml`), `assistant/TerminalGlue.kt` | `pluginZip.mjs` guard; CI `verify` · CI run 45728313993 at `6b75ef0` | verified |
 | AC-025 | T-013 | `docs/jetbrains/{parity-source.json,parity.md}` | `docs0035.test.ts`, `parity.test.ts` | verified |
