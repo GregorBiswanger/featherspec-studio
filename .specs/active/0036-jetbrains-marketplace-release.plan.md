@@ -1,9 +1,9 @@
 # Plan — JetBrains Marketplace release
 
 **Spec:** [0036-jetbrains-marketplace-release.md](0036-jetbrains-marketplace-release.md)
-**Status:** Not started
-**Last updated:** 2026-11-23
-**Current step:** T-001 (after Gregor's start signal)
+**Status:** In Progress
+**Last updated:** 2026-11-26
+**Current step:** T-004 (CI round; push is Ask-first). Stage 2 waits for G0.
 
 ## Approach
 
@@ -73,6 +73,10 @@ pre-PR `npm test` on Gregor's Windows machine.
 - [Template release workflow](https://github.com/JetBrains/intellij-platform-plugin-template/blob/main/.github/workflows/release.yml)
   — `publishPlugin` with the four secrets as environment variables; triggered by a GitHub release (not adopted: OP-003) —
   retrieved 2026-11-23.
+- [IntelliJ Platform Gradle Plugin — types](https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-types.html)
+  — product codes PS PhpStorm, GO GoLand, CL CLion, RM RubyMine, RR RustRover, RD Rider, WS WebStorm, PY PyCharm (type `PyCharm` for
+  2025.3+), IU IntelliJ IDEA (type `IntellijIdea` for 2025.3+); the `FailureLevel` values including `INTERNAL_API_USAGES`,
+  `INVALID_PLUGIN`, `EXPERIMENTAL_API_USAGES` — retrieved 2026-11-26.
 - [FeatherSpec — Releasing](https://github.com/GregorBiswanger/featherspec/wiki/Releasing) — tags never move, release = tagged
   commit, stamp = tag, Keep a Changelog with compare links, `git push --follow-tags`, `gh release create` with the section as
   notes, wiki impact pass (spec §6.9) — retrieved 2026-11-23.
@@ -103,8 +107,8 @@ Parallel: stage 1 — T-001, T-002 and T-003 share no file and each has its own 
   `jetbrains.yml`).
 - **Verify:** `node --test jetbrains/guards/releaseWorkflow.test.mjs` red against the stub, then green;
   `git diff --exit-code 1765403c57c02381dae9acc5f2d4caae7abf7dfb -- .github/workflows/ci.yml .github/workflows/publish.yml`.
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-26 — `node --test jetbrains/guards/releaseWorkflow.test.mjs` 9/9 (negative controls: extra trigger, `workflow_call`, missing `confirm`, missing option, called workflow, missing condition, missing environment, `contents: write`, second job, missing `exit 1`, ref check after Gradle, swapped sign steps, missing ZIP guard step, wrong artifact name, publish without its condition or not last, foreign secret, secret in `run`, secret on the wrong step, `set -x`, secret named in another workflow); `git diff --exit-code 1765403 -- ci.yml publish.yml` clean; `node --test 'jetbrains/guards/*.test.mjs'` 99/99. Built as written, with three decisions: `verifyPlugin` runs the recommended set (`-Pverify.product=recommended`; every product runs in `jetbrains.yml › verify` at the same commit, and a workflow fault found only at the tag would cost a new version); `--no-configuration-cache` on every Gradle call (no secret into a cache entry); `concurrency` group `jetbrains-release`, no cancel. Workflow behaviour itself: CI pending (first real run is the sign run).
+- **Notes:** the guard reads the YAML as text, no parser dependency; `verifyPluginStructure` shares a Gradle step with `buildPlugin`, so the order check allows equal positions.
 
 ### T-002 — Signing, publishing and verifier configuration
 
@@ -117,8 +121,9 @@ Parallel: stage 1 — T-001, T-002 and T-003 share no file and each has its own 
   `EXPERIMENTAL_API_USAGES`, version `0.1.0`, since-build, `untilBuild = provider { null }`), the `.gitignore` lines, and that no
   tracked file holds a `-----BEGIN` block (`git ls-files`, `test/fixtures` included); negative controls.
 - **Verify:** `node --test jetbrains/guards/releaseConfig.test.mjs` red, then green. Gradle effect: T-004.
-- [ ] **Verified (T-002):** —
-- **Notes:** A-003: if the verifier finds internal API usage, T-004 stops and a fix step is inserted before T-005.
+- [x] **Verified (T-002):** 2026-11-26 — `node --test jetbrains/guards/releaseConfig.test.mjs` 6/6 (negative controls: literal password, wrong token source, `hidden = true`, channel `eap`, missing `INTERNAL_API_USAGES`, `EXPERIMENTAL_API_USAGES` in place of `INVALID_PLUGIN`, other version, other since-build, set until-build, product removed, secret name in a comment, product missing in the `jetbrains.yml` matrix or unknown there, `.gitignore` line missing, PEM block in a file, `git check-ignore` of five key file names); no tracked key file. Gradle effect: CI pending (T-004), including A-003 (internal API usage) and the new verifier products.
+- **Notes:** also built here: the verifier products PhpStorm (PS), GoLand (GO), CLion (CL), RubyMine (RM) and RustRover (RR) as `verifyProducts` and as `verify` matrix entries of `jetbrains.yml` at 2025.3.1 and 2026.3, via `IntelliJPlatformType.PhpStorm`, `GoLand`, `CLion`, `RubyMine`, `RustRover` (types page, retrieved 2026-11-26); `vendor { url }` in Gradle. Risk for T-004: a product without a 2026.3 build fails its job; remove that version for that product then.
+- **Notes (A-003):** if the verifier finds internal API usage, T-004 stops and a fix step is inserted before T-005.
 
 ### T-003 — Marketplace texts in plugin.xml
 
@@ -130,8 +135,8 @@ Parallel: stage 1 — T-001, T-002 and T-003 share no file and each has its own 
   under `https://github.com/GregorBiswanger/`, name length ≤ 30, both icons `width="40" height="40"`; negative controls. Before
   editing `plugin.xml`, check `git status` for the other agent's changes to it (parallel work).
 - **Verify:** `node --test jetbrains/guards/pluginPage.test.mjs jetbrains/guards/pluginZip.test.mjs` red, then green.
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-26 — `node --test jetbrains/guards/pluginPage.test.mjs jetbrains/guards/pluginZip.test.mjs` 8/8 + 15/15 (negative controls: empty vendor, vendor without url, vendor with e-mail, wrong vendor name, empty description, missing sentences, missing IDE name, `<img>`, foreign link, missing change notes, `TODO`, wrong first sentence, each forbidden word, name with `Plugin` or `JetBrains` or 31 characters, icon width 16). `pluginZip.mjs` read the vendor only without attributes; it now accepts `<vendor url=…>` (test added).
+- **Notes:** the vendor e-mail is not in `package.json` (`author` has the name only), so `<vendor>` carries the URL only (OP-018). The Send wording follows 0035 (Send to Junie, Claude Code and GitHub Copilot into the CLI agents in the IDE terminal, never Enter), not the Copy for Copilot of the first draft; spec §7 is updated. The texts for the Marketplace form: `docs/jetbrains/marketplace-listing.md`. The words `Plugin`, `IntelliJ` and `JetBrains` are barred from the name only; the other forbidden words from the whole page.
 
 ### T-004 — CI round for stage 1 (gate G1)
 
@@ -140,8 +145,8 @@ Parallel: stage 1 — T-001, T-002 and T-003 share no file and each has its own 
   `jetbrains.yml` and `ci.yml` (PR) at that head: `plugin` × 3, `verify` × 5 with the new failure level, `vscode-guards`,
   `shared-guard`, `vscode-mirror`, `ide-tests`. A red verifier on internal API usage: stop, report the usages, insert a fix step.
 - **Verify:** `gh run list --branch jetbrains-host --limit 5` and `gh run view <id>`: every job green at one head; record run IDs.
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [ ] **Verified (T-004):** — CI pending: local `node --test 'jetbrains/guards/*.test.mjs'` 99/99 is green; the push of `jetbrains-host` is Ask-first and every job at one head is still to be read.
+- **Notes:** the new jobs `verify (phpstorm|goland|clion|rubymine|rustrover)` and the stricter failure level are the new CI risk.
 
 ### T-005 — CHANGELOG: 0.1.0 as published, 0.2.0 new
 
@@ -240,23 +245,23 @@ Parallel: stage 1 — T-001, T-002 and T-003 share no file and each has its own 
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001 | — | — | open |
-| AC-002 | T-001 | — | — | open |
-| AC-003 | T-001 | — | — | open |
-| AC-004 | T-001 | — | — | open |
-| AC-005 | T-001, T-010 | — | — | open |
-| AC-006 | T-001 | — | — (structure only; the first real publish run is the next update) | open |
-| AC-007 | T-001, T-004 | — | — | open |
-| AC-008 | T-002, T-004 | — | — | open |
-| AC-009 | T-002 | — | — | open |
+| AC-001 | T-001 | `.github/workflows/jetbrains-release.yml` | `jetbrains/guards/releaseWorkflow.test.mjs` | built; workflow run: CI pending |
+| AC-002 | T-001 | same | same | built; workflow run: CI pending |
+| AC-003 | T-001 | same | same (text check of the ref step) | built; workflow run: CI pending |
+| AC-004 | T-001 | same | same (`checkOtherWorkflows`) | proven locally |
+| AC-005 | T-001, T-010 | `jetbrains-release.yml` | `releaseWorkflow.test.mjs` (order, artifact) | structure proven; the run: CI pending |
+| AC-006 | T-001 | `jetbrains-release.yml` | `releaseWorkflow.test.mjs` (publish last, only in mode publish) | structure proven; the first real publish run is the next update |
+| AC-007 | T-001, T-004 | — | same (`git diff` against `START_COMMIT`) | local proven; CI pending |
+| AC-008 | T-002, T-004 | `jetbrains/build.gradle.kts` | `releaseConfig.test.mjs` | Gradle effect: CI pending |
+| AC-009 | T-002 | `jetbrains/build.gradle.kts`, `.gitignore` | `releaseConfig.test.mjs` | proven locally |
 | AC-010 | T-010 | — | — | open |
-| AC-011 | T-002 | — | — | open |
-| AC-012 | T-002, T-004, T-010 | — | — | open |
+| AC-011 | T-002 | `jetbrains/build.gradle.kts` | `releaseConfig.test.mjs` | text proven; built `plugin.xml`: CI pending |
+| AC-012 | T-002, T-004, T-010 | `build.gradle.kts`, `jetbrains.yml` matrix | `releaseConfig.test.mjs` (levels, products) | levels and products built; verifier result: CI pending |
 | AC-013 | T-007 | — | manual: Gregor, verifier versions | open |
-| AC-014 | T-003 | — | — | open |
-| AC-015 | T-003 | — | — | open |
-| AC-016 | T-003 | — | — | open |
-| AC-017 | T-003 | — | — | open |
+| AC-014 | T-003 | `plugin.xml` | `pluginPage.test.mjs` | proven locally |
+| AC-015 | T-003 | `plugin.xml` | `pluginPage.test.mjs` | proven locally |
+| AC-016 | T-003 | `plugin.xml` | `pluginPage.test.mjs` | proven locally |
+| AC-017 | T-003 | `plugin.xml`, icons | `pluginPage.test.mjs` | proven locally |
 | AC-018 | T-007 | — | manual: Gregor, Marketplace page | open |
 | AC-019 | T-006 | — | — | open |
 | AC-020 | T-005 | — | — | open |
@@ -278,9 +283,8 @@ Parallel: stage 1 — T-001, T-002 and T-003 share no file and each has its own 
 
 ## Session handoff
 
-- **Done so far:** spec and plan written and clarified by proxy (2026-11-23); parity rows of 0036 added (`n-a`).
-- **Next action:** Gregor reads the plan and the proxies (spec §14) and starts his preparation list (spec §6.10); on his start
-  signal T-001 ‖ T-002 ‖ T-003.
+- **Done so far:** spec and plan written and clarified by proxy (2026-11-23); parity rows of 0036 added (`n-a`); stage 1 built 2026-11-26 (T-001, T-002, T-003 ticked, local guards 99/99, gates green; commits on `jetbrains-host`, not pushed).
+- **Next action:** T-004: Gregor's Go to push `jetbrains-host`, then read every job of `jetbrains.yml` and `ci.yml` (CI pending); Gregor's preparation list (spec §6.10) runs in parallel. Stage 2 (T-005…T-008) waits for G0.
 - **Open decisions:** the proxies OP-001–OP-021 of the spec; G0 depends on Gregor's checks of 0034 and 0035.
 - **Baseline:** _(set when work starts)_
 - **Environment:** parallel agents commit on `jetbrains-host`: commit only own paths (`git add <paths>`); wait on `index.lock`.

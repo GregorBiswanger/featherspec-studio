@@ -120,7 +120,7 @@ mode `sign`. **Publish run** — the same workflow in mode `publish`. **Go** —
   outside the workflow (§6.11, AC-029).
 - Order of steps, each stopping the run when it fails: check the inputs; check that the run's ref is a tag `jetbrains-v<version>`
   equal to the plugin version; `npm ci` and `npm run package`; `gradle -p jetbrains buildPlugin verifyPluginStructure
-  verifyPlugin`; `signPlugin`, `verifyPluginSignature`; the plugin ZIP guard on the signed ZIP; upload the signed ZIP as artifact
+  verifyPlugin` (the recommended set; the products run one per job in `jetbrains.yml › verify` at the same commit, built 2026-11-26); `signPlugin`, `verifyPluginSignature`; the plugin ZIP guard on the signed ZIP; upload the signed ZIP as artifact
   `plugin-zip-signed`; only in mode `publish`: `publishPlugin`.
 - The workflow calls no other workflow and is called by none; `publish.yml` and `ci.yml` stay byte-identical.
 
@@ -154,8 +154,8 @@ mode `sign`. **Publish run** — the same workflow in mode `publish`. **Go** —
 
 - since-build `253.29346` (2025.3.1), no until-build (0034 §6.10, AC-033).
 - The Plugin Verifier runs in the release workflow on the release commit with the products and versions of
-  `jetbrains/build.gradle.kts` (IntelliJ IDEA, WebStorm, Rider, PyCharm at 2025.3.1 and the newest stable release, plus the
-  recommended set). It fails on compatibility problems, invalid plugin structure and **internal API usage** (guideline 2.1d);
+  `jetbrains/build.gradle.kts` (IntelliJ IDEA, WebStorm, Rider, PyCharm, PhpStorm, GoLand, CLion, RubyMine and RustRover at 2025.3.1 and 2026.3, plus the
+  recommended set; one job per product in `jetbrains.yml`, the release workflow runs the recommended set). It fails on compatibility problems, invalid plugin structure and **internal API usage** (guideline 2.1d);
   experimental API usage is reported, not failed (0035 OP-009) (proxy, OP-011). The same failure level applies to
   `jetbrains.yml › verify`.
 - Before the release commit Gregor confirms that `verifyVersions` names the newest stable release of each product; a newer one
@@ -227,27 +227,30 @@ the update rehearsal (they serve the template's updater).
 
 ## 7. Texts (English, drafts; the tests assert the final wording literally, Gregor may change it)
 
-**Description** (`plugin.xml`, CDATA):
+**Description** (`plugin.xml`, CDATA; wording as built in T-003, 2026-11-26: the Send of 0035 replaced Copy for Copilot and Copy for Junie):
 
 > FeatherSpec Studio is the visual command center for spec-driven development with FeatherSpec: it reads your specs, plans and
 > Memory Bank, shows where every spec stands, and names each spec's next FeatherSpec step.
 > - **Specs tool window**: your specs in four groups, each with its next step.
 > - **Overview, Board and Plan map** in an editor tab, in the colours of your IDE theme.
 > - **Copy prompt**: the exact FeatherSpec prompt on your clipboard, ready to paste into your AI assistant.
-> - **Send to Claude Code** types the prompt and its files into Claude Code in the IDE terminal; when you click it, it may start
->   `claude` in a new terminal tab. It never presses Enter.
-> - **Copy for Copilot** and **Copy for Junie** copy the prompt with the file paths and open GitHub Copilot Chat or AI Chat for
->   you to paste.
+> - **Send to Junie, Claude Code or GitHub Copilot** types the prompt and its file mentions into that assistant's command-line
+>   agent in the IDE terminal (`junie`, `claude`, `copilot`); when you click it, it may start the agent in a new terminal tab. It
+>   never presses Enter. An assistant is offered only while its command is on the IDE's PATH.
 >
-> The Studio sends nothing. Local and read-only: no account, no telemetry; the one network call is the FeatherSpec download you
-> start with Set up FeatherSpec. Needs the IDE's embedded browser (JCEF).
+> The Studio sends nothing. It is local and read-only: no account, no telemetry; the one network call is the FeatherSpec download
+> you start with Set up FeatherSpec. It needs the IDE's embedded browser (JCEF).
 >
-> Claude Code, GitHub Copilot and Junie are products of their owners; FeatherSpec Studio works with them and is not affiliated
+> It runs in IntelliJ-based IDEs from version 2025.3.1: Rider, WebStorm, PhpStorm, IntelliJ IDEA, PyCharm, GoLand, CLion, RubyMine
+> and RustRover. It is tested in Rider and WebStorm; the other IDEs are checked with the JetBrains Plugin Verifier.
+>
+> Junie, Claude Code and GitHub Copilot are products of their owners; FeatherSpec Studio works with them and is not affiliated
 > with them. Source, documentation and privacy: github.com/GregorBiswanger/featherspec-studio.
 
 **Change notes 0.1.0:** `First release on the JetBrains Marketplace: the Specs tool window, Overview, Board and Plan map, the
-status bar entry and the settings, with the same next steps as the VS Code extension; the setting Assistant offers Send to
-Claude Code, Copy for Copilot and Copy for Junie, and Copy prompt stays in every menu. Full history: CHANGELOG.md on GitHub.`
+status bar entry and the settings, with the same next steps as the VS Code extension. The setting Assistant offers Send to Junie,
+Claude Code and GitHub Copilot, which type into the command-line agent in the IDE terminal and never press Enter; Copy prompt
+stays in every menu. Full history: CHANGELOG.md on GitHub.`
 
 **Words that appear nowhere on the page** (name, description, change notes, vendor): `official`, `endorsed`, `partner`,
 `certified`, `by Anthropic`, `by GitHub`, `Plugin`, `IntelliJ` (the name only: `JetBrains`).

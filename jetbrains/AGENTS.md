@@ -15,6 +15,9 @@ Read `AGENTS.md` first. This folder is the IntelliJ Platform plugin of FeatherSp
   The sandbox cannot reach Maven, the Gradle portal or JetBrains. Do not claim a Kotlin result from a local run.
 - Local gates for TypeScript changes stay the ones in `AGENTS.md` and `.memory-bank/techContext.md`.
 
+## Release (0036)
+- `.github/workflows/jetbrains-release.yml` signs and, from the second version on, publishes; no secret outside it (guards `releaseWorkflow`, `releaseConfig`). Marketplace texts live in `plugin.xml` (guard `pluginPage`).
+
 ## Kotlin conventions
 - Logic lives in pure classes with no `com.intellij` import, tested by plain JUnit 5.
 - Platform glue stays thin; the Starter smoke covers it.
