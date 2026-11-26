@@ -1,5 +1,6 @@
 package com.gregorbiswanger.featherspec.studio.theme
 
+import com.gregorbiswanger.featherspec.studio.probe.SmokeTrace
 import com.intellij.ide.ui.LafManager
 import com.intellij.ide.ui.LafManagerListener
 import com.intellij.openapi.application.ApplicationManager
@@ -23,6 +24,7 @@ class ThemeBridge(parent: Disposable, private val onChange: (String) -> Unit) {
             LafManagerListener.TOPIC,
             object : LafManagerListener {
                 override fun lookAndFeelChanged(source: LafManager) {
+                    SmokeTrace.themeNotified()
                     ApplicationManager.getApplication().invokeLater { refresh() }
                 }
             },
@@ -40,6 +42,7 @@ class ThemeBridge(parent: Disposable, private val onChange: (String) -> Unit) {
         val next = capture()
         snapshot = next
         onChange(next.updateScript)
+        SmokeTrace.themeSent()
     }
 
     fun dispose() {

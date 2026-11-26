@@ -267,4 +267,29 @@ class SmokeCompareTest {
         assertEquals(5L, sample.get("atMs").asLong)
         assertEquals(300L, sample.get("stallMs").asLong)
     }
+
+    @Test
+    fun `every theme shows how long the IDE and the plugin took without judging them`() {
+        val themes = SmokeThemes.WANTED.map { theme(it).copy(notifiedMs = 12, sentMs = 34, switchCallMs = 56) }
+        val rows = ArrayList<BudgetRow>()
+        assertEquals(emptyList<String>(), SmokeCompare.themes(report(themes = themes), rows))
+        val name = SmokeThemes.WANTED[0].name
+        assertEquals(56L, rows.single { it.name == "AC-028 $name diag: IDE switch call returned" }.measured)
+        assertEquals(12L, rows.single { it.name == "AC-028 $name diag: IDE notified the plugin" }.measured)
+        val sent = rows.single { it.name == "AC-028 $name diag: plugin sent the script" }
+        assertEquals(34L, sent.measured)
+        assertEquals(Verdict.INFO, sent.verdict)
+        assertEquals(SmokeThemes.WANTED.size * 3, rows.count { it.verdict == Verdict.INFO })
+        assertEquals(SmokeThemes.WANTED.size, rows.count { it.verdict != Verdict.INFO })
+    }
+
+    @Test
+    fun `a record without the theme diagnostics reads as not observed`() {
+        val json = JsonParser.parseString(report()).asJsonObject
+        json.getAsJsonArray("themes").forEach { it.asJsonObject.run { remove("notifiedMs"); remove("sentMs"); remove("switchCallMs") } }
+        val rows = ArrayList<BudgetRow>()
+        assertEquals(emptyList<String>(), SmokeCompare.themes(json.toString(), rows))
+        assertEquals(0, rows.count { it.verdict == Verdict.INFO })
+        assertEquals(-1L, SmokeThemes.WANTED.map { theme(it) }.first().sentMs)
+    }
 }

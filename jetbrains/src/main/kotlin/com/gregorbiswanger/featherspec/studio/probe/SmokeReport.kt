@@ -26,6 +26,9 @@ data class ThemeRecord(
     val incompleteScripts: Int,
     val missingVariables: List<String>,
     val contrast: ContrastReport,
+    val notifiedMs: Long = -1L,
+    val sentMs: Long = -1L,
+    val switchCallMs: Long = -1L,
 )
 
 data class SmokeReport(
@@ -99,6 +102,9 @@ data class SmokeReport(
         entry.addProperty("bodyClass", theme.bodyClass)
         entry.addProperty("ms", theme.ms)
         entry.addProperty("scripts", theme.scripts)
+        entry.addProperty("notifiedMs", theme.notifiedMs)
+        entry.addProperty("sentMs", theme.sentMs)
+        entry.addProperty("switchCallMs", theme.switchCallMs)
         entry.addProperty("incompleteScripts", theme.incompleteScripts)
         entry.add("missingVariables", strings(theme.missingVariables))
         entry.addProperty("evaluated", theme.contrast.evaluated)
@@ -222,6 +228,16 @@ object SmokeCompare {
         return problems
     }
 
+    private fun themeDiagnostics(name: String, entry: JsonObject, timing: Timing) {
+        val rows = timing.rows ?: return
+        if (!entry.has("switchCallMs")) {
+            return
+        }
+        rows.add(BudgetVerdict.info("AC-028 $name diag: IDE switch call returned", number(entry, "switchCallMs"), timing.os))
+        rows.add(BudgetVerdict.info("AC-028 $name diag: IDE notified the plugin", number(entry, "notifiedMs"), timing.os))
+        rows.add(BudgetVerdict.info("AC-028 $name diag: plugin sent the script", number(entry, "sentMs"), timing.os))
+    }
+
     private fun themeProblems(wanted: ThemeWant, entry: JsonObject, problems: MutableList<String>, timing: Timing) {
         val name = wanted.name
         if (text(entry, "found").isEmpty()) {
@@ -232,6 +248,7 @@ object SmokeCompare {
             problems.add("$name: body class expected ${wanted.bodyClass}, observed '${text(entry, "bodyClass")}'")
         }
         within(problems, timing, "AC-028 $name switch", number(entry, "ms"), SmokeBudgets.THEME_MS)
+        themeDiagnostics(name, entry, timing)
         if (number(entry, "scripts") < 1) {
             problems.add("$name: no update script reached the panel")
         }

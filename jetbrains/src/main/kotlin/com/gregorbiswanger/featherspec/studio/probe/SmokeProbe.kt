@@ -201,7 +201,12 @@ class SmokeProbe(private val project: Project, private val out: Path) {
         }
         val restored = restoredFacts.firstOrNull { it == null || it.area != expectedArea || it.selection != expectedSelection } ?: restoredFacts.last()
 
-        val themes = themes()
+        SmokeTrace.arm()
+        val themes = try {
+            themes()
+        } finally {
+            SmokeTrace.disarm()
+        }
 
         val changes = SmokeFiles.diff(before, SmokeFiles.snapshot(Path.of(base)))
         return SmokeReport(
@@ -239,11 +244,13 @@ class SmokeProbe(private val project: Project, private val out: Path) {
                 return@map missingTheme(wanted)
             }
             val mark = scripts.mark()
+            SmokeTrace.themeReset()
             val start = System.nanoTime()
             onEdt {
                 manager.setCurrentLookAndFeel(infos[index], false)
                 manager.updateUI()
             }
+            val switchCallMs = Budgets.elapsedMs(start, System.nanoTime())
             val ms = eventMs(scripts, mark, start, THEME_WAIT_MS) { script ->
                 script != null && ThemeScriptReader.read(script).bodyClass == wanted.bodyClass
             }
@@ -260,6 +267,9 @@ class SmokeProbe(private val project: Project, private val out: Path) {
                 incompleteScripts = observed.count { !it.complete(ThemeMapping.names) },
                 missingVariables = last?.missing(ThemeMapping.names) ?: ThemeMapping.names.sorted(),
                 contrast = Contrast.check(last?.variables ?: emptyMap()),
+                notifiedMs = Budgets.elapsedMs(start, SmokeTrace.themeNotifiedNanos()),
+                sentMs = Budgets.elapsedMs(start, SmokeTrace.themeSentNanos()),
+                switchCallMs = switchCallMs,
             )
         }
     }

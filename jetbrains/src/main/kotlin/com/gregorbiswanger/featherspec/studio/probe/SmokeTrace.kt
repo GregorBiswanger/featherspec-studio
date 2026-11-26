@@ -8,10 +8,13 @@ object SmokeTrace {
     private var armed = false
     private val editorAt = AtomicLong(0L)
     private val placeholderAt = AtomicLong(0L)
+    private val themeNotifiedAt = AtomicLong(0L)
+    private val themeSentAt = AtomicLong(0L)
 
     fun arm() {
         editorAt.set(0L)
         placeholderAt.set(0L)
+        themeReset()
         armed = true
     }
 
@@ -30,6 +33,27 @@ object SmokeTrace {
             placeholderAt.compareAndSet(0L, System.nanoTime())
         }
     }
+
+    fun themeReset() {
+        themeNotifiedAt.set(0L)
+        themeSentAt.set(0L)
+    }
+
+    fun themeNotified() {
+        if (armed) {
+            themeNotifiedAt.compareAndSet(0L, System.nanoTime())
+        }
+    }
+
+    fun themeSent() {
+        if (armed) {
+            themeSentAt.compareAndSet(0L, System.nanoTime())
+        }
+    }
+
+    fun themeNotifiedNanos(): Long = themeNotifiedAt.get()
+
+    fun themeSentNanos(): Long = themeSentAt.get()
 
     fun editorNanos(): Long = editorAt.get()
 
