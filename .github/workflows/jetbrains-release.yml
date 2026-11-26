@@ -1,0 +1,94 @@
+name: JetBrains release
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'sign: build, verify, sign and keep the signed ZIP. publish: the same, then upload to the JetBrains Marketplace (not for the first version).'
+        type: choice
+        options:
+          - sign
+          - publish
+        default: sign
+      confirm:
+        description: 'Type the word publish to run. Anything else runs nothing.'
+        type: string
+        required: true
+
+concurrency:
+  group: jetbrains-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    if: inputs.confirm == 'publish'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: jetbrains-marketplace
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check that the run's ref is the tag of the plugin version
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          version="$(grep -m1 -E '^[[:space:]]+version = "' jetbrains/build.gradle.kts | sed -E 's/^[^"]*"([^"]*)".*$/\1/')"
+          if [ -z "$version" ]; then
+            echo "::error::No plugin version found in jetbrains/build.gradle.kts."
+            exit 1
+          fi
+          if [ "$REF" != "refs/tags/jetbrains-v$version" ]; then
+            echo "::error::The run's ref is '$REF'; it must be 'refs/tags/jetbrains-v$version' for the plugin version $version. Start the workflow at that tag."
+            exit 1
+          fi
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run package
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: 9.7.0
+      - name: buildPlugin and verifyPluginStructure
+        run: gradle -p jetbrains --no-configuration-cache buildPlugin verifyPluginStructure
+      - name: verifyPlugin (the recommended set; every product runs in jetbrains.yml, job verify, at the same commit)
+        run: gradle -p jetbrains --no-configuration-cache verifyPlugin -Pverify.product=recommended
+      - name: signPlugin
+        env:
+          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
+        run: gradle -p jetbrains --no-configuration-cache signPlugin
+      - name: verifyPluginSignature
+        env:
+          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
+        run: gradle -p jetbrains --no-configuration-cache verifyPluginSignature
+      - name: Check the signed plugin ZIP
+        run: node jetbrains/guards/pluginZip.mjs "$(ls jetbrains/build/distributions/*-signed.zip)"
+      - name: Show the SHA-256 of the signed plugin ZIP
+        run: sha256sum jetbrains/build/distributions/*-signed.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plugin-zip-signed
+          path: jetbrains/build/distributions/*-signed.zip
+          if-no-files-found: error
+      - name: publishPlugin
+        if: inputs.mode == 'publish'
+        env:
+          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+        run: gradle -p jetbrains --no-configuration-cache publishPlugin
