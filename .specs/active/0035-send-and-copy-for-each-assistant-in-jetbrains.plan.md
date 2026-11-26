@@ -2,8 +2,8 @@
 
 **Spec:** [0035-send-and-copy-for-each-assistant-in-jetbrains.md](0035-send-and-copy-for-each-assistant-in-jetbrains.md)
 **Status:** In Progress
-**Last updated:** 2026-11-24 (PD-112: stages 6 to 10, T-016 to T-024)
-**Current step:** T-016 (PD-112 probe for the three CLI agents); T-014 and T-015 follow after T-024
+**Last updated:** 2026-11-26 (T-014 and T-023 closed; T-015 partial)
+**Current step:** T-015 (manual checks AC-027 and AC-053: the not-yet-evidenced rest, see its Verified line); every other step is ticked
 
 ## Approach
 
@@ -122,7 +122,7 @@ head (pushing is a git write: ask first). Pre-done: `npm test` (CI `vscode-mirro
    `node --test 'jetbrains/guards/*.test.mjs'`, CI `shared-guard`, `vscode-guards`, `plugin` green.
 3. T-009 → T-010 → T-011 → T-012 — Kotlin host. **Gate G3:** every CI job of `jetbrains.yml` green at one head.
 4. T-013 → T-014 — parity, docs, final gates. **Gate G4:** every gate of T-014 green at one head.
-5. T-015 — Gregor's manual checks AC-027, AC-028. **Gate G5:** both pass, then `/sdd-compile` READY in a fresh session,
+5. T-015 — Gregor's manual checks AC-027, AC-028. **Gate G5 (partial 2026-11-26):** both pass, then `/sdd-compile` READY in a fresh session,
    then Gregor's go for `/sdd-lifecycle`.
 
 *PD-112 (2026-11-24): stages 6 to 10 come before T-014 and T-015; T-015 then checks AC-027 and AC-053 (AC-028 is superseded).*
@@ -342,8 +342,8 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 - **Covers:** AC-005, AC-008, AC-021, AC-026 (re-proven), every criterion's tests
 - **Do:** run every gate of *Quality gates*; all `jetbrains.yml` jobs and `ci.yml` green at one head; `npm test`.
 - **Verify:** local gates + `npm run compile`; CI all green; `npm test` in `vscode-mirror` and on Gregor's Windows.
-- [ ] **Verified (T-014):** —
-- **Notes:** —
+- [x] **Verified (T-014):** 2026-11-26 · Gates at head `6b75ef0` (local, 2026-11-26): `npx vitest run --project node --project webview` 4485 passed, 6 skipped, 0 red (255 files) · timing projects (`timing-node`, `timing-webview`, one worker) 35/35 · `npm run -s check-types` exit 0 · `npx eslint src --max-warnings 0` exit 0 · `node --test 'jetbrains/guards/*.test.mjs'` 75/75 · `npm run -s compile` exit 0 · CI run 45728313993 at `6b75ef0` (reported by Gregor, not re-read here: no GitHub access in this session): green `plugin` (Linux, Windows, macOS), `verify` for every product, `shared-guard`, `vscode-guards`, `vscode-mirror`, the no-JCEF runs, `ide-tests` on Linux (IDEA 2025.3) and on Linux and Windows against IDEA 2026.3; red only the PD-111 trend values of 0034 AC-007/AC-020/AC-028 on `ide-tests (windows-latest)` against 2025.3 (loading panel 1852 ms, AC-020 about 1.1 s) and `ide-tests (macos-latest)` (loading panel 3.0 s, theme switch), none in 0035's code. `npm test` runs in CI `vscode-mirror` (green) and on Gregor's Windows VS Code with the VSIX of `6b75ef0`: "vscode läuft auch alles bestens".
+- **Notes:** the red trend values belong to 0034 AC-007, AC-020 and AC-028 (PD-111), not to this plan's criteria; they stay open there. AC-005, AC-008, AC-021 and AC-026 move to `verified`.
 
 ### T-015 — Gregor's checks in Rider and VS Code
 
@@ -351,7 +351,7 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 - **Do:** Gregor installs the CI ZIP in Rider 2026.3, runs AC-027 and AC-028 on `C:\projects\test\tip-splitter`, and the
   VS Code empty state with Send to Copilot; results and versions into the spec's AC lines' evidence here.
 - **Verify:** `manual: Gregor, Rider and VS Code` — the real assistants and the CLI exist only on his machine.
-- [ ] **Verified (T-015):** —
+- [ ] **Verified (T-015):** partial, not ticked (2026-11-26) · Gregor, Rider 2026.3.0.1 on Windows with the plugin of `6b75ef0`: "Sieht super aus! Funktioniert hervorragend." Send to GitHub Copilot and Send to Claude Code open the IDE terminal with the CLI and the prompt; Board, Detail and Progress with AC titles run; that the terminal replaces the plugin chats is "so in Ordnung". VS Code with the VSIX of `6b75ef0`: "läuft auch alles bestens". **Not evidenced:** Send to Junie (not seen in the hands-on), the running-tab versus new-tab cases, that nothing is sent before Enter and that both files are read, the waiting text at a trust or login screen, Safe Mode, the missing-CLI hint, the unset default, the Terminal, Claude Code, Junie CLI and Copilot CLI versions, whether `/sdd-overview` runs as a command in each CLI.
 - **Notes:** then `/sdd-compile` in a fresh session (another model family when available). *PD-112 (2026-11-24):* T-015 checks
   AC-027 and AC-053 instead of AC-028, after T-024.
 
@@ -488,8 +488,8 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
   `assistant/AgentReplayTest.kt` with the redacted `lastLines` of each recorded state as fixtures. Spec §13 values, §14 K-1 closed
   for what was measured; README if a value changes a text.
 - **Verify:** CI `plugin` green (G9); a value that contradicts the spec is a spec change first.
-- [ ] **Verified (T-023):** —
-- **Notes:** —
+- [x] **Verified (T-023):** 2026-11-26 · closed by decision, not by a K-1 measurement · Gregor, offered to skip the K-1 probe because Send runs flawlessly for him: "du bist der sdd dev … kümmere dich darum"; decision (Claude as developer): the provisional markers stay as the constants. Evidence for them: the Rider hands-on of 2026-11-26 with Send to Copilot and Send to Claude Code (terminal opens, CLI starts, prompt arrives) and CI run 45728313993 at `6b75ef0` (`plugin` 3 OS, `verify` green). No constant changed, so no Kotlin ran here.
+- **Notes:** *Deviation from `Do:`:* `MARKERS_STATUS` stays `K-1 pending` for all three agents (honest: no JSON was recorded), `CLI_FORMS` stays provisional, and there is no `AgentReplayTest.kt` (no recorded `lastLines`), so AC-049's replay part is not met and AC-049 stays `built`. **Rest risk:** Junie CLI was not seen in the hands-on; its `JUNIE_INPUT_MARKERS` (`? for shortcuts`, `shift+tab`) and `JUNIE_WAITING_MARKERS` are undocumented guesses. With a wrong marker Send to Junie copies the prompt and shows the waiting text instead of typing, also in a running tab (amendment risk 1). Check step: in Rider with *Assistant* Junie and Junie CLI installed, run *FeatherSpec Probe: Handover Screen* (start the IDE with `-Dfeatherspec.probe.handover=true`) in a running `junie` tab (ready, empty) and at the login screen, and compare `verdict` (`ready`, `waiting`) and `markers`; paste the JSON, then the constants and the replay test follow. The same probe check applies to Copilot's markers only where the hands-on shows a waiting text in a running tab.
 
 ### T-024 — Docs, parity, maps and Memory Bank for PD-112
 
@@ -510,60 +510,57 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-009 | `settings/{SettingsTable,StudioSettings,StudioConfigurable}.kt` | `SettingsTableTest.kt`; combo row CI/manual | superseded by PD-112 (AC-043) |
+| AC-001 | T-009 | `settings/{SettingsTable,StudioSettings,StudioConfigurable}.kt` | `SettingsTableTest.kt`; combo row CI/manual · struck by PD-112, successor AC-043 | built |
 | AC-002 | T-009 | `StudioSettings.kt` (change events), `SettingsTable.changeEvents` | `SettingsTableTest.kt`; 500 ms by CI `ide-tests`/manual | built |
-| AC-003 | T-001, T-007, T-009 | `src/hosts/embedded/{assistants,mirrors,ports}.ts`, `ports/{PluginAvailability,IdePlugins}.kt`, `plugin.xml` listener | `assistant0035.test.ts`, `PluginAvailabilityTest.kt`, `CoreConfigTest.kt` | superseded by PD-112 (AC-044) |
-| AC-004 | T-002, T-007 | `src/core/assistant/assistants.ts`, `src/hosts/embedded/assistants.ts` | `assistantTable0035.test.ts`, `assistant0035.test.ts` (matrix) | superseded by PD-112 (AC-045) |
-| AC-005 | T-002, T-008, T-014 | `src/core/assistant/{assistants,offer}.ts`, `jetbrains.yml › shared-guard` | `assistantTable0035.test.ts`; CI `shared-guard` open | built |
+| AC-003 | T-001, T-007, T-009 | `src/hosts/embedded/{assistants,mirrors,ports}.ts`, `ports/{PluginAvailability,IdePlugins}.kt`, `plugin.xml` listener | `assistant0035.test.ts`, `PluginAvailabilityTest.kt`, `CoreConfigTest.kt` · struck by PD-112, successor AC-044 | built |
+| AC-004 | T-002, T-007 | `src/core/assistant/assistants.ts`, `src/hosts/embedded/assistants.ts` | `assistantTable0035.test.ts`, `assistant0035.test.ts` (matrix) · struck by PD-112, successor AC-045 | built |
+| AC-005 | T-002, T-008, T-014 | `src/core/assistant/{assistants,offer}.ts`, `jetbrains.yml › shared-guard` | `assistantTable0035.test.ts` · T-014 2026-11-26: local gates and CI run 45728313993 at `6b75ef0` | verified |
 | AC-006 | T-006, T-007 | `src/hosts/embedded/assistants.ts`, `src/core/assistant/sendView.ts` | `assistant0035.test.ts` (14 worlds, welcome, messages scan) | verified |
 | AC-007 | T-004 | `src/core/assistant/welcome.ts`, `overviewView.ts`, `boardService.ts` | `emptyState0035.test.ts`, `emptyState0035.test.tsx` | verified |
-| AC-008 | T-004, T-014 | same | `emptyState0035.test.*`; T-014 open | built |
-| AC-009 | T-003 | `src/core/assistant/references.ts`, `src/hosts/embedded/assistants.ts` | `references0035.test.ts`, `assistant0035.test.ts` | superseded by PD-112 (AC-046) |
+| AC-008 | T-004, T-014 | same | `emptyState0035.test.*` · T-014 2026-11-26: local gates and CI run 45728313993 at `6b75ef0` | verified |
+| AC-009 | T-003 | `src/core/assistant/references.ts`, `src/hosts/embedded/assistants.ts` | `references0035.test.ts`, `assistant0035.test.ts` · struck by PD-112, successor AC-046 | built |
 | AC-010 | T-005, T-011 | `src/core/assistant/send.ts:copyFor` | `copyFor0035.test.ts` (Copy for); Claude part: the byte record of `ClaudeTerminalTest.kt` | built |
 | AC-011 | T-007, T-011 | `src/hosts/embedded/{assistants,ports}.ts`, `assistant/{ClaudeTerminal,TerminalGlue,IdeAssistantCalls}.kt` | `assistant0035.test.ts`; `ClaudeTerminalTest.kt` | built |
 | AC-012 | T-011 | `assistant/ClaudeTerminal.kt` (`ClaudeSender`, `ClaudeReadiness`, `ActiveRoot`), `TerminalGlue.kt` | `ClaudeTerminalTest.kt`; real `claude` manual (AC-027) | built |
 | AC-013 | T-007, T-011 | `src/hosts/embedded/assistants.ts` (`causes`), `assistant/{ClaudeTerminal,IdeAssistantCalls}.kt` | `assistant0035.test.ts`; `ClaudeTerminalTest.kt`, `AssistantPortTest.kt` | built |
 | AC-014 | T-010, T-011 | `assistant/AssistantPort.kt` (`hasControlCharacter`), `ClaudeTerminal.kt` | `AssistantPortTest.kt`, `ClaudeTerminalTest.kt` (byte record) | built |
 | AC-015 | T-011 | `assistant/ClaudeTerminal.kt` (`ClaudeTabs`, `LastTyped`) | `ClaudeTerminalTest.kt` (fake tabs) | built |
-| AC-016 | T-003, T-005, T-012 | `src/core/assistant/send.ts:copyFor`, `assistant/{ChatWindows,IdeChatWindows}.kt` | `copyFor0035.test.ts`, `ChatWindowsTest.kt`; IDs manual (A-008) | superseded by PD-112 (AC-050) |
-| AC-017 | T-003, T-005, T-012 | `send.ts:copyFor`, `references.ts`, `assistant/ChatWindows.kt` | `copyFor0035.test.ts`, `assistant0035.test.ts`, `ChatWindowsTest.kt` | superseded by PD-112 (AC-050) |
-| AC-018 | T-003 | `src/core/assistant/references.ts` | `references0035.test.ts` | superseded by PD-112 (AC-046) |
-| AC-019 | T-005, T-012 | `send.ts:copyFor`, `assistant/ChatWindows.kt` | `copyFor0035.test.ts`, `ChatWindowsTest.kt` | superseded by PD-112 (AC-050) |
-| AC-020 | T-005, T-006 | `src/webview/ui/SendButton.tsx` | `SendButton0035.test.tsx`, `copyFor0035.test.ts` | superseded by PD-112 (AC-050) |
-| AC-021 | T-002, T-003, T-005, T-006, T-014 | `src/shared/protocol/assistantTexts.ts` | `copyFor0035.test.ts`, `SendButton0035.test.tsx`; T-014 open | built |
-| AC-022 | T-006 | `src/core/assistant/sendView.ts:tipClosingOf` | `tipCopyFor0035.test.ts` | superseded by PD-112 (AC-050) |
-| AC-023 | T-007, T-010 | `src/hosts/embedded/ports.ts`, `panelSession.ts`, `HostRouter.kt`, `assistant/AssistantPort.kt` | `assistant0035.test.ts`, `HostRouterTest.kt`, `AssistantPortTest.kt` | built |
-| AC-024 | T-001, T-009, T-011 | `plugin.xml` (one optional `<depends>`, `featherspec-terminal.xml`), `assistant/TerminalGlue.kt` | `pluginZip.mjs` guard; CI `verify` | built |
+| AC-016 | T-003, T-005, T-012 | `src/core/assistant/send.ts:copyFor`, `assistant/{ChatWindows,IdeChatWindows}.kt` | `copyFor0035.test.ts`, `ChatWindowsTest.kt`; IDs manual (A-008) · struck by PD-112, successor AC-050 | built |
+| AC-017 | T-003, T-005, T-012 | `send.ts:copyFor`, `references.ts`, `assistant/ChatWindows.kt` | `copyFor0035.test.ts`, `assistant0035.test.ts`, `ChatWindowsTest.kt` · struck by PD-112, successor AC-050 | built |
+| AC-018 | T-003 | `src/core/assistant/references.ts` | `references0035.test.ts` · struck by PD-112, successor AC-046 | built |
+| AC-019 | T-005, T-012 | `send.ts:copyFor`, `assistant/ChatWindows.kt` | `copyFor0035.test.ts`, `ChatWindowsTest.kt` · struck by PD-112, successor AC-050 | built |
+| AC-020 | T-005, T-006 | `src/webview/ui/SendButton.tsx` | `SendButton0035.test.tsx`, `copyFor0035.test.ts` · struck by PD-112, successor AC-050 | built |
+| AC-021 | T-002, T-003, T-005, T-006, T-014 | `src/shared/protocol/assistantTexts.ts` | `copyFor0035.test.ts`, `SendButton0035.test.tsx` · T-014 2026-11-26: local gates and CI run 45728313993 at `6b75ef0` | verified |
+| AC-022 | T-006 | `src/core/assistant/sendView.ts:tipClosingOf` | `tipCopyFor0035.test.ts` · struck by PD-112, successor AC-050 | built |
+| AC-023 | T-007, T-010 | `src/hosts/embedded/ports.ts`, `panelSession.ts`, `HostRouter.kt`, `assistant/AssistantPort.kt` | `assistant0035.test.ts`, `HostRouterTest.kt`, `AssistantPortTest.kt` · CI run 45728313993 at `6b75ef0` | verified |
+| AC-024 | T-001, T-009, T-011 | `plugin.xml` (one optional `<depends>`, `featherspec-terminal.xml`), `assistant/TerminalGlue.kt` | `pluginZip.mjs` guard; CI `verify` · CI run 45728313993 at `6b75ef0` | verified |
 | AC-025 | T-013 | `docs/jetbrains/{parity-source.json,parity.md}` | `docs0035.test.ts`, `parity.test.ts` | verified |
-| AC-026 | T-008, T-014 | `.github/workflows/jetbrains.yml`, `jetbrains/guards/{sharedGuard,renderedTexts}.mjs` | `sharedGuard.test.mjs`; CI `shared-guard` open | built |
-| AC-027 | T-015 | — | manual: Gregor, Rider | open |
-| AC-028 | T-015 | — | manual: Gregor, Rider and VS Code | superseded by PD-112 (AC-053) |
+| AC-026 | T-008, T-014 | `.github/workflows/jetbrains.yml`, `jetbrains/guards/{sharedGuard,renderedTexts}.mjs` | `sharedGuard.test.mjs` · T-014 2026-11-26: local gates and CI run 45728313993 at `6b75ef0` | verified |
+| AC-027 | T-015 | — | manual: Gregor, Rider · partial: Gregor, Rider 2026.3.0.1 on Windows, 2026-11-26, Send to Claude Code opens the terminal with the CLI and the prompt; tab cases, Enter and versions not recorded | open |
+| AC-028 | T-015 | — | manual: Gregor, Rider and VS Code · struck by PD-112, successor AC-053 | built |
 | AC-029 | T-013 | `README.md`, `CHANGELOG.md`, `docs/release-checklist.md`, `jetbrains/AGENTS.md`, `.specs/active/{0024,0034}*.md`, `.specs/done/0029*.md` | `docs0035.test.ts` (notes, README, byte limits) | verified |
-| AC-043 | T-021 | `settings/{SettingsTable,StudioSettings,StudioConfigurable}.kt` | `SettingsTableTest.kt` | open |
-| AC-044 | T-016, T-020 | `assistant/CliAgents.kt` (`CliOnPath`), `ports/{CliAvailability,IdePlugins}.kt`, `StudioProjectService.kt` | `CliAgentsTest.kt`, `CliAvailabilityTest.kt` | open |
-| AC-045 | T-017 | `src/hosts/embedded/assistants.ts` | `agents0035PD112.test.ts` (matrix) | open |
-| AC-046 | T-017, T-023 | `src/core/assistant/references.ts` (`cliText`, `CLI_FORMS`) | `cliText0035PD112.test.ts` | open |
-| AC-047 | T-017, T-019 | `src/hosts/embedded/assistants.ts`, `assistantTexts.ts`, `assistant/{AgentTerminal,TerminalGlue,IdeAssistantCalls}.kt` | `agents0035PD112.test.ts`, `AgentsSendTest.kt`, `AgentTerminalTest.kt` | open |
-| AC-048 | T-019 | `assistant/AgentTerminal.kt` (`AgentTabs`), `TerminalGlue.kt` | `AgentsSendTest.kt` (byte record) | open |
-| AC-049 | T-016, T-019, T-023 | `assistant/CliAgents.kt`, `probe/HandoverScreen.kt` | `CliAgentsTest.kt`, `HandoverScreenTest.kt`, `AgentReplayTest.kt`; K-1 manual | open |
-| AC-050 | T-018, T-022 | `src/core/assistant/*`, `src/shared/protocol/*`, `src/webview/ui/SendButton.tsx`, `AssistantPort.kt`, `HostContract.kt` | `copyForRemoved0035PD112.test.ts` | open |
-| AC-051 | T-020 | `settings/EffectiveAssistant.kt`, `StudioSettings.kt`, `StudioProjectService.kt` | `EffectiveAssistantTest.kt`; VS Code `assistantTable0035.test.ts` | open |
-| AC-052 | T-024 | `README.md`, `CHANGELOG.md`, `docs/release-checklist.md` | `docs0035PD112.test.ts` | open |
-| AC-053 | T-015 | — | manual: Gregor, Rider, Junie CLI and Copilot CLI | open |
+| AC-043 | T-021 | `settings/{SettingsTable,StudioSettings,StudioConfigurable}.kt` | `SettingsTableTest.kt` · local gates and CI `plugin` 3 OS at `6b75ef0` (run 45728313993) | verified |
+| AC-044 | T-016, T-020 | `assistant/CliAgents.kt` (`CliOnPath`), `ports/{CliAvailability,IdePlugins}.kt`, `StudioProjectService.kt` | `CliAgentsTest.kt`, `CliAvailabilityTest.kt` · local gates and CI `plugin` 3 OS at `6b75ef0` (run 45728313993) | verified |
+| AC-045 | T-017 | `src/hosts/embedded/assistants.ts` | `agents0035PD112.test.ts` (matrix) · local gates and CI `plugin` 3 OS at `6b75ef0` (run 45728313993) | verified |
+| AC-046 | T-017, T-023 | `src/core/assistant/references.ts` (`cliText`, `CLI_FORMS`) | `cliText0035PD112.test.ts` · local gates and CI `plugin` 3 OS at `6b75ef0` (run 45728313993) | verified |
+| AC-047 | T-017, T-019 | `src/hosts/embedded/assistants.ts`, `assistantTexts.ts`, `assistant/{AgentTerminal,TerminalGlue,IdeAssistantCalls}.kt` | `agents0035PD112.test.ts`, `AgentsSendTest.kt`, `AgentTerminalTest.kt` · local gates and CI `plugin` 3 OS at `6b75ef0` (run 45728313993) | verified |
+| AC-048 | T-019 | `assistant/AgentTerminal.kt` (`AgentTabs`), `TerminalGlue.kt` | `AgentsSendTest.kt` (byte record) · local gates and CI `plugin` 3 OS at `6b75ef0` (run 45728313993) | verified |
+| AC-049 | T-016, T-019, T-023 | `assistant/CliAgents.kt`, `probe/HandoverScreen.kt` | `CliAgentsTest.kt`, `HandoverScreenTest.kt`, `AgentReplayTest.kt`; K-1 manual · markers `K-1 pending`, no `AgentReplayTest.kt` (T-023 closed by decision) | built |
+| AC-050 | T-018, T-022 | `src/core/assistant/*`, `src/shared/protocol/*`, `src/webview/ui/SendButton.tsx`, `AssistantPort.kt`, `HostContract.kt` | `copyForRemoved0035PD112.test.ts` · local gates and CI `plugin` 3 OS at `6b75ef0` (run 45728313993) | verified |
+| AC-051 | T-020 | `settings/EffectiveAssistant.kt`, `StudioSettings.kt`, `StudioProjectService.kt` | `EffectiveAssistantTest.kt`; VS Code `assistantTable0035.test.ts` · local gates and CI `plugin` 3 OS at `6b75ef0` (run 45728313993) | verified |
+| AC-052 | T-024 | `README.md`, `CHANGELOG.md`, `docs/release-checklist.md` | `docs0035PD112.test.ts` · local gates and CI `plugin` 3 OS at `6b75ef0` (run 45728313993) | verified |
+| AC-053 | T-015 | — | manual: Gregor, Rider, Junie CLI and Copilot CLI · partial: Send to Copilot seen (terminal, CLI, prompt); Junie not seen; the rest of the criterion not recorded | open |
 
 ## Session handoff
 
-- **Done so far:** spec and plan (2026-11-22); stages 1 and 2 (T-001 probe built, T-002 to T-008), stage 3 built (T-009 to T-012, one commit each, CI pending); T-013 verified (parity, notes, docs, maps, Memory Bank); local gates at stage 3: node + webview 4306 green, guards 68/68, eslint and both `tsc` clean; plain Kotlin checked locally with kotlinc 2.0.21 and JUnit stubs (T-009 28, T-010 34, T-011 37, T-012 8 green); the platform glue is compile-checked here only against hand-made stubs.
-- **Next action (PD-112, 2026-11-24):** Gregor reads spec §16 *Amendment 2026-11-24* and stages 6 to 10, installs Junie CLI and
-  Copilot CLI (T-016 *Gregor prepares*), gives the go (G6); then T-016. The earlier next action below still holds for the CI of
-  stage 3.
-- **Next action (before PD-112):** CI on the branch (Gregor pushes): `plugin` (all Kotlin of stage 3 and `HostContractTest`, `HostRouterTest`, `CoreConfigTest`, `SettingsTableTest`), `verify` (experimental Terminal API only through `TerminalToolWindowTabsManager`), `shared-guard`, `vscode-guards`. Then K-1's manual probe results (tool window IDs A-008, readiness markers A-005, enabled check A-007), then T-014 (final gates). If K-1 changes a value, README and the 0035 parity rows follow in the same change.
-- **Open decisions (PD-112):** proxies OP-020 to OP-026; K-1 for Junie CLI and Copilot CLI (markers, bracketed paste, running
-  command, `/sdd-overview` as a command, the PATH source); deleting the Copy for files (T-018, T-022) needs Gregor's yes.
-- **Open decisions:** **K-1 pending** (review 20 S-4, S-7, B-4, work order 20-B): the real values of the K-1 probe for the readiness markers (`ClaudeReadiness.INPUT_MARKERS`, `WAITING_MARKERS`), for `PluginManagerCore.isLoaded` against `isDisabled` (`PluginActivity.CURRENT`, one constant) and for the PowerShell and Git Bash shell integration; the proxies OP-003, OP-004, OP-013 and OP-016 are decided by Gregor since 2026-11-23; the other proxies of spec §14; K-1's values (A-005 to A-009); J-1 (form A or C). Not decided by a measurement: readiness markers (`ClaudeReadiness.MARKERS`), tool window IDs (`ChatWindows.*_IDS`), the active root (core memory, else IDE base path; a TypeScript `root` argument would make it exact).
-- **Kotlin must match the TypeScript:** `assistant.claudeTerminal` args `{target, text}`, answer `{"ok":null}` or `{error}`; the not-ready error text is exactly `Claude Code was not ready within 15000 ms`; `assistant.openChat` args `{assistant}`, answer `"opened"` or `"notFound"`; event `pluginsChanged {plugins: [ids]}` and `CoreConfig.plugins` carry the installed and loaded ids among `com.github.copilot`, `org.jetbrains.plugins.terminal`, `org.jetbrains.junie`, `com.intellij.ml.llm`.
+- **Done so far (2026-11-26):** T-001 stays open by design (the K-1 probe JSON was never pasted; T-023 closed by decision instead); T-002 to T-014 and T-016 to T-024 ticked. All local gates at head `6b75ef0`: node + webview 4485 passed, 6 skipped, 0 red; timing projects 35/35; `check-types` 0; `eslint src --max-warnings 0` 0; guards 75/75; `compile` 0. CI run 45728313993 at `6b75ef0` green on every functional job (see T-014); red only the 0034 trend timings after PD-111 on Windows (2025.3) and macOS. Gregor's hands-on in Rider 2026.3.0.1 (Windows) and VS Code, both 2026-11-26: works, Send to Copilot and Send to Claude Code open the terminal with the CLI and the prompt.
+- **Next action:** Gregor's remaining checks for AC-027 and AC-053 (below), then `/sdd-compile` in a fresh session, then Gregor's go for `/sdd-lifecycle`. No code step is open.
+- **Rest checks for Gregor (Rider 2026.3, `C:\projects\test\tip-splitter`, plugin of `6b75ef0`):** (1) Assistant Junie with Junie CLI installed: `NS-7-start` puts the prompt with two `@` mentions into a running `junie` tab, with none into a new tab `Junie`; nothing is sent, no escape characters show; Enter sends it and Junie reads both files. (2) For each of the three agents: a fresh start at the trust or login screen shows the waiting text and the Studio types nothing. (3) Safe Mode: no tab starts. (4) CLI not on the PATH: the option is missing and the hint shows; setting unset with Junie CLI installed: the step action reads Send to Junie. (5) Record the Rider, Terminal, Claude Code, Junie CLI and Copilot CLI versions and whether `/sdd-overview` runs as a command in each CLI (form decision of AC-046, `CLI_FORMS`). (6) For Junie's markers (T-023 rest risk): *FeatherSpec Probe: Handover Screen* with `-Dfeatherspec.probe.handover=true` in a running `junie` tab and at its login screen; paste the JSON.
+- **Decided (2026-11-26):** T-023 is closed with the provisional markers (`MARKERS_STATUS` `K-1 pending`, no `AgentReplayTest.kt`); Gregor delegated the call to the SDD developer. The terminal instead of the plugin chats is accepted by Gregor ("so in Ordnung").
+- **Open decisions:** proxies OP-020 to OP-026 of PD-112 stand until Gregor overrides; K-1 for Junie CLI (markers, bracketed paste, `/sdd-overview`, PATH source) is open as a rest risk; the 0034 trend timings (AC-007, AC-020, AC-028 on Windows 2025.3 and macOS) belong to 0034.
+- **Kotlin must match the TypeScript:** the bridge calls of PD-112 (`assistant.terminal` with its agent, target and text, the not-ready and waiting texts of `assistantTexts.ts`) and the event `pluginsChanged`/`CoreConfig` mirror are pinned by `HostContractTest`, `HostRouterTest` and `agents0035PD112.test.ts`; read them, not this line, when changing one side.
 - **Baseline:** 1765403c57c02381dae9acc5f2d4caae7abf7dfb
-- **Environment:** Kotlin only in CI; TypeScript locally (`npx vitest run --project node --project webview`). The Preview harness is not required by this plan; the Copy for button reuses the Send classes.
+- **Environment:** Kotlin only in CI; TypeScript locally (`npx vitest run --project node --project webview`). No GitHub access in the sandbox session of 2026-11-26: CI results are quoted from Gregor's report of run 45728313993.
 
 ## Amendments after UX review 20 (2026-11-23, work order 20-A items 1 to 3)
 
