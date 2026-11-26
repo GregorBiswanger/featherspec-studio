@@ -244,7 +244,9 @@ class SmokeProbe(private val project: Project, private val out: Path) {
                 manager.setCurrentLookAndFeel(infos[index], false)
                 manager.updateUI()
             }
-            val ms = eventMs(scripts, mark, start, THEME_WAIT_MS)
+            val ms = eventMs(scripts, mark, start, THEME_WAIT_MS) { script ->
+                script != null && ThemeScriptReader.read(script).bodyClass == wanted.bodyClass
+            }
             Thread.sleep(SETTLE_MILLISECONDS)
             val observed = scripts.after(mark).mapNotNull { it.second }.map { ThemeScriptReader.read(it) }
             val last = observed.lastOrNull()
