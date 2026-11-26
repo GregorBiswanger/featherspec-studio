@@ -111,3 +111,9 @@ test('the main jar is the one holding META-INF/plugin.xml', () => {
     assert.equal(pickMainJar(jars).entry, 'a/lib/x.jar');
     assert.equal(pickMainJar([]), undefined);
 });
+
+test('0036 a vendor with a url attribute passes and a wrong vendor name still fails', () => {
+    const withUrl = goodXml.replace('<vendor>', '<vendor url="https://github.com/GregorBiswanger/featherspec-studio">');
+    assert.deepEqual(checkPluginXml(withUrl), []);
+    assert.ok(checkPluginXml(withUrl.replace('Gregor Biswanger', 'Someone')).some((p) => p.includes('vendor')));
+});

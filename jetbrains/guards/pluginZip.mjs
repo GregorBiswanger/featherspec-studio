@@ -67,7 +67,7 @@ export const compareDigests = (pairs) =>
 
 export const checkPluginXml = (xml, expected = EXPECTED_PLUGIN) => {
     const problems = [];
-    const tag = (name) => xml.match(new RegExp(`<${name}>([^<]*)</${name}>`))?.[1];
+    const tag = (name) => xml.match(new RegExp(`<${name}(?:\\s[^>]*)?>([^<]*)</${name}>`))?.[1];
     if (tag('id') !== expected.id) {
         problems.push(`plugin id is not ${expected.id}`);
     }
