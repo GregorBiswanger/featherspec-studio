@@ -98,6 +98,11 @@ val verifyProducts = mapOf(
     "webstorm" to IntelliJPlatformType.WebStorm,
     "rider" to IntelliJPlatformType.Rider,
     "pycharm" to IntelliJPlatformType.PyCharm,
+    "phpstorm" to IntelliJPlatformType.PhpStorm,
+    "goland" to IntelliJPlatformType.GoLand,
+    "clion" to IntelliJPlatformType.CLion,
+    "rubymine" to IntelliJPlatformType.RubyMine,
+    "rustrover" to IntelliJPlatformType.RustRover,
 )
 
 intellijPlatform {
@@ -107,14 +112,29 @@ intellijPlatform {
         version = "0.1.0"
         vendor {
             name = "Gregor Biswanger"
+            url = "https://github.com/GregorBiswanger/featherspec-studio"
         }
         ideaVersion {
             sinceBuild = "253.29346"
             untilBuild = provider { null }
         }
     }
+    signing {
+        certificateChain = providers.environmentVariable("CERTIFICATE_CHAIN")
+        privateKey = providers.environmentVariable("PRIVATE_KEY")
+        password = providers.environmentVariable("PRIVATE_KEY_PASSWORD")
+    }
+    publishing {
+        token = providers.environmentVariable("PUBLISH_TOKEN")
+        channels = listOf("default")
+        hidden = false
+    }
     pluginVerification {
-        failureLevel = listOf(VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS)
+        failureLevel = listOf(
+            VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+            VerifyPluginTask.FailureLevel.INTERNAL_API_USAGES,
+            VerifyPluginTask.FailureLevel.INVALID_PLUGIN,
+        )
         ides {
             if (verifyProduct == null || verifyProduct == "recommended") {
                 recommended()

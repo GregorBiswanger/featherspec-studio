@@ -56,7 +56,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        product: [idea, webstorm, rider, pycharm, recommended]
+        product: [idea, webstorm, rider, pycharm, phpstorm, goland, clion, rubymine, rustrover, recommended]
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:

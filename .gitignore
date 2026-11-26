@@ -17,3 +17,10 @@ CLAUDE.local.md
 
 # Raw reverse-specification evidence — candidates and the worklist are kept, reports are volatile
 .sdd-reverse/reports/
+
+# Plugin signing material and keys — never commit
+*.pem
+*.crt
+*.key
+*.p12
+*.pfx
