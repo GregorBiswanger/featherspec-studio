@@ -366,7 +366,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         }
     });
 
-    it('the release checklist runs in spec order, ends with Go and checks no UI that is gone', async () => {
+    it('the release checklist runs in spec order, ends with Go and the 0036 section after it, and checks no UI that is gone', async () => {
         const text = await read('docs/release-checklist.md');
         const headings = text.match(/^## .*$/gm) ?? [];
         expect(headings).toEqual([
@@ -400,6 +400,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             '## JetBrains (manual) (0034)',
             '## Send in JetBrains (manual) (0035)',
             '## Go',
+            '## JetBrains Marketplace and VS Code 0.2.0 (0036)',
         ]);
         for (const gone of ['Plan line', 'descriptions cut', 'attention row', 'attention reason', 'filters, sort']) {
             expect(text, gone).not.toContain(gone);

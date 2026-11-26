@@ -378,3 +378,41 @@ Evidence for spec 0035 AC-027 and AC-053; plugin ZIP, Rider 2026.3 and `C:\proje
 - [x] **Published 2026-11-20** by Gregor's Go: run 44761333126 on `main` `bf236fc`, Marketplace `GregorBiswanger.featherspec-studio` 0.1.0, Visualization and AI; README images load from the public repository. All boxes ticked → Go → `gh workflow run publish.yml -f confirm=publish` (the workflow runs the unit
   suite and `npx @vscode/vsce publish --oidc`). Alternative without the workflow: `npx @vscode/vsce package`
   and upload the `.vsix` by hand on the publisher management page.
+
+## JetBrains Marketplace and VS Code 0.2.0 (0036)
+
+Evidence for spec 0036 AC-013, AC-018, AC-023, AC-024 and AC-030 to AC-033; the order of the steps is spec §5. Write the dates and values here, never a secret (AC-030).
+
+Preparation (AC-030, spec §6.10, done before the sign run):
+
+- [ ] **1. JetBrains Account** on plugins.jetbrains.com: date ___
+- [ ] **2. Vendor profile** with website and e-mail, trader or non-trader status declared: date ___
+- [ ] **3. Marketplace Developer Agreement**, accepted at the first upload: date ___
+- [ ] **4. Certificate** (`private_encrypted.pem`, `chain.crt`, plain key deleted, key and password in the password manager): created ___, expires ___ (365 days after creation)
+- [ ] **5. GitHub environment** `jetbrains-marketplace`: required reviewer `GregorBiswanger`, deployment restricted to tags `jetbrains-v*`: date ___
+- [ ] **6. Environment secrets** `CERTIFICATE_CHAIN`, `PRIVATE_KEY`, `PRIVATE_KEY_PASSWORD`: date ___; `PUBLISH_TOKEN` after the 0.1.0 approval (OP-015): date ___
+- [ ] **8. Every Go** of spec §3 written here or in the PR: dates ___
+
+Versions and G0 (AC-013, AC-023, AC-024):
+
+- [ ] **AC-013 verifier versions** on the day of G2 (___): newest stable IntelliJ IDEA ___, WebStorm ___, Rider ___, PyCharm ___
+- [ ] **AC-023 G0** (___): 0034 and 0035 in `done/`; the boxes of *JetBrains (manual)* and *Send in JetBrains (manual)* ticked; the cold-start values below measured
+- [ ] **AC-024 cold start** (___): core ready ___ s (limit 12 s); first panel frame ___ s (limit 1 s). Above a limit the release stops until a fix ships first, or a release names the value in its notes
+
+Marketplace page (AC-018, at the first upload):
+
+- [ ] **AC-018** (___): licence MIT with its link, source code, issue tracker and documentation links, tags from the Marketplace list, three Rider screenshots of 1280 × 800; every link and picture loads
+
+Order of the steps (AC-034, spec §5); each line gets its date and run ID:
+
+- [ ] **Step 1** G0 holds (§6.12): ___
+- [ ] **Step 2** §6.2 to §6.8 built on `jetbrains-host`; every job of `ci.yml` and `jetbrains.yml` green at one head: run ___
+- [ ] **Step 3** Preparation list above, in parallel with step 2
+- [ ] **Step 4** Gregor's Go, PR opened and merged with a merge commit; CI on `main` green: PR ___, merge commit ___
+- [ ] **Step 5** Tags `jetbrains-v0.1.0` and `v0.2.0` on the release commit, `v0.1.0` on `bf236fc`: ___
+- [ ] **Step 6** Sign run at `jetbrains-v0.1.0` with the environment approved (AC-030, AC-031): run ___, SHA-256 of `plugin-zip-signed` ___
+- [ ] **Step 7** First upload of the signed ZIP by hand (AC-031): date ___
+- [ ] **Step 8** JetBrains review (AC-031): upload ___, approval ___, review remarks ___ (a rejection ships as 0.1.1 with a new tag)
+- [ ] **Step 9** Install check in Rider and WebStorm (AC-032): Rider ___ version ___, WebStorm ___ version ___, no signature warning ___, the Studio opens on `C:\projects\test\tip-splitter` ___
+- [ ] **Step 10** `publish.yml` for VS Code 0.2.0 (AC-033): run ___, VS Code Marketplace shows `GregorBiswanger.featherspec-studio` 0.2.0 ___
+- [ ] **Step 11** GitHub releases, wiki line and cleanup (§6.11): ___

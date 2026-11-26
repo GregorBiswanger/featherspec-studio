@@ -10,7 +10,7 @@ Current phase: act
 - 0014–0017, 0020–0024, 0027 are implemented; their specs stay In Progress in `active/` until Gregor's manual checks are recorded (briefs 2026-11-26: traceability normalised, CI 45728313993 at `6b75ef0` recorded; open `manual:` rows per plan).
 
 ## Active Spec
-- [0036](../.specs/active/0036-jetbrains-marketplace-release.md) / [plan](../.specs/active/0036-jetbrains-marketplace-release.plan.md): T-001…T-003 built, CI pending (T-004); G0 first.
+- [0036](../.specs/active/0036-jetbrains-marketplace-release.md) / [plan](../.specs/active/0036-jetbrains-marketplace-release.plan.md): T-001…T-005, T-007 ticked; T-006 waits on gate 4 (Blockers); G0 first.
 - [0035](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md) / [plan](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.plan.md): Send to three CLI agents (PD-112), T-014, T-016…T-024 ticked; T-023 closed by decision (markers `K-1 pending`); AC-027, AC-053 partial (plan handoff).
 - [0034](../.specs/active/0034-studio-for-jetbrains-ides.md) / [plan](../.specs/active/0034-studio-for-jetbrains-ides.plan.md): JetBrains IDEs, T-001…T-042 ticked, G4 fix round closed; open: AC-007, AC-020, AC-028 (trend timings Windows 2025.3, macOS) and Gregor's AC-040 (partial), AC-041, AC-042; baseline `3bc615c`.
 - [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec for Copilot and Claude Code in every version (PD-091), T-001…T-011 verified; AC-016, AC-017, AC-020 are Gregor's or the orchestrator's.
@@ -31,14 +31,14 @@ Current phase: act
 
 ## Changed Recently
 - 2026-11-26: 0018 and 0019 moved to `done/`; traceability of 0014–0017, 0020–0024, 0027 normalised, 0022 got AC-030/AC-031, 0027 rows follow PD-091, 0030, 0033.
-- 2026-11-26: local gates at `6b75ef0` green (node + webview 4485, timing 35, types, eslint, guards 75); T-014 and T-023 closed in 0035, T-035 in 0034.
-- 0035 review 20 (2026-11-23): B-1…B-4, S-1…S-6 built (PD-110, Gregor decided OP-003/004/013/016), S-7 prepared; Kotlin only locally compiled, CI open.
+- 2026-11-26: 0036 T-005, T-007 built (CHANGELOG 0.2.0 Unreleased, checklist section); T-006 version and README built.
 
 ## Decisions in Flight
 - 0034: the proxy decisions await Gregor (plan handoff).
 - `AGENTS.md` stays above its 200-line target: the template body alone is 200 lines; further eviction would edit template wiring, Gregor's call.
 
 ## Blockers / Questions
+- 0036 gate 4: `problems.test.ts` AC-005 red on spec 0038's status, not 0036; Gregor decides.
 - 0034: `AGENTS.md` at 14991/15000 bytes (boundary detail moved to `core.md`; proxy decision, Gregor confirms); no other model family for the compile here (Claude only).
 - Gregor's manual checks stay in the specs: 0014 AC-026; 0015 AC-030; 0016 AC-025; 0017 AC-026; 0020 AC-022; 0021 AC-022 (real window), AC-023…AC-025; 0022 AC-020, AC-021; 0023 AC-018…AC-020; 0024 AC-016…AC-019; 0027 AC-017, AC-020.
 - Also Gregor's: 0025 AC-022 real window, AC-023, AC-024; 0026 AC-017, AC-019; 0028 AC-015; 0029 AC-014; 0030 AC-013; 0031 AC-009; 0032 (16 §4.1); 0033 (17 §5).

@@ -3,7 +3,7 @@
 **Spec:** [0036-jetbrains-marketplace-release.md](0036-jetbrains-marketplace-release.md)
 **Status:** In Progress
 **Last updated:** 2026-11-26
-**Current step:** T-004 (CI round; push is Ask-first). Stage 2 waits for G0.
+**Current step:** T-006 is blocked by gate 4 (`problems.test.ts` on backlog spec 0038; Gregor decides). T-008 waits for G0.
 
 ## Approach
 
@@ -183,8 +183,8 @@ Parallel: stage 1 — T-001, T-002 and T-003 share no file and each has its own 
   `AGENTS.md` snapshot (no source module).
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts src/adapters/node/docs0035.test.ts src/adapters/node/release0036.test.ts`;
   `wc -c AGENTS.md .memory-bank/activeContext.md` → ≤ 15000 and < 7000.
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-26 — red first: `release0036.test.ts` AC-034 test red (no section after `## Go`); green with `docsScan.test.ts`, `docs0035.test.ts`, `release0036.test.ts` 213/213 (`docsScan` ordering test amended to the new heading after `## Go`); `wc -c AGENTS.md` 14991 (≤ 15000), `.memory-bank/activeContext.md` 6924 (< 7000).
+- **Notes:** `techContext.md` (Release) and `jetbrains/AGENTS.md` already carried the release lines from T-001; checked, no edit. `systemPatterns.md` gets one record (JetBrains release, 0036). `activeContext.md` was 7180 bytes after the edits: the duplicate *local gates at 6b75ef0* bullet under Changed Recently went (the same numbers stay under Validation), and the *0035 review 20* bullet under Changed Recently was replaced by the 0036 line (its record stays in 0035's plan); the 0036 lines name T-006's gate 4. The checklist section lists §6.10 items 1–6 and 8, AC-013, AC-018, AC-023, AC-024, AC-030 to AC-033, and the §5 steps; dates and values are blank for Gregor.
 
 ### T-008 — Full gates and the PR (gate G2)
 
@@ -263,9 +263,9 @@ Parallel: stage 1 — T-001, T-002 and T-003 share no file and each has its own 
 | AC-016 | T-003 | `plugin.xml` | `pluginPage.test.mjs` | proven locally |
 | AC-017 | T-003 | `plugin.xml`, icons | `pluginPage.test.mjs` | proven locally |
 | AC-018 | T-007 | — | manual: Gregor, Marketplace page | open |
-| AC-019 | T-006 | — | — | open |
-| AC-020 | T-005 | — | — | open |
-| AC-021 | T-006 | — | — | open |
+| AC-019 | T-006 | `package.json`, `package-lock.json` | `release0036.test.ts` (SHA-256 against main, negative control) | proven locally; T-006 unticked (gate 4) |
+| AC-020 | T-005 | `CHANGELOG.md` | `release0036.test.ts` (SHA-256 of 0.1.0, 0.2.0, links) | proven locally |
+| AC-021 | T-006 | `README.md` | `release0036.test.ts` (section, heading) | proven locally; T-006 unticked (gate 4) |
 | AC-022 | T-008 | — | — | open |
 | AC-023 | T-007, T-008 | — | manual: Gregor, G0 | open |
 | AC-024 | T-007, T-008 | — | manual: Gregor, cold start | open |
@@ -278,13 +278,13 @@ Parallel: stage 1 — T-001, T-002 and T-003 share no file and each has its own 
 | AC-031 | T-007, T-010 | — | manual: Gregor, first upload | open |
 | AC-032 | T-007, T-011 | — | manual: Gregor, install check | open |
 | AC-033 | T-007, T-011 | — | manual: Gregor, VS Code publish | open |
-| AC-034 | T-007, T-012 | — | — | open |
+| AC-034 | T-007, T-012 | `docs/release-checklist.md`, `AGENTS.md`, `activeContext.md` | `release0036.test.ts` (section after Go, sizes), `docsScan.test.ts` (heading order) | section and sizes proven locally; T-012 open |
 | AC-035 | T-012 | — | — | open |
 
 ## Session handoff
 
-- **Done so far:** spec and plan written and clarified by proxy (2026-11-23); parity rows of 0036 added (`n-a`); stage 1 built 2026-11-26 (T-001, T-002, T-003 ticked, local guards 99/99, gates green; commits on `jetbrains-host`, not pushed).
-- **Next action:** T-004: Gregor's Go to push `jetbrains-host`, then read every job of `jetbrains.yml` and `ci.yml` (CI pending); Gregor's preparation list (spec §6.10) runs in parallel. Stage 2 (T-005…T-008) waits for G0.
+- **Done so far:** spec and plan written and clarified by proxy (2026-11-23); parity rows of 0036 added (`n-a`); stage 1 built 2026-11-26 (T-001, T-002, T-003 ticked, local guards 99/99, gates green; commits on `jetbrains-host`, not pushed); T-004 CI green (run 45871033008); T-005 (`f842fe9`) and T-007 ticked; T-006 (`d81d63d`) built, unticked (gate 4).
+- **Next action:** Gregor decides gate 4 (the status of 0038, `problems.test.ts` AC-005), then T-006 is ticked with the gate result. Gregor's preparation list (spec §6.10) and the checklist section run in parallel. T-008 waits for G0 (0034 and 0035 in `done/`, cold start).
 - **Open decisions:** the proxies OP-001–OP-021 of the spec; G0 depends on Gregor's checks of 0034 and 0035.
 - **Baseline:** _(set when work starts)_
 - **Environment:** parallel agents commit on `jetbrains-host`: commit only own paths (`git add <paths>`); wait on `index.lock`.

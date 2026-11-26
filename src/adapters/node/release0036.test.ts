@@ -140,3 +140,34 @@ describe('0036 AC-021: README JetBrains IDEs says how to install', () => {
         expect(headings).toHaveLength(1);
     });
 });
+
+export function sectionAfterGo(checklist: string): string {
+    const lines = checklist.split('\n');
+    const go = lines.indexOf('## Go');
+    const start = lines.indexOf('## JetBrains Marketplace and VS Code 0.2.0 (0036)');
+    if (go < 0 || start < go) {
+        return '';
+    }
+    const stop = lines.findIndex((line, index) => index > start && line.startsWith('## '));
+    return lines.slice(start, stop < 0 ? undefined : stop).join('\n');
+}
+
+describe('0036 AC-034: the checklist section after Go and the size limits', () => {
+    it('negative control: a section above Go is not found', () => {
+        expect(sectionAfterGo('## JetBrains Marketplace and VS Code 0.2.0 (0036)\nA\n## Go\n')).toBe('');
+    });
+
+    it('lists AC-013, AC-018, AC-023, AC-024 and AC-030 to AC-033, and the order of spec §5', async () => {
+        const section = sectionAfterGo(await read('docs/release-checklist.md'));
+        expect(section).not.toBe('');
+        for (const id of ['AC-013', 'AC-018', 'AC-023', 'AC-024', 'AC-030', 'AC-031', 'AC-032', 'AC-033']) {
+            expect(section, id).toContain(id);
+        }
+        expect(section).toContain('§5');
+    });
+
+    it('AGENTS.md stays at most 15 000 bytes and activeContext.md below 7 000', async () => {
+        expect(Buffer.byteLength(await read('AGENTS.md'), 'utf8')).toBeLessThanOrEqual(15000);
+        expect(Buffer.byteLength(await read('.memory-bank/activeContext.md'), 'utf8')).toBeLessThan(7000);
+    });
+});
