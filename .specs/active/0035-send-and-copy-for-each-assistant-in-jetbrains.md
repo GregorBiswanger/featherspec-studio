@@ -544,6 +544,8 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   *Amended 2026-11-26 (K-1, Junie):* Junie 26.11.3, the agent Rider 2026.3 installs, shows `? show help`,
   `/ available commands` and `shift + tab` on its input screen and none of the provisional input markers; Junie's input
   markers are `? for shortcuts`, `shift+tab`, `? show help`, `/ available commands`, `shift + tab` (waiting markers unchanged).
+  *Amended 2026-11-27 (K-1, Copilot):* Copilot CLI 1.0.116 on Rider 2026.3 shows `/ commands` and `? help` in its footer;
+  Copilot's input markers are `@ to mention files`, `/ for commands`, `? for help`, `/ commands`, `? help` (waiting markers unchanged).
 - **AC-050** *(PD-112; replaces AC-016, AC-017, AC-019, AC-020, AC-022, AC-030, AC-034)* In JetBrains no step action shall be a
   Copy for: the menu of each Send shall hold `Send to the current chat`, `Send to a new chat` and `Copy prompt` in this order,
   and Copy prompt shall put the line alone on the clipboard and open nothing; the toggletip's Send paragraph shall be 0024's

@@ -41,7 +41,7 @@ class CliAgentsTest {
             listOf("Continue with JetBrains account", "Use a Junie API key", "Do you trust", "integration plugin"),
             CliAgents.JUNIE.waitingMarkers,
         )
-        assertEquals(listOf("@ to mention files", "/ for commands", "? for help"), CliAgents.COPILOT.inputMarkers)
+        assertEquals(listOf("@ to mention files", "/ for commands", "? for help", "/ commands", "? help"), CliAgents.COPILOT.inputMarkers)
         assertEquals(
             listOf("trust the files in this folder", "Yes, and remember this folder for future sessions", "No (Esc)", "/login"),
             CliAgents.COPILOT.waitingMarkers,
@@ -206,5 +206,25 @@ class CliAgentsTest {
         assertTrue(CliAgents.JUNIE.hasInputBox(screen))
         assertFalse(CliAgents.JUNIE.hasInputBox("Do you trust the files in this folder?\n1. Yes"))
         assertFalse(CliAgents.JUNIE.hasInputBox("? show help\nContinue with JetBrains account"))
+    }
+
+    @Test
+    fun `K-1 the input screen of Copilot CLI 1_0_116 counts as ready`() {
+        val screen = """
+             Current   Sessions   Issues   Pull requests   Gists
+
+              Copilot v1.0.116 uses AI.     Getting started
+              Check for mistakes.           Use the tabs above to explore your sessions and pull requests
+                                            /model — Switch models across providers, or use Copilot Fusion
+
+             ● Connected to JetBrains Rider
+             ● MCP Servers reloaded: 4 servers connected
+
+             C:\\projects\\test\\tip-split-rider-test [main%]          Run on: This computer ctrl+e change environment
+             ▌
+             ← open sidebar · Interactive · Manual Approval · / commands · ? help · tab next tab
+        """.trimIndent()
+        assertTrue(CliAgents.COPILOT.hasInputBox(screen))
+        assertFalse(CliAgents.COPILOT.hasInputBox("Do you trust the files in this folder?\n? help\nNo (Esc)"))
     }
 }
