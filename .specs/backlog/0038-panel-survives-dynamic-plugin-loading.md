@@ -1,6 +1,6 @@
 # Panel survives dynamic plugin loading
 
-**Status:** Backlog
+**Status:** Draft
 
 Found while verifying 0034 in CI. IntelliJ IDEA 2026.3 (unified) can load and unload bundled plugins at runtime: in CI, about
 40 s after start, the JetBrains Ultimate module was loaded and indexing ran. A Studio tab opened inside that window reached
