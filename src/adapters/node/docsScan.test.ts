@@ -336,7 +336,8 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         expect(text).not.toContain('(0020)');
     });
 
-    it('CHANGELOG holds 0.1.0 dated on the release day (2026-11-20), at most one Unreleased section above it, and describes the product as it ships', async () => {
+    // 0036 T-005: the first release is 0.1.0, byte-identical as published; at most one Unreleased section above it.
+    it('CHANGELOG is one first release, dated on the release day (2026-11-20), and describes the product as it ships', async () => {
         const text = await read('CHANGELOG.md');
         const headings = text.match(/^## \[.*$/gm) ?? [];
         expect(headings.filter((heading) => heading.includes('Unreleased')).length).toBeLessThanOrEqual(1);
@@ -366,7 +367,8 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         }
     });
 
-    it('the release checklist runs in spec order, ends with Go and the 0036 section after it, and checks no UI that is gone', async () => {
+    // 0036 T-007: the release section of AC-034 follows Go.
+    it('the release checklist runs in spec order, ends with Go and checks no UI that is gone', async () => {
         const text = await read('docs/release-checklist.md');
         const headings = text.match(/^## .*$/gm) ?? [];
         expect(headings).toEqual([
@@ -483,7 +485,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         }
     });
 
-    it('finds the 0.1.0 section of a changelog and stops at the link block', () => {
+    it('finds the first release section of a changelog and stops at the next one', () => {
         expect(firstRelease('# C\n\n## [0.2.0] - Unreleased\nA\n\n## [0.1.0] - y\nB\n\n[0.2.0]: u\n')).toBe('## [0.1.0] - y\nB\n');
     });
 
