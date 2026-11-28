@@ -88,4 +88,14 @@ class BudgetVerdictTest {
         assertNull(BudgetVerdict.problem(BudgetVerdict.info("diag", -1, "Linux")))
         assertTrue(BudgetVerdict.table("Panel", listOf(row)).contains("| diag | 4200 | - | - | Mac OS X | info |"))
     }
+
+    @Test
+    fun `PD-111 a theme switch on macOS is a trend at any time, Linux and Windows stay judged, unmeasured fails`() {
+        assertEquals(Verdict.TREND, BudgetVerdict.judgeTrendOnMac("AC-028 Light switch", 17_467, 500, "Mac OS X").verdict)
+        assertEquals(null, BudgetVerdict.problem(BudgetVerdict.judgeTrendOnMac("AC-028 Light switch", 17_467, 500, "Mac OS X")))
+        assertEquals(Verdict.PASSED, BudgetVerdict.judgeTrendOnMac("AC-028 Light switch", 73, 500, "Mac OS X").verdict)
+        assertEquals(Verdict.FAILED, BudgetVerdict.judgeTrendOnMac("AC-028 Light switch", -1, 500, "Mac OS X").verdict)
+        assertEquals(Verdict.FAILED, BudgetVerdict.judgeTrendOnMac("AC-028 Light switch", 800, 500, "Windows Server 2025").verdict)
+        assertEquals(Verdict.FAILED, BudgetVerdict.judgeTrendOnMac("AC-028 Light switch", 501, 500, "Linux").verdict)
+    }
 }

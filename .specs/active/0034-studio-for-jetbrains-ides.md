@@ -387,6 +387,7 @@ WebStorm by hand in AC-040 and AC-041.
   kinds of §6.6, for Light, Darcula, High Contrast, Islands Light and Islands Dark.
 - **AC-028** When the developer switches the IDE theme, the open panel shall show the new theme's values and body class
   within 500 ms, without reopening and without a frame in which old and new colours mix (0005 AC-019).
+  *Amended 2026-11-28 (PD-111): on the macOS CI runner the switch time is a trend only and never fails the job (the runner's own Look-and-Feel switch took up to 17 s before the IDE notified the plugin; the plugin's part was 1–2 ms). Linux and Windows keep the budget rules; a wrong or missing theme fails everywhere.*
 - **AC-029** For each of the five themes of AC-027, every pair of the mapping's contrast table — at least panel text,
   secondary text, link and button text on their backgrounds, and the focus outline — shall have a contrast ratio of at least
   4.5:1 for text and 3:1 for the focus outline, computed from the mapped values.

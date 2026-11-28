@@ -43,6 +43,21 @@ object BudgetVerdict {
         return BudgetRow(name, measured, budget, limit, os, verdict)
     }
 
+    fun isMacOs(os: String): Boolean {
+        val name = os.lowercase()
+        return name.contains("mac") || name.contains("darwin")
+    }
+
+    /**
+     * PD-111 amendment 2026-11-28: on macOS a theme switch's time is a trend only — the CI runner's own Look-and-Feel
+     * switch took up to 17 s before the IDE notified the plugin (plugin part 1-2 ms). A value that was not measured
+     * still fails; Linux and Windows are judged as by [judge].
+     */
+    fun judgeTrendOnMac(name: String, measured: Long, budget: Long, os: String): BudgetRow {
+        val row = judge(name, measured, budget, os)
+        return if (isMacOs(os) && row.verdict == Verdict.FAILED && measured >= 0) row.copy(verdict = Verdict.TREND) else row
+    }
+
     /** A value without a budget: it is shown and never fails. */
     fun info(name: String, measured: Long, os: String): BudgetRow = BudgetRow(name, measured, NO_BUDGET, NO_BUDGET, os, Verdict.INFO)
 

@@ -279,7 +279,9 @@ object SmokeCompare {
         if (text(entry, "bodyClass") != wanted.bodyClass) {
             problems.add("$name: body class expected ${wanted.bodyClass}, observed '${text(entry, "bodyClass")}'")
         }
-        within(problems, timing, "AC-028 $name switch", number(entry, "ms"), SmokeBudgets.THEME_MS)
+        val switchRow = BudgetVerdict.judgeTrendOnMac("AC-028 $name switch", number(entry, "ms"), SmokeBudgets.THEME_MS, timing.os)
+        timing.rows?.add(switchRow)
+        BudgetVerdict.problem(switchRow)?.let { problems.add(it) }
         themeDiagnostics(name, entry, timing)
         if (number(entry, "scripts") < 1) {
             problems.add("$name: no update script reached the panel")
