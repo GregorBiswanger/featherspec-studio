@@ -165,7 +165,7 @@ class AgentTerminalTest {
             assertFalse(claude.hasInputBox("$box\n$marker"), marker)
             assertTrue(claude.hasInputBox("$marker\n$box"), marker)
         }
-        assertEquals("K-1 pending", ClaudeReadiness.MARKERS_STATUS)
+        assertEquals("K-1 confirmed 2026-11-28 (Junie 26.11.3, Claude Code 2.1.296, Copilot CLI 1.0.116)", ClaudeReadiness.MARKERS_STATUS)
     }
 
     @Test

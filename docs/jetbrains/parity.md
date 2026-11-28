@@ -808,7 +808,7 @@ Generated from `.specs/done/` and `.specs/active/` by `src/adapters/node/parity.
 | 0035 | AC-046 | shared | shared-test |  |
 | 0035 | AC-047 | deliberately different | PD-112 (the agent table of the IDE terminal; VS Code keeps its rows) |  |
 | 0035 | AC-048 | deliberately different | PD-112 (a new agent tab runs the bare command in the IDE terminal) |  |
-| 0035 | AC-049 | deliberately different | PD-112 (readiness markers and paste mode per CLI agent; K-1 pending) |  |
+| 0035 | AC-049 | deliberately different | PD-112 (readiness markers and paste mode per CLI agent; K-1 confirmed 2026-11-28) |  |
 | 0035 | AC-050 | deliberately different | PD-112 (Copy for removed from the JetBrains source and protocol 13) |  |
 | 0035 | AC-051 | deliberately different | PD-112 (the host passes the effective Assistant value to the core) |  |
 | 0035 | AC-052 | deliberately different | PD-112 (the README sentence about starting an agent concerns JetBrains only) |  |

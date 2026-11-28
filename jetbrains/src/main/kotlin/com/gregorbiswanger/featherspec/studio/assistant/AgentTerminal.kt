@@ -58,8 +58,8 @@ object AgentTabs {
 }
 
 object ClaudeReadiness {
-    // K-1 pending: both marker lists are provisional until the K-1 probe has seen the real screens; replace them here only.
-    const val MARKERS_STATUS = "K-1 pending"
+    // K-1 confirmed 2026-11-28: the marker lists were checked against the real screens (see AgentReplayTest); change them here only.
+    const val MARKERS_STATUS = "K-1 confirmed 2026-11-28 (Junie 26.11.3, Claude Code 2.1.296, Copilot CLI 1.0.116)"
 
     val INPUT_MARKERS: List<String> = listOf("? for shortcuts", "\u2502 >", "shift+tab to cycle")
 

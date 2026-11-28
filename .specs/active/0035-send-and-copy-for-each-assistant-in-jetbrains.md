@@ -144,8 +144,8 @@ trusted (Safe Mode) only types into a running Claude terminal and never starts `
   Not ready within 15 000 ms → fallback; the Studio types nothing afterwards (proxy, OP-006).
 - **Waiting for an answer (review 20 B-4, §16, AC-032):** *ready* means the visible text of the tab shows an input marker and
   no waiting marker after it. The markers are two named lists in the platform-free `ClaudeReadiness`
-  (`INPUT_MARKERS`, `WAITING_MARKERS`; **K-1 pending**: provisional until the K-1 probe has seen the real input box, the
-  folder-trust dialog and the login prompt; the trust dialog may contain `Claude Code` too). Not ready, in an existing or in a
+  (`INPUT_MARKERS`, `WAITING_MARKERS`; **K-1 confirmed 2026-11-28** (the input screen of Claude Code 2.1.296; AC-049):
+  the trust dialog and the login prompt stay documented texts; the trust dialog may contain `Claude Code` too). Not ready, in an existing or in a
   new tab: the Studio types nothing, focuses the tab, copies the line and shows §7's waiting text instead of the general
   warning. Every other failure keeps 0024's warning.
 - **Safe Mode (review 20 S-3, PD-110, AC-037):** while the IDE does not trust the project (`TrustedProjects.isProjectTrusted`, the
@@ -535,9 +535,9 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   this agent (a running `claude` is no Junie terminal); a new tab shall run the bare command alone, without any argument or
   flag (so never `--trust-project`, `--allow-all-paths`, `--yolo`, `--trust-folder` or `--dangerously-skip-permissions`), shown
   by the byte record of the fake terminal for each agent.
-- **AC-049** *(PD-112, **K-1 pending**)* Readiness shall be decided per agent by the platform-free `AgentReadiness` from the
+- **AC-049** *(PD-112, **K-1 confirmed 2026-11-28**)* Readiness shall be decided per agent by the platform-free `AgentReadiness` from the
   agent's named constants `INPUT_MARKERS` and `WAITING_MARKERS` (Claude Code: those of AC-032) and one `MARKERS_STATUS` per agent,
-  `K-1 pending` for all three until K-1; the paste mode shall be one named constant per agent, bracketed for all three until K-1
+  `K-1 confirmed 2026-11-28 (Junie 26.11.3, Claude Code 2.1.296, Copilot CLI 1.0.116)` for all three (it was `K-1 pending` until then); the paste mode shall be one named constant per agent, bracketed for all three until a K-1 value says otherwise
   says otherwise; the *Handover Screen* probe shall report for every terminal tab the agent its command belongs to, that agent's
   verdict, and the hits of every marker of all three agents; after K-1, the redacted `lastLines` of each recorded state shall be
   the fixtures of a replay test whose verdicts equal the probe's.
@@ -546,6 +546,11 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   markers are `? for shortcuts`, `shift+tab`, `? show help`, `/ available commands`, `shift + tab` (waiting markers unchanged).
   *Amended 2026-11-27 (K-1, Copilot):* Copilot CLI 1.0.116 on Rider 2026.3 shows `/ commands` and `? help` in its footer;
   Copilot's input markers are `@ to mention files`, `/ for commands`, `? for help`, `/ commands`, `? help` (waiting markers unchanged).
+  *Amended 2026-11-28 (K-1 confirmed):* the input screens of all three agents were seen on Gregor's Rider 2026.3: Junie 26.11.3 (`/ available commands`,
+  `@ search for a file or a folder`, `! bash command`, `? show help`, input `> `), Claude Code v2.1.296 (input line `❯ `, footer
+  `⏵⏵ auto mode on (shift+tab to cycle)`) and Copilot CLI 1.0.116 (footer `/ commands · ? help`, input `▌`). `MARKERS_STATUS` says
+  `K-1 confirmed 2026-11-28 (Junie 26.11.3, Claude Code 2.1.296, Copilot CLI 1.0.116)` for all three, and `AgentReplayTest.kt` replays these
+  three screens (hasInputBox true) and one trust or login screen per agent (false), as the replay test of this criterion demands.
 - **AC-050** *(PD-112; replaces AC-016, AC-017, AC-019, AC-020, AC-022, AC-030, AC-034)* In JetBrains no step action shall be a
   Copy for: the menu of each Send shall hold `Send to the current chat`, `Send to a new chat` and `Copy prompt` in this order,
   and Copy prompt shall put the line alone on the clipboard and open nothing; the toggletip's Send paragraph shall be 0024's
@@ -728,7 +733,7 @@ waiting for an answer (B-4), Safe Mode (S-3, PD-110), a missing command (S-2), t
 API — read with the agent's row below in place of Claude Code and `claude` (AC-047). The Studio starts only the bare command,
 without any argument or flag, so that trust, login and permission decisions stay with the developer (AC-048).
 
-**Agents** (one platform-free table in Kotlin and one in TypeScript; marked rows are **K-1 pending**)
+**Agents** (one platform-free table in Kotlin and one in TypeScript; the markers are **K-1 confirmed 2026-11-28**; the marked form and paste rows stay K-1)
 
 | | Junie | Claude Code | GitHub Copilot |
 | --- | --- | --- | --- |
@@ -739,8 +744,8 @@ without any argument or flag, so that trust, login and permission decisions stay
 | File reference | ` @<path>` | ` @<path>` | ` @<path>` |
 | Line form (`CLI_FORMS`) | `follow` (K-1/J-1) | `slash` | `follow` (K-1) |
 | Paste mode | bracketed (K-1) | bracketed | bracketed (K-1) |
-| Input markers, provisional | `? for shortcuts`, `shift+tab` (guesses) | AC-032's | `@ to mention files`, `/ for commands`, `? for help` (guesses) |
-| Waiting markers, provisional | `Continue with JetBrains account`, `Use a Junie API key` (login, documented), `Do you trust`, `integration plugin` (guesses) | AC-032's | `trust the files in this folder`, `Yes, and remember this folder for future sessions`, `No (Esc)`, `/login` (documented) |
+| Input markers (K-1 confirmed 2026-11-28) | `? for shortcuts`, `shift+tab`, `? show help`, `/ available commands`, `shift + tab` | AC-032's | `@ to mention files`, `/ for commands`, `? for help`, `/ commands`, `? help` |
+| Waiting markers (K-1 confirmed 2026-11-28 for the input side; the waiting texts are the documented ones) | `Continue with JetBrains account`, `Use a Junie API key` (login, documented), `Do you trust`, `integration plugin` (guesses) | AC-032's | `trust the files in this folder`, `Yes, and remember this folder for future sessions`, `No (Esc)`, `/login` (documented) |
 
 **Prompt text (replaces §6.2's Copilot and Junie syntaxes and §6.7):** `cliText(line, paths, form)`: form `slash` keeps the line,
 form `follow` rewrites a line `/sdd-<name>` or `/sdd-<name> <rest>` as §6.7's form C did; then one ` @<path>` per path that

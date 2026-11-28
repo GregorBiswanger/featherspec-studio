@@ -29,13 +29,14 @@ class CliAgentsTest {
     }
 
     @Test
-    fun `AC-049 every agent says K-1 pending and the paste is bracketed until K-1`() {
-        assertEquals(listOf("K-1 pending", "K-1 pending", "K-1 pending"), CliAgents.ALL.map { it.markersStatus })
+    fun `AC-049 every agent says K-1 confirmed and the paste is bracketed`() {
+        val confirmed = "K-1 confirmed 2026-11-28 (Junie 26.11.3, Claude Code 2.1.296, Copilot CLI 1.0.116)"
+        assertEquals(listOf(confirmed, confirmed, confirmed), CliAgents.ALL.map { it.markersStatus })
         assertEquals(listOf(PasteMode.BRACKETED, PasteMode.BRACKETED, PasteMode.BRACKETED), CliAgents.ALL.map { it.pasteMode })
     }
 
     @Test
-    fun `AC-049 the markers are the provisional ones of the spec`() {
+    fun `AC-049 the markers are the confirmed ones of the spec`() {
         assertEquals(listOf("? for shortcuts", "shift+tab", "? show help", "/ available commands", "shift + tab"), CliAgents.JUNIE.inputMarkers)
         assertEquals(
             listOf("Continue with JetBrains account", "Use a Junie API key", "Do you trust", "integration plugin"),

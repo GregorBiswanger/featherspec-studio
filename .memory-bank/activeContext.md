@@ -11,7 +11,7 @@ Current phase: act
 
 ## Active Spec
 - [0036](../.specs/active/0036-jetbrains-marketplace-release.md) / [plan](../.specs/active/0036-jetbrains-marketplace-release.plan.md): T-001…T-005, T-007 ticked; T-006 waits on gate 4 (Blockers); G0 first.
-- [0035](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md) / [plan](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.plan.md): Send to three CLI agents (PD-112), T-014, T-016…T-024 ticked; T-023 closed by decision (markers `K-1 pending`); AC-027, AC-053 partial (plan handoff).
+- [0035](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md) / [plan](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.plan.md): Send to three CLI agents (PD-112), T-014, T-016…T-024 ticked; K-1 confirmed 2026-11-28; AC-027, AC-053 manual rest open (handoff).
 - [0034](../.specs/active/0034-studio-for-jetbrains-ides.md) / [plan](../.specs/active/0034-studio-for-jetbrains-ides.plan.md): JetBrains IDEs, T-001…T-042 ticked, G4 fix round closed; open: AC-007, AC-020, AC-028 (trend timings Windows 2025.3, macOS) and Gregor's AC-040 (partial), AC-041, AC-042; baseline `3bc615c`.
 - [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec for Copilot and Claude Code in every version (PD-091), T-001…T-011 verified; AC-016, AC-017, AC-020 are Gregor's or the orchestrator's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 are Gregor's; OP-004 closed by PD-078.

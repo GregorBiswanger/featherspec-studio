@@ -67,7 +67,7 @@ class CliAgent(
 }
 
 object CliAgents {
-    const val MARKERS_STATUS = "K-1 pending"
+    const val MARKERS_STATUS = "K-1 confirmed 2026-11-28 (Junie 26.11.3, Claude Code 2.1.296, Copilot CLI 1.0.116)"
 
     // "? show help", "/ available commands" and "shift + tab": the input screen of Junie 26.11.3 (agent the IDE installed,
     // Rider 2026.3, seen 2026-11-26); the earlier two stay for other builds.
