@@ -525,6 +525,6 @@ None open. Each decision below stands where its ID is cited.
 Ready: clarified 2026-11-20 (OP-017–OP-023); no open point; OP-019–OP-024 confirmed by Gregor 2026-11-20. Done
 per the DoD of `AGENTS.md`: AC-001–AC-031, AC-033–AC-035, AC-037–AC-039 and AC-043 proven (AC-032 and AC-036 moved,
 OP-024), AC-040–AC-042 checked by Gregor, the parity matrix fully categorised, VS Code CI and `.vsix` unchanged. Next:
-Gregor reads the plan [0034-studio-for-jetbrains-ides.plan.md](0034-studio-for-jetbrains-ides.plan.md) (41 steps
-after the G1 re-plan of 2026-11-21, spikes first, split per OP-024); then `/sdd-lifecycle` to `active/`. Follow-up specs: 0035 *Send to assistant in
+Gregor reads the plan [0034-studio-for-jetbrains-ides.plan.md](0034-studio-for-jetbrains-ides.plan.md) (43 steps,
+T-001…T-043, after the G1 re-plan of 2026-11-21 and the later appends T-042 and T-043; spikes first, split per OP-024); then `/sdd-lifecycle` to `active/`. Follow-up specs: 0035 *Send to assistant in
 JetBrains IDEs*, 0036 *JetBrains Marketplace release*.
